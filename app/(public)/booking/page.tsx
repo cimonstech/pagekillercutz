@@ -20,12 +20,14 @@ export default function BookingPage() {
       <nav className="relative mb-12 flex items-center justify-between px-4">
         <div className="absolute left-0 top-1/2 z-0 h-0.5 w-full -translate-y-1/2 bg-surface-container-highest" />
         <div className="absolute left-0 top-1/2 z-0 h-0.5 w-[15%] -translate-y-1/2 bg-primary-container" />
-        {[
-          ["1", "Details", true],
-          ["2", "Vibe", false],
-          ["3", "Payment", false],
-        ].map(([num, label, on]) => (
-          <div key={label} className="relative z-10 flex flex-col items-center gap-2">
+        {(
+          [
+            ["1", "Details", true],
+            ["2", "Vibe", false],
+            ["3", "Payment", false],
+          ] as const
+        ).map(([num, label, on]) => (
+          <div key={num} className="relative z-10 flex flex-col items-center gap-2">
             <div
               className={[
                 "flex size-8 items-center justify-center rounded-full text-[12px] font-bold",

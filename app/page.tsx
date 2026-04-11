@@ -154,38 +154,39 @@ export default function Home() {
               <p className="kc-hero-subtitle font-headline text-base text-on-surface-variant mb-6 max-w-lg">
                 Master of the decks. Afrobeat &amp; Highlife fusion from Accra to the world.
               </p>
-              <div className="kc-hero-ctas flex flex-wrap items-center justify-start gap-4">
+              <div className="kc-hero-ctas flex flex-wrap items-center justify-start gap-3">
                 <Link
                   href="/sign-in"
-                  className="flex items-center gap-2 pl-7 pr-6 py-3 bg-primary text-on-primary-fixed font-bold rounded-full active:scale-[0.96] transition-transform duration-150 ease-out glow-btn"
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-6 font-bold leading-none text-on-primary-fixed glow-btn active:scale-[0.96] transition-transform duration-150 ease-out sm:px-7"
                 >
                   <span
-                    className="material-symbols-outlined text-[20px] ml-[2px]"
+                    className="material-symbols-outlined pointer-events-none text-[20px] leading-none"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     play_arrow
                   </span>
-                  Play
+                  <span className="leading-none">Play</span>
                 </Link>
                 <Link
                   href="/contact"
-                  className="flex items-center gap-2 px-7 py-3 bg-white/10 text-white font-bold rounded-full shadow-border hover:bg-white/20 transition-[background-color,box-shadow]"
+                  className="inline-flex h-12 shrink-0 items-center justify-center rounded-full bg-white/10 px-6 font-bold leading-none text-white shadow-border hover:bg-white/20 sm:px-7 transition-[background-color,box-shadow]"
                 >
                   Book the DJ
                 </Link>
                 <Link
                   href="/about"
-                  className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20 text-on-surface-variant hover:text-on-surface hover:border-white/40 transition-colors"
+                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/20 text-on-surface-variant hover:text-on-surface hover:border-white/40 transition-colors"
+                  aria-label="More about the artist"
                 >
-                  <span className="material-symbols-outlined text-[18px]">more_horiz</span>
+                  <span className="material-symbols-outlined text-[18px] leading-none">more_horiz</span>
                 </Link>
               </div>
               <div
-                className="kc-hero-stats mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 xl:mt-10"
+                className="kc-hero-stats mt-8 flex w-full max-w-full flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6 sm:gap-y-4 xl:mt-10"
                 aria-label="Artist stats with community avatars"
               >
-                <MemberAvatarStack size={34} />
-                <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
+                <MemberAvatarStack size={34} className="shrink-0 justify-start" />
+                <div className="flex w-full min-w-0 flex-wrap items-start justify-start gap-x-6 gap-y-4 sm:w-auto sm:items-center">
                     <div>
                       <p className="font-display text-3xl font-extrabold leading-none tracking-tight text-[#00BFFF] tabular-nums sm:text-4xl">
                         100+
@@ -212,8 +213,8 @@ export default function Home() {
                         MONTHLY LISTENERS
                       </p>
                     </div>
-                    <div className="hidden h-10 w-px bg-outline-variant/30 sm:block" />
-                    <div>
+                    <div className="hidden h-10 w-px bg-outline-variant/30 sm:block" aria-hidden />
+                    <div className="hidden sm:block">
                       <p className="font-display text-3xl font-extrabold leading-none tracking-tight text-white tabular-nums sm:text-4xl">
                         2K
                       </p>
@@ -436,7 +437,7 @@ export default function Home() {
             <AnimateIn from={32}>
             <section className="relative rounded-3xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-secondary/10 pointer-events-none" />
-              <div className="relative glass border-0 rounded-3xl p-8 lg:p-10 flex flex-col md:flex-row gap-8 items-center">
+              <div className="relative glass border-0 rounded-3xl p-8 lg:p-10 flex flex-col md:flex-row gap-8 items-start md:items-center">
                 <div className="flex-1">
                   <p className="font-label text-xs text-primary uppercase tracking-widest mb-3">About the Artist</p>
                   <h2 className="font-display text-4xl uppercase tracking-tighter mb-4">Page KillerCutz</h2>
@@ -453,27 +454,27 @@ export default function Home() {
                     <span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </Link>
                 </div>
-                <div className="flex flex-col items-center gap-6 shrink-0">
-                  <div className="flex flex-col items-center gap-2">
-                    <MemberAvatarStack size={40} />
-                    <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest text-center">
+                <div className="flex w-full shrink-0 flex-col items-start gap-6 md:w-auto md:items-center">
+                  <div className="flex flex-col items-start gap-2 md:items-center">
+                    <MemberAvatarStack size={40} className="justify-start" />
+                    <p className="font-label text-left text-[10px] text-on-surface-variant uppercase tracking-widest md:text-center">
                       Fans in 7+ countries
                     </p>
                   </div>
-                  <div className="flex gap-6 sm:gap-8">
-                    <div className="text-center">
+                  <div className="flex w-full flex-wrap justify-start gap-6 sm:gap-8 md:justify-center">
+                    <div className="text-left md:text-center">
                       <p className="font-display text-4xl sm:text-5xl text-primary tabular-nums">100+</p>
                       <p className="font-label text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest">
                         Events
                       </p>
                     </div>
-                    <div className="text-center">
+                    <div className="text-left md:text-center">
                       <p className="font-display text-4xl sm:text-5xl text-secondary tabular-nums">12+</p>
                       <p className="font-label text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest">
                         Years
                       </p>
                     </div>
-                    <div className="text-center">
+                    <div className="text-left md:text-center">
                       <p className="font-display text-4xl sm:text-5xl text-white tabular-nums">3</p>
                       <p className="font-label text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest">
                         Continents

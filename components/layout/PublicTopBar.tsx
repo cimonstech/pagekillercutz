@@ -233,34 +233,17 @@ export default function PublicTopBar() {
     return () => ctx.revert();
   }, []);
 
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <header ref={headerRef} className="sticky top-0 z-40 border-b border-white/5 bg-[rgba(8,8,15,0.92)] backdrop-blur-xl">
       <Suspense fallback={<PublicTopBarFallback mobileOpen={mobileOpen} onToggle={toggle} />}>
         <PublicTopBarInner mobileOpen={mobileOpen} onToggle={toggle} />
       </Suspense>
 
-      {/* Mobile dropdown nav */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[rgba(8,8,15,0.97)] backdrop-blur-xl">
-          <nav className="flex flex-col px-4 py-3" aria-label="Mobile navigation">
-            {CENTER_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center py-3.5 px-2 font-headline text-sm font-medium text-white border-b border-white/[0.06] last:border-0 hover:text-[#00BFFF] transition-colors"
-              >
-                {label}
-              </Link>
-            ))}
-            <Link
-              href="/sign-in"
-              onClick={() => setMobileOpen(false)}
-              className="mt-3 mb-1 flex items-center justify-center rounded-full border border-[#00BFFF] px-6 py-2.5 font-headline text-[13px] font-semibold text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/10"
-            >
-              Sign In
-            </Link>
-          </nav>
-        </div>
-      )}
-    </he
+      <Suspense fallback={null}>
+        <MobileNavDrawer open={mobileOpen} onClose={closeMobile} />
+      </Suspense>
+    </header>
+  );
+}
