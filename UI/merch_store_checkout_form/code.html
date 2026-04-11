@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800;900&amp;family=Space+Grotesk:wght@600&amp;family=Inter:wght@400;500&amp;family=Space+Mono&amp;family=Syne:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#34343c",
+                        "on-primary-container": "#004a65",
+                        "on-primary-fixed": "#001e2c",
+                        "inverse-primary": "#00668a",
+                        "outline-variant": "#3d4850",
+                        "primary-container": "#00bfff",
+                        "secondary-fixed-dim": "#ffb955",
+                        "secondary-container": "#dc9100",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "surface-bright": "#393841",
+                        "primary": "#8fd6ff",
+                        "surface-container-low": "#1b1b23",
+                        "inverse-surface": "#e4e1ec",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-tertiary-container": "#8d0025",
+                        "surface-container-high": "#2a2931",
+                        "background": "#13131a",
+                        "surface-dim": "#13131a",
+                        "secondary": "#ffb955",
+                        "surface-container-highest": "#34343c",
+                        "surface-container": "#1f1f27",
+                        "outline": "#87929b",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "on-surface-variant": "#bcc8d1",
+                        "tertiary-container": "#ff9399",
+                        "surface": "#13131a",
+                        "secondary-fixed": "#ffddb4",
+                        "on-secondary-fixed": "#291800",
+                        "on-primary-fixed-variant": "#004c69",
+                        "on-secondary-container": "#4f3100",
+                        "on-secondary": "#452b00",
+                        "surface-tint": "#7ad0ff",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-surface": "#e4e1ec",
+                        "inverse-on-surface": "#303038",
+                        "error": "#ffb4ab",
+                        "on-primary": "#003549",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "on-tertiary": "#680019",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "tertiary": "#ffbdbf",
+                        "on-background": "#e4e1ec",
+                        "on-error": "#690005",
+                        "primary-fixed": "#c3e8ff"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "brand": ["Barlow Condensed"],
+                        "mono": ["Space Mono"],
+                        "syne": ["Syne"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem", "24": "1.5rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
+            outline: none;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex items-center justify-center p-4">
+<!-- Background Ambience -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/5 blur-[120px] rounded-full"></div>
+</div>
+<!-- Top Navigation (Contextual Suppression Logic: Hidden as this is a focused transactional state) -->
+<!-- Side Navigation (Contextual Suppression Logic: Hidden as this is a focused task) -->
+<!-- Main Checkout Modal -->
+<main class="relative z-10 w-full max-w-[600px] glass-panel rounded-24 overflow-hidden shadow-2xl border border-white/5">
+<!-- Header -->
+<header class="flex items-center justify-between px-8 py-6 border-b border-white/5">
+<h1 class="text-2xl font-headline font-semibold tracking-tight text-white uppercase">Checkout</h1>
+<button class="p-2 hover:bg-white/10 rounded-full transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-white">close</span>
+</button>
+</header>
+<div class="px-8 py-6 max-h-[819px] overflow-y-auto no-scrollbar">
+<!-- Order Summary (Collapsed Glass Card) -->
+<section class="mb-8">
+<div class="glass-input p-4 rounded-xl flex items-center justify-between cursor-pointer hover:bg-white/5 group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up of a black graphic t-shirt with a glowing cyan synthwave logo against a dark industrial background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVmVGHU0Yf1FEctwz1uoCa-k3ePu3zrVq61nyuh_Y52KgxHoWrb_dDQCQtLSnZaBZGVJVb0lyWzQTORNPzgWcKwpUzhoqsss2OYmI7pteqWJZ3J5DfycYoNdvXBBo6OU22zvXWAsiV1yNUUfbOW8FJwEt5KZHzYyIBeXLbA_Dholf40ElqBiNwsbVA2bel-y7RoA1xR3jmK7grVuUW1rjjc30hb_j7nqZnf0bk1ZG5TzCwya3QRMn0i5wkTDrTsza24MDc6oQc17Vu"/>
+</div>
+<div>
+<p class="text-sm font-semibold text-white">Order Summary</p>
+<p class="text-xs text-on-surface-variant">2 Items in cart</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">expand_more</span>
+</div>
+</section>
+<!-- Customer Details Form -->
+<section class="space-y-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="w-1 h-4 bg-primary rounded-full"></span>
+<h2 class="text-sm font-headline uppercase tracking-widest text-primary-container">Customer Details</h2>
+</div>
+<div class="space-y-4">
+<!-- Full Name -->
+<div class="space-y-1.5">
+<label class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant px-1">Full Name</label>
+<input class="w-full h-12 px-4 rounded-lg glass-input text-on-surface placeholder:text-white/20" placeholder="Kwame Mensah" type="text"/>
+</div>
+<!-- Email & Phone Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant px-1">Email Address</label>
+<input class="w-full h-12 px-4 rounded-lg glass-input text-on-surface placeholder:text-white/20" placeholder="kwame@sonicpulse.gh" type="email"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant px-1">Phone Number</label>
+<input class="w-full h-12 px-4 rounded-lg glass-input text-on-surface placeholder:text-white/20" placeholder="+233 24 000 0000" type="tel"/>
+</div>
+</div>
+<!-- Address -->
+<div class="space-y-1.5">
+<label class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant px-1">Shipping Address</label>
+<input class="w-full h-12 px-4 rounded-lg glass-input text-on-surface placeholder:text-white/20" placeholder="12 Osu Badu Street" type="text"/>
+</div>
+<!-- City Dropdown -->
+<div class="space-y-1.5">
+<label class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant px-1">City</label>
+<div class="relative">
+<select class="w-full h-12 px-4 rounded-lg glass-input text-on-surface appearance-none focus:ring-0">
+<option class="bg-surface-container">Accra</option>
+<option class="bg-surface-container">Kumasi</option>
+<option class="bg-surface-container">Takoradi</option>
+<option class="bg-surface-container">Tamale</option>
+<option class="bg-surface-container">Cape Coast</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Total Row -->
+<section class="mt-10 pt-6 border-t border-white/5 flex items-end justify-between">
+<div>
+<p class="text-[10px] font-mono uppercase tracking-[0.2em] text-on-surface-variant">Payment Due</p>
+<h3 class="text-lg font-headline text-white mt-1">Order Total</h3>
+</div>
+<div class="text-right">
+<p class="font-syne font-bold text-[28px] leading-none text-primary-container">GHS 440</p>
+<p class="text-[10px] font-mono text-on-surface-variant mt-1">INCL. VAT &amp; SHIPPING</p>
+</div>
+</section>
+</div>
+<!-- Footer Actions -->
+<footer class="px-8 py-8 bg-white/2 flex flex-col sm:flex-row-reverse gap-4">
+<button class="flex-1 h-14 bg-primary-container text-on-primary-fixed font-headline font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all">
+<span>Place Order</span>
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</button>
+<button class="flex-1 h-14 bg-transparent text-on-surface-variant border border-white/10 font-headline font-semibold uppercase tracking-wider rounded-lg flex items-center justify-center hover:bg-white/5 hover:text-white transition-all">
+                Back to Cart
+            </button>
+</footer>
+</main>
+<!-- Global Pulse Indicator (Matches Design System) -->
+<div class="fixed bottom-0 left-0 w-full h-[2px] bg-primary/20">
+<div class="h-full bg-primary-container w-3/4 shadow-[0_0_15px_#00bfff]"></div>
+</div>
+</body></html>

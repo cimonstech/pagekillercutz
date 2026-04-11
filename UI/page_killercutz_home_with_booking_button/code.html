@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "secondary": "#ffb955",
+            "on-primary-fixed": "#001e2c",
+            "on-surface-variant": "#bcc8d1",
+            "error": "#ffb4ab",
+            "primary-fixed": "#c3e8ff",
+            "on-tertiary-container": "#8d0025",
+            "tertiary-container": "#ff9399",
+            "outline-variant": "#3d4850",
+            "secondary-fixed-dim": "#ffb955",
+            "tertiary-fixed-dim": "#ffb3b5",
+            "on-secondary-fixed": "#291800",
+            "background": "#13131a",
+            "secondary-fixed": "#ffddb4",
+            "on-secondary": "#452b00",
+            "on-primary-fixed-variant": "#004c69",
+            "surface-container-highest": "#34343c",
+            "inverse-primary": "#00668a",
+            "on-secondary-container": "#4f3100",
+            "primary": "#8fd6ff",
+            "inverse-on-surface": "#303038",
+            "outline": "#87929b",
+            "surface-container": "#1f1f27",
+            "on-tertiary-fixed-variant": "#920027",
+            "error-container": "#93000a",
+            "on-secondary-fixed-variant": "#633f00",
+            "surface-bright": "#393841",
+            "on-error-container": "#ffdad6",
+            "secondary-container": "#dc9100",
+            "surface-dim": "#13131a",
+            "primary-fixed-dim": "#7ad0ff",
+            "surface-container-low": "#1b1b23",
+            "on-tertiary-fixed": "#40000c",
+            "inverse-surface": "#e4e1ec",
+            "surface-tint": "#7ad0ff",
+            "on-primary-container": "#004a65",
+            "on-primary": "#003549",
+            "on-tertiary": "#680019",
+            "surface-variant": "#34343c",
+            "on-surface": "#e4e1ec",
+            "surface": "#13131a",
+            "surface-container-lowest": "#0e0d15",
+            "surface-container-high": "#2a2931",
+            "primary-container": "#00bfff",
+            "on-error": "#690005",
+            "on-background": "#e4e1ec",
+            "tertiary": "#ffbdbf",
+            "tertiary-fixed": "#ffdada"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "display": ["Barlow Condensed"],
+            "body": ["Inter"],
+            "label": ["Space Mono"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .glass-header {
+      background: rgba(19, 19, 26, 0.8);
+      backdrop-filter: blur(20px);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+    }
+    .text-glow {
+      text-shadow: 0 0 20px rgba(143, 214, 255, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<div class="flex min-h-screen flex-col">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 glass-header border-b border-white/5 px-6 lg:px-12 py-4">
+<div class="flex items-center justify-between max-w-7xl mx-auto">
+<div class="flex items-center gap-12">
+<div class="flex items-center gap-3">
+<div class="size-6 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="font-display text-2xl tracking-tighter uppercase">Killercutz</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-headline text-sm font-medium hover:text-primary transition-colors" href="#">Discover</a>
+<a class="font-headline text-sm font-medium hover:text-primary transition-colors" href="#">Browse</a>
+<a class="font-headline text-sm font-medium hover:text-primary transition-colors" href="#">Radio</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-sm" data-icon="search">search</span>
+<input class="bg-surface-container-low border-none rounded-sm pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary w-64 placeholder:text-outline-variant" placeholder="Search tracks..." type="text"/>
+</div>
+<button class="px-5 py-2 text-sm font-bold bg-primary text-on-primary-fixed rounded-sm hover:brightness-110 transition-all">Sign In</button>
+<button class="px-5 py-2 text-sm font-bold bg-surface-container-highest text-on-surface rounded-sm hover:bg-surface-variant transition-all">Sign Up</button>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-12 py-8">
+<!-- Hero Section -->
+<section class="relative min-h-[500px] flex flex-col justify-end p-8 lg:p-12 overflow-hidden mb-12">
+<div class="absolute inset-0 z-0">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10"></div>
+<img alt="close-up of a DJ hand spinning a vinyl record on a turntable in a moody dimly lit club with neon blue highlights" class="w-full h-full object-cover grayscale opacity-60" data-alt="close-up of a DJ hand spinning a vinyl record on a turntable in a moody dimly lit club with neon blue highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjPL3QRPZEhRF9ffT4wW-mgRcK9EGEz8mHqkcW9roK1xKdzYDMDt_K6k7KaYqUY8ZA8_SvHcy1gOwBnMA1BqmvNmk2Ehcw2BkiecyH8SFB-dr0SUOZ56U7ZP7D8_TAwgzP8oCwVsbet0fixQEPT4ZlkPnhrJzHx8Tgzccl3vG4ZfHgLdAcB3nCBOgacGNZfl7O74mT4UBlAijCjECDHMUBk4G2fUXZ93bDxR672qevp5qSb2MkVUKB7MHRLUYnsyzb2rY7sdBYm4uw"/>
+</div>
+<div class="relative z-20 max-w-2xl">
+<h1 class="font-display text-7xl lg:text-9xl uppercase leading-[0.85] tracking-tighter text-white mb-6">
+            Killercutz <br/> <span class="text-primary">Ghana</span>
+</h1>
+<p class="font-headline text-xl text-on-surface-variant mb-8 max-w-lg">
+            Master of the decks. Experience the ultimate Afrobeat and Highlife fusion. Delivering the pulse of Accra to the world.
+          </p>
+<div class="flex flex-wrap gap-4">
+<button class="flex items-center gap-2 px-8 py-4 bg-primary text-on-primary-fixed font-bold text-lg rounded-sm hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+              Listen Now
+            </button><button class="flex items-center gap-2 px-8 py-4 bg-[#00BFFF] text-black font-headline font-semibold text-lg rounded-xl hover:scale-105 transition-transform">
+  Book the DJ <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<div class="flex gap-6 items-center px-6">
+<div>
+<span class="block font-label text-xs text-primary uppercase tracking-widest">Listeners</span>
+<span class="block font-headline text-2xl font-bold">2.5M</span>
+</div>
+<div class="w-px h-8 bg-outline-variant/30"></div>
+<div>
+<span class="block font-label text-xs text-primary uppercase tracking-widest">Followers</span>
+<span class="block font-headline text-2xl font-bold">450K</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Main Content Area -->
+<div class="lg:col-span-8 space-y-12">
+<!-- Section Tabs -->
+<div class="flex border-b border-outline-variant/20 gap-8">
+<button class="pb-4 border-b-2 border-primary text-white font-headline font-bold">Overview</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant hover:text-white transition-colors font-headline font-bold">Releases</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant hover:text-white transition-colors font-headline font-bold">Events</button>
+<button class="pb-4 border-b-2 border-transparent text-on-surface-variant hover:text-white transition-colors font-headline font-bold">Biography</button>
+</div>
+<!-- New Releases Grid -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline text-2xl font-semibold">New Releases</h2>
+<a class="text-primary text-sm font-medium hover:underline" href="#">View All</a>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+<!-- Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square overflow-hidden mb-4 bg-surface-container">
+<img alt="abstract vibrant afrobeat album cover with geometric patterns and neon colors" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="abstract vibrant afrobeat album cover with geometric patterns and neon colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_J8F7-4RVVlbNfMJYSHK_wTOwViXFk2svzkgbdaYzVcKn7a-V2MmKfvGGczRI5HBPCZ1aCZEsPp_xyaJRiwZuED8FZNWb82YmI42TK_WRpoi7nTpp5yzxU4qNbon9T2h-A-oMX82TUM3TBmIOZ2-rqEhSVn6--NtPHaXX1Cu79bJJSRF9sYT8Iph9rTQ8E5Zk1a9tEiAZgCIj43yr0v2f3nfyXc8SIhqYy0whtdNShNGwzXIFjIN0tJuIudD2Qajj9tmaR5HBQ16E"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<div class="size-12 bg-primary rounded-full flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+</div>
+</div>
+</div>
+<h3 class="font-headline font-medium truncate">Accra Nights Vol. 4</h3>
+<p class="text-on-surface-variant text-sm font-label">2024 • Album</p>
+</div>
+<!-- Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square overflow-hidden mb-4 bg-surface-container">
+<img alt="dark cinematic photography of a music mixing console with glowing led lights" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="dark cinematic photography of a music mixing console with glowing led lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAA8N-43lShzE9loAwKatvzNqq99mT4lW7ygl0ubRVKphP8-54gJBxSQgzu2Nvoa0I50iZdxNPQeElcJrpcyCE999sBN6Jk3YwfaXRJ7Znr1-SyPJq2a_Mn4sPLU3HS4b-9D5qD7EsclNPg05p78OHFzl4MSc5PIf6TQ2L7RfYIF8NajhtvSYD08FEAAzP229hfOOdM-GcjMcR-IIgErHdx_UaawC8lyRSaJht2nY5vQmfsZb-40j6qGOKTnDqwfzz2kYO0h80m91P"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<div class="size-12 bg-primary rounded-full flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+</div>
+</div>
+</div>
+<h3 class="font-headline font-medium truncate">Electric Highlife</h3>
+<p class="text-on-surface-variant text-sm font-label">2024 • EP</p>
+</div>
+<!-- Card 3 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-square overflow-hidden mb-4 bg-surface-container">
+<img alt="energetic crowd at an outdoor music festival with colorful smoke and sunlight" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="energetic crowd at an outdoor music festival with colorful smoke and sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh9xQ8m8pUduhGDxcDbI806SedBbB4nE_e5h5avgkzmrC_CWc0tbUhlXHS44ZK_TrEj4ZQfjBQhWR8hFYtBopNgaN8WD6JJBFu1Lrt03gpUT3vXwGvjUHVPtpXtkWFI5q5VpjO7MWlkE_f-wKwa37q0sEeXXSI7OEi5Mj5cRfa8OPDX7RtE7sqFV2iqcc8ZzFZ23FklyS1FJtEalsseHQVMhpYoEcTM2V6UXscb1lDoNYHoD54w0q4gAlq92Fs0cpW1HOfwCRDzVZG"/>
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<div class="size-12 bg-primary rounded-full flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+</div>
+</div>
+</div>
+<h3 class="font-headline font-medium truncate">Sunsum Remixes</h3>
+<p class="text-on-surface-variant text-sm font-label">2023 • Single</p>
+</div>
+</div>
+</section>
+<!-- Biography Preview -->
+<section class="p-8 bg-surface-container-low border border-white/5 rounded-sm">
+<h2 class="font-headline text-2xl font-semibold mb-4">About the Artist</h2>
+<p class="text-on-surface-variant leading-relaxed mb-6">
+              Hailing from the vibrant streets of Accra, KillerCutz has redefined the sound of modern West Africa. Merging deep traditional Highlife rhythms with cutting-edge electronic production, his sets are legendary for their energy and cultural depth. Since 2015, he has headlined festivals across three continents, bringing the authentic spirit of Ghana to global stages.
+            </p>
+<button class="text-primary font-bold flex items-center gap-2 hover:gap-3 transition-all">
+              Read Full Bio <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</section>
+</div>
+<!-- Sidebar Panel -->
+<aside class="lg:col-span-4 space-y-8">
+<!-- Popular Songs -->
+<div class="glass-card p-6 rounded-sm border border-white/5">
+<h2 class="font-headline text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="trending_up">trending_up</span>
+              Popular Songs
+            </h2>
+<div class="space-y-4">
+<!-- Track 1 -->
+<div class="flex items-center gap-4 group cursor-pointer hover:bg-white/5 p-2 -mx-2 transition-colors">
+<span class="font-label text-xs text-outline w-4">01</span>
+<div class="size-10 bg-surface-container rounded-sm overflow-hidden flex-shrink-0">
+<img alt="close-up of vibrant stage lighting in deep purple and blue" class="w-full h-full object-cover" data-alt="close-up of vibrant stage lighting in deep purple and blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvRZg1SWShtFtmiQNiNDxJG9hkNMTGHFJBFL_rpGrxOeT9GZBJrew4HkFwk4kKyEK0M2ob0WrMHA5nXNWadQomJSJhyYwugGbtR-zgKfXPs3gOw2VX0bQHwhvVkLynGJYhadu2H5SSLRBVpuPTu0h6qQk933iXUyh1jqD0Jc8kLgosJwAQw11e5QpXgK8iEPL5pgO-3Obusrzj0b9dVxADEIAowOLWPJTEyZ9wCKAS1-o8VQI8eRa0Ur8DloQww2gshOOmO8KTQXPG"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium truncate">Ahenfie (The Palace)</p>
+<p class="text-xs text-outline-variant font-label">1.2M plays</p>
+</div>
+<span class="font-label text-xs text-outline">04:22</span>
+</div>
+<!-- Track 2 -->
+<div class="flex items-center gap-4 group cursor-pointer hover:bg-white/5 p-2 -mx-2 transition-colors">
+<span class="font-label text-xs text-outline w-4">02</span>
+<div class="size-10 bg-surface-container rounded-sm overflow-hidden flex-shrink-0">
+<img alt="low angle shot of a musician playing a keyboard in a hazy studio" class="w-full h-full object-cover" data-alt="low angle shot of a musician playing a keyboard in a hazy studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBofh7EfLBPXxk4q4cOKq4CL3j-ev4gA54uGRpYw4d05L-TFgl4N97KElS4lDmXgTY-6TqRyb4rLsKqpMwV3mUvmRVr6Nw42ba9NYAlFWP5bB34lWfj4VAxaKYKOB57jMR35mOaMUvfHe9_zS9UPG77HFKrgeBeXbwjh8iGjcqjbjFBPCAtcXgGLYCcg2z-i52twJHDmIV3u1ZtH5i5srA_omuRctzDusSmMHyjVAeOoA-L0pFvsj1giZFnPOLfax7_4nFA1nuIBeug"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium truncate">Gold Coast Grooves</p>
+<p class="text-xs text-outline-variant font-label">980K plays</p>
+</div>
+<span class="font-label text-xs text-outline">03:45</span>
+</div>
+<!-- Track 3 -->
+<div class="flex items-center gap-4 group cursor-pointer hover:bg-white/5 p-2 -mx-2 transition-colors">
+<span class="font-label text-xs text-outline w-4">03</span>
+<div class="size-10 bg-surface-container rounded-sm overflow-hidden flex-shrink-0">
+<img alt="vintage condenser microphone in a professional music studio" class="w-full h-full object-cover" data-alt="vintage condenser microphone in a professional music studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDICHzUL0Val8phgSd8QHb-HJNmHH8GXdgKrkhYpFy7F28mJwnWoosgF8RpSKdRfmCqJicCacMm-KnyJNKzSQx0EA2RIRzvMUtpWvkgAPabGWu75YP6n1lSd4pv02zuZywMX-7DgPWVdknc5jEGULVz33aL_2Qb52RSokrn6ZA2bdOzqF4Rkeb6nVy-_6jZ_JruW-eI87s5eO0mEOVqvmoGefDOxa8XQnLcsNNc4G4TACznyPEpMNcsgjXFPfRW1d6NA0WywhW9dAQr"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium truncate">Sunlight over Labadi</p>
+<p class="text-xs text-outline-variant font-label">850K plays</p>
+</div>
+<span class="font-label text-xs text-outline">05:12</span>
+</div>
+</div>
+<button class="w-full mt-6 py-3 border border-outline-variant/30 text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors">
+              Explore All Tracks
+            </button>
+</div>
+<!-- Newsletter Signup -->
+<div class="p-6 bg-primary-container/10 border border-primary/20 rounded-sm">
+<h3 class="font-headline font-bold mb-2">Get Artist Updates</h3>
+<p class="text-sm text-on-surface-variant mb-4">Subscribe to receive exclusive mixes and event tour dates in your inbox.</p>
+<div class="space-y-3">
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-sm text-sm p-3 focus:ring-1 focus:ring-primary" placeholder="Email Address" type="email"/>
+<button class="w-full bg-primary text-on-primary-fixed font-bold py-3 rounded-sm">Subscribe</button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto border-t border-white/5 bg-surface-container-lowest py-12 px-6 lg:px-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="flex items-center gap-3 grayscale opacity-70">
+<div class="size-5 text-on-surface">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="font-display text-lg tracking-tighter uppercase">Killercutz</span>
+</div>
+<div class="flex flex-col items-center md:items-end gap-2">
+<div class="flex gap-6 text-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Use</a>
+</div>
+<p class="text-xs text-outline-variant font-label">© 2024 KILLERCUTZ GHANA. ALL RIGHTS RESERVED.</p>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

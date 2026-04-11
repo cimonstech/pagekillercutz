@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Events - Sonic Futurism</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-primary-fixed": "#001e2c",
+                "background": "#08080F",
+                "tertiary-container": "#ff9399",
+                "on-secondary-container": "#4f3100",
+                "on-error-container": "#ffdad6",
+                "outline": "#87929b",
+                "surface-container-lowest": "#0e0d15",
+                "secondary-fixed-dim": "#ffb955",
+                "on-tertiary-fixed-variant": "#920027",
+                "inverse-on-surface": "#303038",
+                "primary": "#8fd6ff",
+                "error-container": "#93000a",
+                "primary-container": "#00bfff",
+                "on-primary-fixed-variant": "#004c69",
+                "secondary": "#ffb955",
+                "tertiary-fixed-dim": "#ffb3b5",
+                "surface-variant": "#34343c",
+                "surface-container": "#1f1f27",
+                "on-tertiary": "#680019",
+                "on-primary-container": "#004a65",
+                "surface-container-high": "#2a2931",
+                "on-tertiary-container": "#8d0025",
+                "tertiary-fixed": "#ffdada",
+                "on-tertiary-fixed": "#40000c",
+                "on-surface": "#e4e1ec",
+                "inverse-primary": "#00668a",
+                "error": "#ffb4ab",
+                "on-secondary": "#452b00",
+                "on-secondary-fixed": "#291800",
+                "surface-bright": "#393841",
+                "secondary-container": "#dc9100",
+                "primary-fixed": "#c3e8ff",
+                "inverse-surface": "#e4e1ec",
+                "surface-tint": "#7ad0ff",
+                "on-primary": "#003549",
+                "surface-container-highest": "#34343c",
+                "surface": "#08080F",
+                "on-background": "#e4e1ec",
+                "on-surface-variant": "#bcc8d1",
+                "surface-container-low": "#1b1b23",
+                "on-secondary-fixed-variant": "#633f00",
+                "tertiary": "#ffbdbf",
+                "secondary-fixed": "#ffddb4",
+                "primary-fixed-dim": "#7ad0ff",
+                "surface-dim": "#13131a",
+                "outline-variant": "#3d4850",
+                "on-error": "#690005"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Space Mono"],
+                "display": ["Barlow Condensed"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .light .glass {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .scratch-disc {
+            background: repeating-radial-gradient(circle, transparent, transparent 10px, rgba(0, 191, 255, 0.04) 11px, transparent 12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-container selection:text-on-primary-fixed overflow-x-hidden">
+<!-- Background Accents -->
+<div class="fixed top-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none z-0"></div>
+<div class="fixed top-[-50px] right-[-100px] w-[500px] h-[500px] scratch-disc rounded-full pointer-events-none z-0 opacity-40"></div>
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[72px] bg-[#08080F]/80 backdrop-blur-xl flex flex-col items-center py-8 z-50 shadow-[40px_0_40px_rgba(0,0,0,0.06)] transition-colors duration-300">
+<div class="mb-12 text-[#00BFFF] font-black text-2xl tracking-tighter">P</div>
+<nav class="flex flex-col gap-8 w-full items-center">
+<button class="w-full py-3 flex flex-col items-center text-[#bcc8d1] hover:text-[#8fd6ff] transition-all duration-200 hover:bg-[#FFFFFF]/5">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</button>
+<button class="w-full py-3 flex flex-col items-center bg-[#F4F6FA]/10 text-[#00BFFF] border-l-2 border-[#FFD700] transition-all duration-200">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+</button>
+<button class="w-full py-3 flex flex-col items-center text-[#bcc8d1] hover:text-[#8fd6ff] transition-all duration-200 hover:bg-[#FFFFFF]/5">
+<span class="material-symbols-outlined" data-icon="mic_external_on">mic_external_on</span>
+</button>
+<button class="w-full py-3 flex flex-col items-center text-[#bcc8d1] hover:text-[#8fd6ff] transition-all duration-200 hover:bg-[#FFFFFF]/5">
+<span class="material-symbols-outlined" data-icon="library_music">library_music</span>
+</button>
+<button class="w-full py-3 mt-auto flex flex-col items-center text-[#bcc8d1] hover:text-[#8fd6ff] transition-all duration-200 hover:bg-[#FFFFFF]/5">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-[72px] mb-[68px] min-h-screen relative z-10 p-8 md:p-12 max-w-[1400px]">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<h1 class="font-headline font-semibold text-[32px] text-on-surface leading-tight">Events &amp; Shows</h1>
+<p class="text-on-surface-variant text-sm mt-1">Past performances and upcoming sonic experiences curated for the elite.</p>
+</div>
+<div class="relative w-full md:w-80">
+<input class="w-full glass border-none rounded-sm px-4 py-2 text-sm focus:ring-1 focus:ring-primary/30 text-on-surface placeholder:text-outline outline-none" placeholder="Search events..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-outline text-lg" data-icon="search">search</span>
+</div>
+</header>
+<!-- Filter Row -->
+<section class="flex items-center gap-3 overflow-x-auto pb-6 no-scrollbar mb-8">
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap bg-primary-container text-on-primary-fixed border-none">All</button>
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap text-on-surface-variant hover:text-on-surface transition-colors">Festival</button>
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap text-on-surface-variant hover:text-on-surface transition-colors">Wedding</button>
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap text-on-surface-variant hover:text-on-surface transition-colors">Private Lounge</button>
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap text-on-surface-variant hover:text-on-surface transition-colors">Corporate Gala</button>
+<button class="glass px-6 py-2 rounded-sm text-sm font-medium whitespace-nowrap text-on-surface-variant hover:text-on-surface transition-colors">Rooftop Sets</button>
+</section>
+<!-- Featured Event Card -->
+<section class="mb-16">
+<div class="glass h-[220px] rounded-sm overflow-hidden flex flex-col md:flex-row group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,191,255,0.05)]">
+<div class="flex-1 p-8 flex flex-col justify-center">
+<span class="inline-block bg-primary-container text-on-primary-fixed text-[10px] font-bold px-2 py-0.5 tracking-widest rounded-sm w-fit mb-4">FEATURED</span>
+<h2 class="font-display text-5xl md:text-6xl text-on-surface leading-none mb-4 group-hover:text-primary transition-colors uppercase">Neon Genesis Festival</h2>
+<div class="flex items-center gap-6 font-label text-[11px] text-primary tracking-widest">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span> OCT 24, 2024</span>
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span> LABADI BEACH, ACCRA</span>
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span> 120 BPM AVG</span>
+</div>
+</div>
+<div class="w-full md:w-2/5 h-full relative overflow-hidden">
+<img alt="Neon lights at festival" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="vibrant blue and purple stage lighting over a massive outdoor festival crowd at night with high energy atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp6OSNuCjrUnYcUQPczdGBWJflLeiE4bGJ-EsTPN9tKfI0N3U5Op4-Iyw1H9aViBvgku_8GY7dyeHKPJHh7RS9X7lB-o46wCeBWaKfrL7WZeHsUu262a8ZbjYSvYnnUEXLyJL_nUJJI7PbvpFx0FST9IQkUY3Uc-JvYuwi85Aq5G-Lpa4q1jLzgl-alMZibNQnTlgRH9xtdWhLNKaQBMcBqkq4ZHMaT0pjPOB019tgcYBFf765YIF8jHwH75sGBwV0Fb0VVHhRNoRn"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background to-transparent md:from-transparent"></div>
+</div>
+</div>
+</section>
+<!-- Events Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+<!-- Card 1 -->
+<div class="glass flex flex-col rounded-sm group cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,191,255,0.1)] border border-transparent hover:border-primary/10">
+<div class="relative h-48 overflow-hidden rounded-t-sm">
+<img alt="DJ Controller" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="close up of a professional dj controller with blue led lights in a dark moody club environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCWl3Xzeu8qaffYr3h23m--EYLnrKKW-6bTTlKIcNdPjHGMVkqB25th-FduhYZkMrivfGYlEyrjHx-ZM0IqpMwoqAOGFrCOLCcnsl7Kcgz2zL7UUZnvleZKtyBP6jka9HDFpGgkT2jOh5Xu_jKtjL_C-kNOai67TkQAvWsVPFg_OtRU-wXAZJrPoqV0LezzC0oJdmlkj6EthfHic_mfz5cb6Gd3zsg7eF1PxrmkVG6-SdfOO1cAy9snPhdhkin3-YMrrWv5dFTS1l2"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-surface/80 backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-sm flex items-center gap-1">🥂 Wedding</span>
+</div>
+</div>
+<div class="p-6">
+<h3 class="font-headline font-bold text-lg mb-2 group-hover:text-primary transition-colors">The Royal Ambiance Wedding</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">A high-end luxury wedding set blending classic jazz with Afro-tech rhythms for an unforgettable night.</p>
+<div class="font-label text-[10px] text-outline uppercase tracking-tighter flex justify-between items-center">
+<span>The Kempinski Hotel</span>
+<span class="text-primary-container">Sep 12, 2024</span>
+</div>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Afrobeats</span>
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Jazz Fusion</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass flex flex-col rounded-sm group cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,191,255,0.1)] border border-transparent hover:border-primary/10">
+<div class="relative h-48 overflow-hidden rounded-t-sm">
+<img alt="Graduation Event" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="professional graduation ceremony hall with warm amber lighting and modern architectural lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKNxVuAhnfGmGSA8yIrvIrHET-tWgHxXNjbTVc60VsHyr_Zz15E4-5dpkDCJuVMBvhXWPKAXIz1lRGwb67l1le6wVH_hUcV5Bg_dTvd4o6BneyL5CfefEADC8JHjXRLSnhbHsofAj5-UlHF5H64QSpGpT19dEbC7pvBVtTp9cMKT5g7boBfZX6azk1hjV1uGGWzJZcvQODm0ZhVa8490bbCvrC2yv0AZ3xEA4I8VNKhe2T_fPFF967T3q2nQOXNa1wK5fiTbkQe1Y3"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-surface/80 backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-sm flex items-center gap-1">🎓 Academic Gala</span>
+</div>
+</div>
+<div class="p-6">
+<h3 class="font-headline font-bold text-lg mb-2 group-hover:text-primary transition-colors">Alumni Network Night</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">Sophisticated background grooves transitioning into high-energy dance floor killers as the night progresses.</p>
+<div class="font-label text-[10px] text-outline uppercase tracking-tighter flex justify-between items-center">
+<span>Grand Arena, Accra</span>
+<span class="text-primary-container">Aug 28, 2024</span>
+</div>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Deep House</span>
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Soulful</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass flex flex-col rounded-sm group cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,191,255,0.1)] border border-transparent hover:border-primary/10">
+<div class="relative h-48 overflow-hidden rounded-t-sm">
+<img alt="Private Lounge" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="sleek modern private lounge with neon accents and luxury leather seating in dim cool lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsii-3KwXnbtIKb39Qb8zLwKN4qIf_VunnqwpZ_2RwumuZiOWPQ44bTUugRs3W2OyKXsoLaNEEJOb3v10AYSrOq_X1YJ_-2_cqjUDW5THT2g2WdROpzVEh636LaSg32mHBWJmzpEgxBeVAk8VLQs_0HQp9vLvd5PK7eDFsSoTMrseiRqUxAEAalpUZo1OMSUaWO4PW1nVaXbcCMz6-TWc00P0J8R8LUkhCSL-8EsD8EqkiH0-PNPR6MWLPQa5YFYzTr8Quf0TEmPok"/>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-surface/80 backdrop-blur-md text-[10px] font-bold px-2 py-1 rounded-sm flex items-center gap-1">🍸 Private Set</span>
+</div>
+</div>
+<div class="p-6">
+<h3 class="font-headline font-bold text-lg mb-2 group-hover:text-primary transition-colors">Midnight Sessions Vol. 4</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 mb-4">An exclusive rooftop performance featuring unreleased remixes and live loops for a select guest list.</p>
+<div class="font-label text-[10px] text-outline uppercase tracking-tighter flex justify-between items-center">
+<span>Sky Bar 25</span>
+<span class="text-primary-container">Aug 15, 2024</span>
+</div>
+<div class="mt-4 flex flex-wrap gap-2">
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Experimental</span>
+<span class="text-[9px] border border-outline/20 px-2 py-0.5 rounded-sm text-outline">Amapiano</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Load More Section -->
+<div class="flex flex-col items-center gap-4 mb-20">
+<span class="font-label text-[11px] text-outline tracking-widest uppercase">Showing 9 of 24 events</span>
+<button class="px-8 py-3 rounded-sm border border-primary text-primary font-medium hover:bg-primary/5 transition-all active:scale-95 text-sm">Load More Performances</button>
+</div>
+<!-- Booking CTA Strip -->
+<section class="mb-12">
+<div class="glass border-l-4 border-primary p-10 flex flex-col md:flex-row items-center justify-between gap-8 rounded-r-sm">
+<div class="text-center md:text-left">
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-2">Book Page KillerCutz for your Event</h2>
+<p class="text-on-surface-variant">Elevate your next performance with the premium sonic pulse of Accra's finest.</p>
+</div>
+<button class="bg-primary-container text-on-primary-fixed px-10 py-4 font-bold rounded-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all whitespace-nowrap">Book Now</button>
+</div>
+</section>
+</main>
+<!-- Bottom Player Bar (Shared Component) -->
+<footer class="fixed bottom-0 left-0 w-full h-[68px] bg-[#FFFFFF]/5 backdrop-blur-lg flex items-center justify-between px-10 z-[60] border-t-2 border-[#00BFFF] shadow-[0_-10px_40px_rgba(0,191,255,0.1)] transition-transform active:scale-[0.99]">
+<!-- Left: Track Info -->
+<div class="flex items-center gap-4 w-1/4">
+<div class="w-10 h-10 rounded-sm overflow-hidden flex-shrink-0">
+<img alt="Current Track" class="w-full h-full object-cover" data-alt="vibrant abstract music album cover with glitch art and neon cyan colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7pgXqF7VLu192vpM31-HZiyk-Wrgy1pmVJYe9LggH4UK1o-Orx4aF7qCDfNbzJ8t0fNRjw_GSED2BcI_DOnHLSonPARzUK-OP1nKtN8VjWuZLqCw0bQ4tsuF6c4MhrSP3ci9tCLZkA-b9eB7IufnRF_aFG-obCzpnavfITMTOqYDz_fGgMNFDizilyDNI9zWMg-8qyGU7aIUeA_XOzdO1aslcTj6r5Mw7r7fRovYBFmC8WCAWLund1RD4eahgLVH2hxvuz_C7XkNL"/>
+</div>
+<div class="overflow-hidden">
+<h4 class="font-headline font-semibold text-sm text-on-surface truncate">Neon Horizon (Live Set)</h4>
+<p class="font-label text-[10px] text-primary tracking-widest uppercase">KillerCutz x Sonic</p>
+</div>
+</div>
+<!-- Center: Controls -->
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center gap-6">
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="shuffle">shuffle</span>
+</button>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="skip_previous">skip_previous</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-fixed flex items-center justify-center hover:scale-105 active:scale-90 transition-all shadow-[0_0_15px_rgba(0,191,255,0.4)]">
+<span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="skip_next">skip_next</span>
+</button>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="repeat">repeat</span>
+</button>
+</div>
+<div class="w-64 h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-1/3 h-full bg-primary shadow-[0_0_8px_rgba(0,191,255,0.6)]"></div>
+</div>
+</div>
+<!-- Right: Volume & Extra -->
+<div class="flex items-center gap-4 w-1/4 justify-end">
+<span class="material-symbols-outlined text-outline text-lg" data-icon="playlist_play">playlist_play</span>
+<span class="material-symbols-outlined text-outline text-lg" data-icon="devices">devices</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-lg" data-icon="volume_up">volume_up</span>
+<div class="w-20 h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-on-surface-variant"></div>
+</div>
+</div>
+</div>
+</footer>
+<!-- FAB Suppression Applied: No FAB on Details/Event Listing Screens -->
+</body></html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Client Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #13131a;
+        }
+        .syne-bold {
+            font-family: 'Space Grotesk', sans-serif; /* Fallback to Space Grotesk for bold tech feel */
+            font-weight: 700;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "secondary-fixed": "#ffddb4",
+                "surface-dim": "#13131a",
+                "primary-fixed": "#c3e8ff",
+                "background": "#13131a",
+                "on-tertiary-fixed-variant": "#920027",
+                "tertiary": "#ffbdbf",
+                "surface-bright": "#393841",
+                "surface": "#13131a",
+                "error-container": "#93000a",
+                "surface-container": "#1f1f27",
+                "surface-container-high": "#2a2931",
+                "on-surface": "#e4e1ec",
+                "on-tertiary": "#680019",
+                "error": "#ffb4ab",
+                "surface-variant": "#34343c",
+                "primary-fixed-dim": "#7ad0ff",
+                "outline": "#87929b",
+                "inverse-surface": "#e4e1ec",
+                "secondary-container": "#dc9100",
+                "on-error": "#690005",
+                "surface-tint": "#7ad0ff",
+                "on-secondary": "#452b00",
+                "surface-container-low": "#1b1b23",
+                "on-primary-container": "#004a65",
+                "primary": "#8fd6ff",
+                "on-secondary-fixed": "#291800",
+                "tertiary-fixed": "#ffdada",
+                "secondary": "#ffb955",
+                "inverse-primary": "#00668a",
+                "secondary-fixed-dim": "#ffb955",
+                "tertiary-fixed-dim": "#ffb3b5",
+                "on-secondary-container": "#4f3100",
+                "primary-container": "#00bfff",
+                "on-surface-variant": "#bcc8d1",
+                "on-tertiary-fixed": "#40000c",
+                "on-primary-fixed": "#001e2c",
+                "on-background": "#e4e1ec",
+                "on-secondary-fixed-variant": "#633f00",
+                "on-error-container": "#ffdad6",
+                "inverse-on-surface": "#303038",
+                "outline-variant": "#3d4850",
+                "on-primary-fixed-variant": "#004c69",
+                "surface-container-highest": "#34343c",
+                "on-tertiary-container": "#8d0025",
+                "surface-container-lowest": "#0e0d15",
+                "on-primary": "#003549",
+                "tertiary-container": "#ff9399"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar Anchor -->
+<nav class="fixed left-0 top-0 h-screen w-[72px] bg-[#08080F]/80 backdrop-blur-xl flex flex-col items-center py-8 z-50 no-border shadow-[40px_0_40px_rgba(0,0,0,0.06)] shadow-2xl">
+<div class="mb-12">
+<span class="text-cyan-400 font-bold text-xl font-['Space_Grotesk'] tracking-tight">K</span>
+</div>
+<div class="flex flex-col gap-8 flex-1">
+<button class="bg-[#8fd6ff]/10 text-[#8fd6ff] border-l-2 border-[#ffc107] p-3 transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+</button>
+<button class="text-[#bcc8d1] opacity-70 p-3 hover:text-[#8fd6ff] hover:opacity-100 transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+</button>
+<button class="text-[#bcc8d1] opacity-70 p-3 hover:text-[#8fd6ff] hover:opacity-100 transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="subscriptions">subscriptions</span>
+</button>
+<button class="text-[#bcc8d1] opacity-70 p-3 hover:text-[#8fd6ff] hover:opacity-100 transition-all scale-95 active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="mt-auto">
+<button class="text-[#bcc8d1] opacity-70 p-3 hover:text-[#8fd6ff] hover:opacity-100 transition-all">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</button>
+</div>
+</nav>
+<!-- TopNavBar Anchor -->
+<header class="fixed top-0 right-0 left-[72px] h-16 flex justify-between items-center px-8 w-full z-40 bg-transparent">
+<div class="flex items-center gap-4">
+<span class="text-[#8fd6ff] font-['Barlow_Condensed'] font-extrabold uppercase tracking-tighter text-2xl">Sonic Futurism</span>
+<div class="bg-surface-container-high px-2 py-1 flex items-center gap-2 rounded">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[10px] font-['Space_Mono'] uppercase tracking-widest text-primary">Portal Active</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[#bcc8d1] cursor-pointer hover:text-white transition-colors" data-icon="dark_mode">dark_mode</span>
+<span class="material-symbols-outlined text-[#bcc8d1] cursor-pointer hover:text-white transition-colors" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full border-2 border-primary bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile portrait with cyan lighting on dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbMtY1hgNUIvOCJ57ozFstVucHhz1PmKRtwCVgtCeJFxRZn2gMMpYx2r_XXx389Aka96SyRHSk9K0rFL5B9xZyXw4WVGkgFrdQTwe9iuXhX_mgIel5MdY77SDTYYY2-LfaoF5InL805r-UFcs45p7HGg31XtEr8Nxr54aSD0r9kwUa1TOoo8fPPRg3P08XSrJsetO0ETzhtaSkOJqI63gd_L3WnOkcG3_6cKmcFBNLhtcH7LE4-HfiWUEMDJOIn5TOPcL3YCuL09CK"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[72px] pt-24 pb-32 px-8 max-w-7xl mx-auto">
+<div class="grid grid-cols-12 gap-6">
+<!-- ROW 1: Event Hero & Payment -->
+<div class="col-span-12 lg:col-span-8 relative group overflow-hidden bg-surface-container-low rounded-lg p-8 min-h-[320px] flex flex-col justify-end border-none">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700" data-alt="Cinematic wide shot of a high-end luxury wedding reception at night with warm golden lighting and floral decor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdU2mDBvR2NcNbiS88uh5kNhMx2fPrBf0yzSOsblmhjxy4fnAnniiCoqK5unJVh5caVTBiXlm2rlyKFu36hrMXqc8tysVNDlhzzVOIMRJZoPu0mPHG_Pt6rgiFof4YDuOpmvfYn6JZACyVTf6M0eiplEkCFn7agppRYme1kt91t0jtF-G-qXaLO7TkZDpUNPQOSIqnCyofYglruDuXlnaY-5Mx-blBnFwN850Tmpvgw2ma7q1gBUo12ojrPOUx8QZWF-3WVpr2EyIG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/60 to-transparent"></div>
+</div>
+<div class="relative z-10 space-y-4">
+<div class="flex items-center gap-3">
+<span class="text-xs font-['Space_Mono'] uppercase tracking-[0.2em] text-on-surface-variant">Your Event</span>
+<span class="bg-primary-container text-on-primary-container text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Wedding</span>
+</div>
+<h1 class="text-display-lg font-['Barlow_Condensed'] font-extrabold text-5xl md:text-6xl text-white tracking-tight leading-none">Accra Nights Live</h1>
+<div class="flex flex-wrap gap-6 text-on-surface-variant text-sm font-medium">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="calendar_today">calendar_today</span>
+<span>Dec 15, 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="location_on">location_on</span>
+<span>Kempinski Gold Coast</span>
+</div>
+<div class="flex items-center gap-2 font-['Space_Mono'] text-primary">
+<span class="material-symbols-outlined text-lg" data-icon="fingerprint">fingerprint</span>
+<span>KC-2024-X1</span>
+</div>
+</div>
+<div class="pt-4">
+<button class="bg-primary text-on-primary px-6 py-3 font-bold flex items-center gap-2 rounded-sm hover:brightness-110 active:scale-95 transition-all">
+                            Curate Your Playlist <span class="material-symbols-outlined" data-icon="arrow_right_alt">arrow_right_alt</span>
+</button>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 bg-surface-container-low border-l-[3px] border-secondary p-8 flex flex-col justify-between backdrop-blur-md rounded-lg">
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs uppercase tracking-widest text-on-surface-variant">Payment Status</span>
+<span class="bg-secondary-container/20 text-secondary text-[10px] px-2 py-0.5 rounded font-bold uppercase border border-secondary/30">Pending</span>
+</div>
+<div class="space-y-1">
+<p class="text-on-surface-variant text-sm">Amount Due</p>
+<p class="text-4xl syne-bold text-secondary">GHS 850</p>
+</div>
+<div class="p-4 bg-surface-container-highest/40 rounded-sm border border-outline-variant/10">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mb-3">Send via MoMo · Use Event ID</p>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant font-medium">DJ MoMo</span>
+<span class="text-lg font-['Space_Mono'] text-primary">0541234567</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="content_copy">content_copy</span>
+</div>
+</div>
+</div>
+<button class="mt-6 w-full border border-secondary text-secondary py-3 text-sm font-bold hover:bg-secondary/10 transition-colors uppercase tracking-widest">
+                    Confirm Payment
+                </button>
+</div>
+<!-- ROW 2: Stats, Countdown, Notifications -->
+<div class="col-span-12 md:col-span-4 lg:col-span-3 bg-surface-container-low p-6 flex flex-col rounded-lg">
+<h3 class="text-title-lg font-['Space_Grotesk'] text-on-surface mb-6">Your Playlist</h3>
+<div class="space-y-6 flex-1">
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#8fd6ff]"></div>
+<span class="text-on-surface text-sm font-medium">5 Must-play</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]"></div>
+<span class="text-on-surface text-sm font-medium">2 Do-not-play</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#ffb955]"></div>
+<span class="text-on-surface text-sm font-medium">3 Timeline moments</span>
+</div>
+</div>
+<a class="mt-8 text-primary text-sm font-bold flex items-center gap-2 hover:translate-x-1 transition-transform" href="#">
+                    Edit Playlist <span class="material-symbols-outlined text-lg" data-icon="arrow_right_alt">arrow_right_alt</span>
+</a>
+</div>
+<div class="col-span-12 md:col-span-4 lg:col-span-3 bg-surface-container-low p-6 flex flex-col items-center justify-center rounded-lg border border-primary/20 relative">
+<div class="absolute inset-0 bg-primary/5 blur-3xl rounded-full"></div>
+<div class="relative text-center">
+<p class="text-6xl syne-bold text-primary drop-shadow-[0_0_15px_rgba(143,214,255,0.4)] leading-none">14</p>
+<p class="text-on-surface-variant text-xs uppercase tracking-[0.3em] mt-2">days to go</p>
+</div>
+<div class="absolute bottom-4 flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+</div>
+</div>
+<div class="col-span-12 md:col-span-12 lg:col-span-6 bg-surface-container-low p-6 rounded-lg">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-title-lg font-['Space_Grotesk'] text-on-surface">Recent Updates</h3>
+<span class="text-[10px] text-primary uppercase font-bold tracking-widest cursor-pointer">View All</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-highest/30 rounded transition-colors group">
+<span class="material-symbols-outlined text-primary-container p-2 bg-primary/10 rounded" data-icon="notifications">notifications</span>
+<div class="flex-1">
+<p class="text-sm text-on-surface font-medium">Package upgrade confirmed: Elite Platinum</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">2 HOURS AGO</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-highest/30 rounded transition-colors group">
+<span class="material-symbols-outlined text-secondary p-2 bg-secondary/10 rounded" data-icon="payments">payments</span>
+<div class="flex-1">
+<p class="text-sm text-on-surface font-medium">Pending balance notification sent</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">1 DAY AGO</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-highest/30 rounded transition-colors group">
+<span class="material-symbols-outlined text-primary p-2 bg-primary/10 rounded" data-icon="playlist_add_check">playlist_add_check</span>
+<div class="flex-1">
+<p class="text-sm text-on-surface font-medium">Timeline moments locked by DJ</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">3 DAYS AGO</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- ROW 3: Package Summary -->
+<div class="col-span-12 bg-surface-container-low border-l-[4px] border-secondary rounded-lg backdrop-blur-xl overflow-hidden group">
+<div class="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+<div class="space-y-4">
+<div class="space-y-1">
+<span class="text-[10px] font-['Space_Mono'] text-secondary uppercase tracking-[0.2em]">Active Subscription</span>
+<h2 class="text-3xl font-['Space_Grotesk'] font-semibold text-white">Elite Platinum</h2>
+</div>
+<div class="flex flex-wrap gap-x-8 gap-y-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant text-sm">Full PA System &amp; Subs</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant text-sm">Wireless Mics (4)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant text-sm">MC Inclusion</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-sm" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant text-sm">Intelligent Lighting</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 shrink-0">
+<span class="text-on-surface-variant text-xs uppercase tracking-widest font-medium">Total Package Value</span>
+<span class="text-4xl syne-bold text-secondary">GHS 2,500</span>
+<button class="mt-2 text-[10px] font-bold text-primary uppercase border-b border-primary/30 pb-0.5 hover:border-primary transition-all">Details &amp; Contract</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Anchor (Player Bar) -->
+<footer class="fixed bottom-0 left-0 w-full h-[68px] bg-[#08080F]/80 backdrop-blur-2xl border-t-2 border-[#00BFFF] flex items-center justify-between px-6 w-full z-50 shadow-[0_-10px_40px_rgba(0,191,255,0.1)]">
+<div class="flex items-center gap-4 w-1/3">
+<div class="w-10 h-10 bg-surface-container rounded-sm overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up of DJ mixer and spinning vinyl record under blue neon club lights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCngEItTpo1qsZ6IMFd1TTwHzU87kLRSYIy6cva-p3IqP7BdZTlg_b5KEElx_QSht_vl8odQq3N1mbN4_RNUeMSxbF8c4KgB9pEO9UtkfzuHLQb-RT4YljZHxzPkmEiDllJ9WU2cZMIOtctmoBBhvF42oMYzJ8xfmxpjqfosTiaO2j9qThqwfPfnqDDNUFF9YIWYxmtnFxuBZpgKS0euXftQR0ZSE3qX02r6iKkfCdt0Kjq_A8wZC26I9RsKwiScmgk3mPYloW_3lxM"/>
+</div>
+<div class="hidden sm:block">
+<p class="text-xs font-bold text-white truncate">Mixtape Preview: Afro-Fusion Vol. 1</p>
+<p class="text-[10px] text-on-surface-variant uppercase font-['Space_Mono']">KillerCutz Exclusive</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<span class="material-symbols-outlined text-[#bcc8d1] cursor-pointer hover:scale-110 transition-transform" data-icon="skip_previous">skip_previous</span>
+<div class="relative group cursor-pointer">
+<div class="absolute -inset-1 bg-primary/20 blur rounded-full group-hover:bg-primary/40 transition-colors"></div>
+<span class="material-symbols-outlined text-[#00BFFF] relative text-4xl drop-shadow-[0_0_8px_rgba(0,191,255,0.8)] active:scale-95 transition-all" data-icon="play_circle" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<span class="material-symbols-outlined text-[#00BFFF] cursor-pointer hover:scale-110 transition-transform" data-icon="skip_next">skip_next</span>
+</div>
+<div class="flex items-center justify-end gap-4 w-1/3">
+<div class="hidden md:flex items-center gap-3">
+<span class="material-symbols-outlined text-[#bcc8d1] text-sm" data-icon="volume_up">volume_up</span>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-[65%] h-full bg-primary"></div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#bcc8d1] cursor-pointer" data-icon="queue_music">queue_music</span>
+</div>
+</footer>
+</body></html>

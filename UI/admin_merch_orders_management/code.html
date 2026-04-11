@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Admin | Orders</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,800;1,800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#13131a",
+                        "on-secondary-fixed": "#291800",
+                        "on-secondary": "#452b00",
+                        "on-background": "#e4e1ec",
+                        "surface-container-lowest": "#0e0d15",
+                        "error-container": "#93000a",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "secondary-fixed": "#ffddb4",
+                        "secondary-fixed-dim": "#ffb955",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-high": "#2a2931",
+                        "surface-container-low": "#1b1b23",
+                        "surface": "#13131a",
+                        "on-primary-fixed": "#001e2c",
+                        "secondary-container": "#dc9100",
+                        "on-tertiary-container": "#8d0025",
+                        "on-tertiary": "#680019",
+                        "on-primary-container": "#004a65",
+                        "on-error": "#690005",
+                        "on-surface": "#e4e1ec",
+                        "on-primary-fixed-variant": "#004c69",
+                        "secondary": "#ffb955",
+                        "inverse-primary": "#00668a",
+                        "on-tertiary-fixed": "#40000c",
+                        "tertiary-container": "#ff9399",
+                        "primary-container": "#00bfff",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "tertiary-fixed": "#ffdada",
+                        "tertiary": "#ffbdbf",
+                        "primary": "#8fd6ff",
+                        "background": "#13131a",
+                        "outline-variant": "#3d4850",
+                        "primary-fixed": "#c3e8ff",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#7ad0ff",
+                        "surface-container": "#1f1f27",
+                        "inverse-on-surface": "#303038",
+                        "surface-container-highest": "#34343c",
+                        "on-primary": "#003549",
+                        "on-surface-variant": "#bcc8d1",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "on-secondary-container": "#4f3100",
+                        "outline": "#87929b",
+                        "surface-variant": "#34343c",
+                        "surface-bright": "#393841",
+                        "inverse-surface": "#e4e1ec"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "display": ["Barlow Condensed"],
+                        "mono": ["Space Mono"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem",
+                        "2xl": "1rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary min-h-screen">
+<!-- Sidebar Wrapper -->
+<aside class="fixed left-0 top-0 h-full w-[200px] z-50 bg-[#08080F]/80 backdrop-blur-xl flex flex-col h-full py-6 font-['Inter'] text-sm">
+<div class="px-6 mb-10">
+<h1 class="font-['Barlow_Condensed'] text-3xl font-extrabold uppercase italic text-cyan-400">Sonic Merch</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/50">Global Hub</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-slate-400 px-4 py-3 hover:text-slate-100 flex items-center gap-3 transition-all hover:bg-white/5 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+                Dashboard
+            </a>
+<a class="bg-white/10 text-cyan-400 border-l-2 border-yellow-400 font-medium px-4 py-3 flex items-center gap-3 transition-all active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">shopping_cart</span>
+                Orders
+            </a>
+<a class="text-slate-400 px-4 py-3 hover:text-slate-100 flex items-center gap-3 transition-all hover:bg-white/5 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">inventory_2</span>
+                Inventory
+            </a>
+<a class="text-slate-400 px-4 py-3 hover:text-slate-100 flex items-center gap-3 transition-all hover:bg-white/5 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">group</span>
+                Customers
+            </a>
+<a class="text-slate-400 px-4 py-3 hover:text-slate-100 flex items-center gap-3 transition-all hover:bg-white/5 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">bar_chart</span>
+                Analytics
+            </a>
+<a class="text-slate-400 px-4 py-3 hover:text-slate-100 flex items-center gap-3 transition-all hover:bg-white/5 active:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-lg">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-3 bg-secondary text-on-secondary-fixed font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">
+                Go Pro
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[200px] min-h-screen">
+<!-- Top Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-200px)] z-40 bg-slate-950/80 backdrop-blur-xl flex justify-between items-center h-16 px-8 font-['Space_Grotesk'] tracking-tight">
+<div class="flex items-center gap-4">
+<span class="text-slate-400">Admin</span>
+<span class="text-slate-600">/</span>
+<span class="text-cyan-400 font-bold border-b-2 border-cyan-400">Orders</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-slate-400">
+<span class="material-symbols-outlined text-xl hover:bg-white/5 p-2 rounded-full cursor-pointer transition-all active:scale-95">notifications</span>
+<span class="material-symbols-outlined text-xl hover:bg-white/5 p-2 rounded-full cursor-pointer transition-all active:scale-95">settings</span>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="portrait of a confident modern creative professional man with short dark hair and stylish glasses in studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATj6bcA75pIC2P9__7ie3jbceNoh8d8Q8McWxCmd_A0ad9hB2RuxHwo8CZujotOYOCqZktY94k4cHEdr0kxTE2gmHRZ4PsmzV0ktjJuyz5D3-2icoEu9hfMBYw-fIG0ocoLolzE6WmTD-3uvWl2y7SSFFvxTL4q_yUkRWF0PO9GwjacQH9klRtI_msxq8EgToTZiAHl-8f-ysRpGNon3yMorc6ffMoOS14YR2KCpMQhgTbDrTFujxeww8mW0eMcXMWkamzcJsCmWpK"/>
+</div>
+</div>
+</header>
+<div class="pt-24 px-8 pb-12 max-w-7xl mx-auto space-y-8">
+<!-- Page Header Row -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="font-headline font-semibold text-[28px] text-on-surface leading-none">Merch Orders</h2>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-white/5 border-none h-11 pl-10 pr-4 rounded-lg text-sm focus:ring-1 focus:ring-primary w-64 glass" placeholder="Search orders..." type="text"/>
+</div>
+<select class="bg-white/5 border-none h-11 px-4 rounded-lg text-sm focus:ring-1 focus:ring-primary glass min-w-[140px]">
+<option>All Status</option>
+<option>Processing</option>
+<option>Shipped</option>
+<option>Delivered</option>
+<option>Unpaid</option>
+</select>
+<button class="h-11 px-6 text-primary border border-primary/20 hover:bg-primary/10 transition-all font-medium rounded-sm active:scale-95">
+                        Export CSV
+                    </button>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="glass p-5 rounded-2xl flex items-center justify-between">
+<div>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest font-medium">Total Orders</p>
+<h4 class="text-2xl font-headline font-bold mt-1">1,284</h4>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/20 text-4xl">inventory</span>
+</div>
+<div class="glass p-5 rounded-2xl flex items-center justify-between border-b-2 border-secondary/30">
+<div>
+<p class="text-xs text-secondary uppercase tracking-widest font-medium">Processing</p>
+<h4 class="text-2xl font-headline font-bold mt-1 text-secondary">42</h4>
+</div>
+<span class="material-symbols-outlined text-secondary/20 text-4xl">sync</span>
+</div>
+<div class="glass p-5 rounded-2xl flex items-center justify-between border-b-2 border-primary/30">
+<div>
+<p class="text-xs text-primary uppercase tracking-widest font-medium">Shipped</p>
+<h4 class="text-2xl font-headline font-bold mt-1 text-primary">156</h4>
+</div>
+<span class="material-symbols-outlined text-primary/20 text-4xl">local_shipping</span>
+</div>
+<div class="glass p-5 rounded-2xl flex items-center justify-between border-b-2 border-emerald-500/30">
+<div>
+<p class="text-xs text-emerald-400 uppercase tracking-widest font-medium">Delivered</p>
+<h4 class="text-2xl font-headline font-bold mt-1 text-emerald-400">1,086</h4>
+</div>
+<span class="material-symbols-outlined text-emerald-400/20 text-4xl">verified</span>
+</div>
+</div>
+<!-- Orders Table/List -->
+<div class="space-y-4">
+<!-- Order Card 1 -->
+<div class="glass rounded-2xl p-6 flex flex-col lg:flex-row gap-8 items-start hover:bg-white/[0.08] transition-all group">
+<!-- Left: Customer Info -->
+<div class="w-full lg:w-1/4 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">#KC-89421</span>
+</div>
+<h3 class="font-headline font-semibold text-lg">Marcus Holloway</h3>
+<div class="text-sm text-on-surface-variant space-y-1">
+<p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">mail</span> m.holloway@nexus.com</p>
+<p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">phone</span> +1 (555) 902-4411</p>
+<p class="truncate pt-2 text-xs opacity-60">2410 Skyline Dr, San Francisco, CA 94103</p>
+</div>
+</div>
+<!-- Middle: Order Items -->
+<div class="w-full lg:flex-1 border-y lg:border-y-0 lg:border-x border-white/5 py-4 lg:py-0 lg:px-8">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="h-12 w-12 bg-surface-container rounded overflow-hidden">
+<img alt="Merch" class="w-full h-full object-cover" data-alt="high-quality studio product photo of a black heavy cotton streetwear hoodie with minimalist neon cyan typography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY6KBQrA6z8pR3_2ZsMXu8oJeiHlkabu1TkQZzkZTR_IaK4r1kkU0HYDpJIXcIH4w1ayMnVRa9SEpZqwyrWPCCxWXJst2UwdMs-00Mj-E3gRLhilubYc3v9C6-QMJc7SFYprEJKVKFO3j1U8BsC1IN9dl4sHdGfZqJ4lISXNsWhaKEG-eMdh6Vi7I8-xt3xN9_BBUI-tAU7HVcqxgGNopCbGZqUjXtgu17PREQrlQPS3JQgHueBL5bdg4btJS2rJVzkNiEk65lrU4k"/>
+</div>
+<div>
+<p class="text-sm font-medium">Overdrive Heavy Hoodie</p>
+<div class="flex gap-2 mt-1">
+<span class="text-[10px] px-1.5 py-0.5 bg-white/5 rounded">XL</span>
+<span class="text-[10px] px-1.5 py-0.5 bg-white/5 rounded">Onyx Black</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-mono text-on-surface-variant">1 x $85.00</p>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-3 mt-3">
+<span class="text-xs uppercase tracking-tighter text-on-surface-variant font-bold">Total Amount</span>
+<span class="text-lg font-headline font-bold text-on-surface">$85.00</span>
+</div>
+</div>
+</div>
+<!-- Right: Actions & Status -->
+<div class="w-full lg:w-auto flex flex-col gap-4 justify-between self-stretch">
+<div class="flex flex-wrap gap-2 justify-end">
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full">Paid</span>
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full">Processing</span>
+</div>
+<div class="flex gap-2 justify-end">
+<button class="bg-primary text-on-primary font-bold text-xs px-4 py-2 hover:brightness-110 transition-all rounded-sm">Mark Shipped</button>
+<button class="text-on-surface-variant hover:text-white transition-all p-2 bg-white/5 rounded-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Order Card 2 -->
+<div class="glass rounded-2xl p-6 flex flex-col lg:flex-row gap-8 items-start hover:bg-white/[0.08] transition-all group">
+<div class="w-full lg:w-1/4 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded">#KC-89420</span>
+</div>
+<h3 class="font-headline font-semibold text-lg">Elena Rodriguez</h3>
+<div class="text-sm text-on-surface-variant space-y-1">
+<p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">mail</span> elena.r@vibe.fm</p>
+<p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">phone</span> +1 (555) 212-0089</p>
+<p class="truncate pt-2 text-xs opacity-60">1200 Miami Blvd, Suite 400, Miami, FL 33101</p>
+</div>
+</div>
+<div class="w-full lg:flex-1 border-y lg:border-y-0 lg:border-x border-white/5 py-4 lg:py-0 lg:px-8">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="h-12 w-12 bg-surface-container rounded overflow-hidden">
+<img alt="Merch" class="w-full h-full object-cover" data-alt="studio shot of a minimalist white t-shirt with a vintage graphic print of a waveform on the chest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCU0J-OALvdF7xLCzOkb4eAKxPp-RFN5Tv5cBWAeTOOV9Jd9iAsXCXKHcXu3l8W37X2oo-wZ7vIegGAGzc4yhtmZcgz5mg3RUvle6ZLi3qUm2kvBA4wsg3aCm9qmS0Gmk2jmsj1tRrBdtQ8-kQ-bBhZT4hMG0grZVq5ArLvFglrCr0bTf-0B__ejzvWpqXQnEodG-vY0sbjNLNWNUxbQtwYN3tskY0C_wxdRdj0Wo_HMif2VK4yYho4Q18l7BUYjMNOcIipsZCih-_7"/>
+</div>
+<div>
+<p class="text-sm font-medium">WAV-Form Signature Tee</p>
+<div class="flex gap-2 mt-1">
+<span class="text-[10px] px-1.5 py-0.5 bg-white/5 rounded">M</span>
+<span class="text-[10px] px-1.5 py-0.5 bg-white/5 rounded">Sonic White</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-mono text-on-surface-variant">2 x $35.00</p>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-3 mt-3">
+<span class="text-xs uppercase tracking-tighter text-on-surface-variant font-bold">Total Amount</span>
+<span class="text-lg font-headline font-bold text-on-surface">$70.00</span>
+</div>
+</div>
+</div>
+<div class="w-full lg:w-auto flex flex-col gap-4 justify-between self-stretch">
+<div class="flex flex-wrap gap-2 justify-end">
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-full">Unpaid</span>
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-white/5 text-on-surface-variant border border-white/10 rounded-full">Pending</span>
+</div>
+<div class="flex gap-2 justify-end">
+<button class="bg-secondary text-on-secondary-fixed font-bold text-xs px-4 py-2 hover:brightness-110 transition-all rounded-sm">Mark Paid</button>
+<button class="text-on-surface-variant hover:text-white transition-all p-2 bg-white/5 rounded-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Order Card 3 (Delivered) -->
+<div class="glass rounded-2xl p-6 flex flex-col lg:flex-row gap-8 items-start hover:bg-white/[0.08] transition-all group opacity-80">
+<div class="w-full lg:w-1/4 space-y-2">
+<div class="flex items-center gap-2">
+<span class="font-mono text-xs text-on-surface-variant bg-white/5 px-2 py-0.5 rounded">#KC-89419</span>
+</div>
+<h3 class="font-headline font-semibold text-lg">Jordan Chen</h3>
+<div class="text-sm text-on-surface-variant space-y-1">
+<p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">mail</span> j.chen@techcorp.io</p>
+<p class="truncate pt-2 text-xs opacity-60">88 Battery St, Seattle, WA 98121</p>
+</div>
+</div>
+<div class="w-full lg:flex-1 border-y lg:border-y-0 lg:border-x border-white/5 py-4 lg:py-0 lg:px-8">
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="h-12 w-12 bg-surface-container rounded overflow-hidden grayscale">
+<img alt="Merch" class="w-full h-full object-cover" data-alt="macro photo of a high-end metal keychain with an engraved music label logo sitting on a dark surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmF545HoK8CDysTcBisI_5Ac6akEejj3J9neRHN1qa7PNI_HZ-Vig504RRH4fkqShkK6NJnR3HXPbDb-Hm_3vOZkS1IMCzZrpwTj1GbPzwG0WPxdyOFZsRt4dvzLEFrgZbu8YR39K1Md299GRl4Gvt7NNrAgAKbOmLW4m8QZ9VtHyI_J8Ar--MrhhWMrk26kJcdG1and8QxV1djHseD9efuHgaCdHM0gTgaR_RHwdKtnE7mnksfNdnpikDGFTuH9FmtW3Yx9k1XXv1"/>
+</div>
+<div>
+<p class="text-sm font-medium">Sonic Keyring - Black Nickel</p>
+<div class="flex gap-2 mt-1">
+<span class="text-[10px] px-1.5 py-0.5 bg-white/5 rounded">Standard</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-mono text-on-surface-variant">1 x $15.00</p>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-3 mt-3">
+<span class="text-xs uppercase tracking-tighter text-on-surface-variant font-bold">Total Amount</span>
+<span class="text-lg font-headline font-bold text-on-surface-variant">$15.00</span>
+</div>
+</div>
+</div>
+<div class="w-full lg:w-auto flex flex-col gap-4 justify-between self-stretch">
+<div class="flex flex-wrap gap-2 justify-end">
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-primary/10 text-primary rounded-full">Paid</span>
+<span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">Delivered</span>
+</div>
+<div class="flex gap-2 justify-end">
+<button class="text-on-surface-variant hover:text-white transition-all px-4 py-2 bg-white/5 rounded-sm text-xs font-bold uppercase tracking-widest">Archive</button>
+<button class="text-on-surface-variant hover:text-white transition-all p-2 bg-white/5 rounded-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Backdrop (Hidden by default, shown for UI demonstration in absolute position) -->
+<div class="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-6 hidden">
+<!-- Order Detail Modal (600px Glass) -->
+<div class="glass w-full max-w-[600px] rounded-2xl border border-white/10 shadow-2xl flex flex-col max-h-[921px]">
+<header class="p-6 border-b border-white/5 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-mono text-primary">#KC-89421</span>
+<h2 class="font-headline font-semibold text-xl">Marcus Holloway</h2>
+</div>
+<button class="text-on-surface-variant hover:text-white transition-all">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<div class="p-8 overflow-y-auto space-y-8">
+<!-- Fulfillment Timeline -->
+<div class="relative">
+<div class="absolute left-4 top-0 bottom-0 w-0.5 bg-white/5"></div>
+<div class="space-y-8 relative">
+<!-- Step 1 -->
+<div class="flex items-start gap-6">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10 text-on-primary">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-sm">Order Placed</p>
+<p class="text-xs text-on-surface-variant">Oct 24, 2023 - 02:45 PM</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-6">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10 text-on-primary">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<div>
+<p class="font-bold text-sm">Payment Successful</p>
+<p class="text-xs text-on-surface-variant">Oct 24, 2023 - 02:48 PM</p>
+</div>
+</div>
+<!-- Step 3 (Current) -->
+<div class="flex items-start gap-6">
+<div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center z-10 text-on-secondary-fixed">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+<div>
+<p class="font-bold text-sm text-secondary">Processing Order</p>
+<p class="text-xs text-on-surface-variant">In warehouse queue</p>
+</div>
+</div>
+<!-- Step 4 (Upcoming) -->
+<div class="flex items-start gap-6 opacity-30">
+<div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-lg">local_shipping</span>
+</div>
+<div>
+<p class="font-bold text-sm">Shipped</p>
+<p class="text-xs text-on-surface-variant">Awaiting carrier pickup</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-8 pt-4 border-t border-white/5">
+<div class="space-y-2">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Shipping Address</p>
+<p class="text-sm leading-relaxed">
+                            Marcus Holloway<br/>
+                            2410 Skyline Dr<br/>
+                            San Francisco, CA 94103<br/>
+                            United States
+                        </p>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Payment Method</p>
+<div class="flex items-center gap-2 text-sm">
+<span class="material-symbols-outlined text-lg">credit_card</span>
+<span>Visa ending in 4421</span>
+</div>
+<p class="text-xs text-emerald-400 mt-1 font-mono uppercase tracking-tighter">Transaction: TXN_9001224</p>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-white/5">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ordered Items</p>
+<div class="bg-white/5 p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 bg-surface rounded overflow-hidden">
+<img alt="Merch" class="w-full h-full object-cover" data-alt="high-quality studio product photo of a black heavy cotton streetwear hoodie with minimalist neon cyan typography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaew7Vs2O5KWj7741kHhbK0g8g674vXAWDQS369YJe4-89tk6zip42A7QfJlLywGYmZVSIsZNXPh6wIT-of4BL3zaGQM7R6Pqgjd3H8_KrJsXO_nJj77ABP2KDAct3YZdWkmUqp9BIYJK9RvC3BLHJxfB5dJDaBMwgFOp8gsJ9UfCPf5XnnnAsrbst44hx6LMv-_7KgwGGp1uYiQVnxTtBaZekvvj7FZf4zuzwEDeqxnGCYba8gpl9l81GM4LxhZaicEEQj8U3fLgD"/>
+</div>
+<div>
+<p class="font-medium text-sm">Overdrive Heavy Hoodie</p>
+<p class="text-xs text-on-surface-variant">XL | Onyx Black</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-mono text-sm">1 x $85.00</p>
+<p class="font-bold text-primary">$85.00</p>
+</div>
+</div>
+</div>
+</div>
+<footer class="p-6 bg-white/5 mt-auto flex justify-end gap-3 rounded-b-2xl">
+<button class="px-6 py-2.5 text-on-surface-variant font-bold text-xs uppercase tracking-widest hover:text-white transition-all">Cancel Order</button>
+<button class="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm Shipment</button>
+</footer>
+</div>
+</div>
+</body></html>

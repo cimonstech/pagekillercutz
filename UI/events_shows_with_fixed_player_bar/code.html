@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz | Events &amp; Shows</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-bright": "#393841",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#ffddb4",
+                        "primary": "#8fd6ff",
+                        "on-secondary-container": "#4f3100",
+                        "primary-fixed": "#c3e8ff",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e4e1ec",
+                        "on-primary": "#003549",
+                        "surface-container-low": "#1b1b23",
+                        "secondary-container": "#dc9100",
+                        "surface-container-high": "#2a2931",
+                        "on-secondary-fixed": "#291800",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-primary-fixed": "#001e2c",
+                        "secondary-fixed-dim": "#ffb955",
+                        "on-primary-fixed-variant": "#004c69",
+                        "surface": "#13131a",
+                        "error": "#ffb4ab",
+                        "on-background": "#e4e1ec",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "on-primary-container": "#004a65",
+                        "on-surface-variant": "#bcc8d1",
+                        "background": "#13131a",
+                        "outline": "#87929b",
+                        "primary-container": "#00bfff",
+                        "outline-variant": "#3d4850",
+                        "tertiary": "#ffbdbf",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "surface-variant": "#34343c",
+                        "surface-dim": "#13131a",
+                        "on-tertiary-container": "#8d0025",
+                        "on-tertiary": "#680019",
+                        "tertiary-container": "#ff9399",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#e4e1ec",
+                        "secondary": "#ffb955",
+                        "inverse-on-surface": "#303038",
+                        "surface-container-highest": "#34343c",
+                        "surface-container": "#1f1f27",
+                        "surface-tint": "#7ad0ff",
+                        "on-secondary": "#452b00",
+                        "inverse-primary": "#00668a"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["Space Mono"],
+                        "display": ["Barlow Condensed"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .dark .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[72px] bg-[#08080F]/80 backdrop-blur-xl shadow-[40px_0_40px_rgba(0,0,0,0.06)] bg-gradient-to-r from-white/5 to-transparent flex flex-col items-center py-8 gap-8 z-50">
+<div class="text-xl font-bold text-[#00BFFF] mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
+</div>
+<nav class="flex flex-col gap-6 w-full">
+<a class="flex items-center justify-center text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</a>
+<a class="flex items-center justify-center text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="music_note">music_note</span>
+</a>
+<!-- Active Tab: Events -->
+<a class="relative flex items-center justify-center bg-[#F4F6FA]/10 text-[#00BFFF] before:absolute before:left-0 before:h-8 before:w-0.5 before:bg-[#00BFFF] before:shadow-[0_0_8px_#00BFFF] transition-all duration-300 active:scale-90 py-3" href="/events">
+<span class="material-symbols-outlined" data-icon="event" style="font-variation-settings: 'FILL' 1;">event</span>
+</a>
+<a class="flex items-center justify-center text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</a>
+<a class="flex items-center justify-center text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="door_open">door_open</span>
+</a>
+</nav>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-12 py-6 ml-[72px] bg-transparent z-40">
+<div class="text-2xl font-black text-[#00BFFF] font-headline uppercase tracking-widest">
+            KillerCutz
+        </div>
+<div class="flex items-center gap-6 text-[#bcc8d1]">
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-lg outline-variant/15 outline outline-1">
+<span class="material-symbols-outlined text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm placeholder:text-on-surface-variant/50 w-48" placeholder="Search events..." type="text"/>
+</div>
+<button class="hover:text-white transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="hover:text-white transition-colors cursor-pointer relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<div class="w-10 h-10 bg-surface-container-high rounded-full overflow-hidden border border-outline-variant/20">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional avatar of a modern tech user with a minimalist aesthetic and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_V65gmpCfIsxDP1qV3rF2g4afJUiXMngjZ5OdPxc5ZmvO8EUMVZvszmyb-Ufxf6rD-TzoGNjP5SXQo1aTl-7be3jb3YEgMYPEp4JxELfad75u--Rv4KteQVRSHuP2yQHwO7M5KfIwJ0evEiyZ8sZlgqk14zUZk1I6v6JeiKUcDDvQNrE8JNd1Dkp5H3xH9H2Zv_VIYa2KKyGw1RuvDNWQRASIVS0iDRdqXO5wW2zb3RK_kGLyky_uQFG-Ko9MPFCZU9i7iazg-62y"/>
+</div>
+</div>
+</header>
+<main class="ml-[72px] px-12 pb-40">
+<!-- Page Header -->
+<div class="mt-8 mb-10">
+<h1 class="font-headline font-semibold text-[32px] text-on-surface tracking-tight">Events &amp; Shows</h1>
+<p class="text-on-surface-variant font-body mt-1">Past performances, festivals, and headline shows.</p>
+</div>
+<!-- Filter Pills -->
+<div class="flex gap-3 mb-12 overflow-x-auto no-scrollbar">
+<button class="px-6 py-2 rounded-full bg-primary text-on-primary font-medium text-sm transition-all duration-300">All</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/10 font-medium text-sm transition-all duration-300">Festival</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/10 font-medium text-sm transition-all duration-300">Wedding</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/10 font-medium text-sm transition-all duration-300">Corporate</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/10 font-medium text-sm transition-all duration-300">Club Night</button>
+</div>
+<!-- Events Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+<!-- Card 1 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🎸</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Festival</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">Echoes of the Valley</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">Headline set featuring a 3-hour journey through sonic futurism and experimental deep house.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            AUG 24, 2024
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Accra Central, GH
+                        </div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🎧</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Club Night</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">Neon Pulse Vol. IV</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">Late-night residency set focusing on electric vibes and high-energy transitions.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            SEP 12, 2024
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            The Basement, Berlin
+                        </div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🏢</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Corporate</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">Tech Summit Gala</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">Ambient soundscapes and sophisticated grooves for the global innovators dinner.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            OCT 05, 2024
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Innovation Hub, SF
+                        </div>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">💍</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Wedding</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">The Mensah Celebration</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">A curated blend of highlife classics and modern afrobeats for a private luxury event.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            NOV 18, 2024
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Kempinski Gold Coast
+                        </div>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🎸</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Festival</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">Global Rhythm Fest</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">Opening set for the main stage, featuring live hardware integration and analog synths.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            DEC 28, 2024
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Black Star Square
+                        </div>
+</div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="glass-card group flex flex-col rounded-xl overflow-hidden hover:-translate-y-2 hover:outline hover:outline-1 hover:outline-primary-container/30 transition-all duration-500">
+<div class="h-[180px] bg-surface flex items-center justify-center relative">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🎧</span>
+<div class="absolute top-4 right-4 bg-primary-container/20 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono text-primary uppercase tracking-wider border border-primary/20">Club Night</div>
+</div>
+<div class="p-6 space-y-3">
+<h3 class="font-headline font-semibold text-base text-on-surface">Midnight Spectrum</h3>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">Immersive 360-degree audio experience at the newly launched Zenith Lounge.</p>
+<div class="pt-2 space-y-2">
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            JAN 15, 2025
+                        </div>
+<div class="flex items-center gap-2 text-on-surface-variant font-mono text-[12px]">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                            Zenith, London
+                        </div>
+</div>
+</div>
+</div>
+</div>
+<!-- CTA Strip -->
+<div class="w-full glass-card border-l-[3px] border-primary-container p-8 flex flex-col md:flex-row items-center justify-between rounded-r-lg">
+<div class="mb-6 md:mb-0">
+<h2 class="font-headline font-semibold text-[20px] text-on-surface">Book KillerCutz for your next event.</h2>
+<p class="text-on-surface-variant text-sm mt-1">Available for worldwide bookings, festivals, and high-end private functions.</p>
+</div>
+<button class="bg-primary-container text-on-primary-fixed px-8 py-3 rounded-sm font-headline font-bold text-sm uppercase tracking-wider flex items-center gap-2 hover:bg-primary transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(0,191,255,0.2)]">
+                Book Now
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component: Player Bar) -->
+<footer class="fixed bottom-0 left-0 w-full h-[68px] bg-white/5 backdrop-blur-[20px] border-t border-white/10 flex items-center justify-between px-8 z-50">
+<!-- Progress Bar (The Progress Pulse) -->
+<div class="absolute top-0 left-0 h-0.5 bg-primary w-1/3 shadow-[0_0_8px_#00BFFF]"></div>
+<div class="flex items-center gap-4 w-1/4">
+<div class="w-12 h-12 bg-surface-container rounded-sm overflow-hidden flex-shrink-0">
+<img alt="Now Playing" class="w-full h-full object-cover" data-alt="album art featuring futuristic geometric shapes with neon cyan and magenta accents on a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBljaUBYaVKvsPM1ZETc9jM1QyZjL3ql0PchUFTKXWSSnvUHT4TbJcS2bkfP2JjGlaC-0pFRh22IeAnq8-MT-5mC-8oRT-LUdKNzIqsQxoc1YK8DL5XBJJwtq-sVoliLG8qw3dzbdhtOy65Gw9NF2j_dBBwtQdbeLjEnovIID8_JE1dFdJLqW-gPthrSkRwzs_gC9r1XSnbPO9nep2hTGg7abeWa58xCVjyvz3_Zv4EbdHmaXXuIsRpw-LM-swqpqa1JkJ9ZKKyN24c"/>
+</div>
+<div class="hidden sm:block">
+<h4 class="text-on-surface text-sm font-semibold truncate">Sonic Horizon</h4>
+<p class="text-on-surface-variant text-[10px] font-mono uppercase">KillerCutz • 128 BPM</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<button class="text-[#bcc8d1] hover:text-white transition-colors">
+<span class="material-symbols-outlined">shuffle</span>
+</button>
+<button class="text-[#bcc8d1] hover:text-white transition-colors">
+<span class="material-symbols-outlined">skip_previous</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shadow-[0_0_12px_rgba(143,214,255,0.4)] hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-[#bcc8d1] hover:text-white transition-colors">
+<span class="material-symbols-outlined">skip_next</span>
+</button>
+<button class="text-[#bcc8d1] hover:text-white transition-colors">
+<span class="material-symbols-outlined">repeat</span>
+</button>
+</div>
+<div class="flex items-center gap-4 w-1/4 justify-end">
+<span class="material-symbols-outlined text-[#bcc8d1]">volume_up</span>
+<div class="w-24 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+<button class="text-[#bcc8d1] hover:text-white transition-colors ml-2">
+<span class="material-symbols-outlined">queue_music</span>
+</button>
+</div>
+</footer>
+</body></html>

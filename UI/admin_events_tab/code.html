@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Admin - Events</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .headline-font { font-family: 'Space Grotesk', sans-serif; }
+        .display-font { font-family: 'Barlow Condensed', sans-serif; }
+        .mono-font { font-family: 'Space Mono', monospace; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0e0d15; }
+        ::-webkit-scrollbar-thumb { background: #3d4850; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8fd6ff; }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#1f1f27",
+              "primary-fixed-dim": "#7ad0ff",
+              "surface": "#13131a",
+              "on-error": "#690005",
+              "surface-variant": "#34343c",
+              "on-tertiary-fixed-variant": "#920027",
+              "surface-container-low": "#1b1b23",
+              "inverse-on-surface": "#303038",
+              "tertiary-fixed": "#ffdada",
+              "surface-container-high": "#2a2931",
+              "primary": "#8fd6ff",
+              "on-surface-variant": "#bcc8d1",
+              "on-secondary": "#452b00",
+              "on-surface": "#e4e1ec",
+              "on-secondary-fixed": "#291800",
+              "primary-fixed": "#c3e8ff",
+              "tertiary": "#ffbdbf",
+              "outline": "#87929b",
+              "secondary-container": "#dc9100",
+              "on-primary-fixed": "#001e2c",
+              "secondary": "#ffb955",
+              "tertiary-fixed-dim": "#ffb3b5",
+              "surface-container-highest": "#34343c",
+              "on-tertiary-fixed": "#40000c",
+              "surface-bright": "#393841",
+              "on-tertiary": "#680019",
+              "surface-container-lowest": "#0e0d15",
+              "secondary-fixed-dim": "#ffb955",
+              "on-secondary-fixed-variant": "#633f00",
+              "on-primary": "#003549",
+              "surface-dim": "#13131a",
+              "on-background": "#e4e1ec",
+              "outline-variant": "#3d4850",
+              "error-container": "#93000a",
+              "on-secondary-container": "#4f3100",
+              "on-primary-fixed-variant": "#004c69",
+              "primary-container": "#00bfff",
+              "secondary-fixed": "#ffddb4",
+              "inverse-surface": "#e4e1ec",
+              "background": "#13131a",
+              "error": "#ffb4ab",
+              "surface-tint": "#7ad0ff",
+              "on-primary-container": "#004a65",
+              "tertiary-container": "#ff9399",
+              "on-tertiary-container": "#8d0025",
+              "inverse-primary": "#00668a",
+              "on-error-container": "#ffdad6"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-x-hidden">
+<!-- BACKGROUND MOTIF -->
+<div class="fixed bottom-[-100px] right-[-100px] opacity-[0.03] pointer-events-none z-0">
+<svg height="800" viewbox="0 0 200 200" width="800" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" fill="none" r="80" stroke="currentColor" stroke-width="0.5"></circle>
+<circle cx="100" cy="100" fill="none" r="60" stroke="currentColor" stroke-width="0.5"></circle>
+<circle cx="100" cy="100" fill="none" r="40" stroke="currentColor" stroke-width="0.5"></circle>
+<circle cx="100" cy="100" fill="none" r="20" stroke="currentColor" stroke-width="2"></circle>
+<path d="M100 20 L100 180 M20 100 L180 100" stroke="currentColor" stroke-width="0.2"></path>
+</svg>
+</div>
+<!-- SideNavBar (Admin Expanded) -->
+<aside class="w-[200px] h-full fixed left-0 top-0 z-40 bg-[#08080F]/80 backdrop-blur-xl border-r border-white/10 flex flex-col py-6 shadow-[40px_0_40px_rgba(0,0,0,0.06)]">
+<div class="px-6 mb-12">
+<h1 class="text-xl font-black text-[#00BFFF] uppercase tracking-tighter font-['Space_Grotesk']">KillerCutz</h1>
+<span class="text-[10px] mono-font opacity-50 tracking-widest">ADMIN v3.0</span>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all font-['Space_Grotesk'] font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">home</span>
+<span class="text-sm">Home</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all font-['Space_Grotesk'] font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">explore</span>
+<span class="text-sm">Discover</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all font-['Space_Grotesk'] font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">library_music</span>
+<span class="text-sm">Library</span>
+</a>
+<!-- Active Tab: Events (Derived from context) -->
+<a class="flex items-center px-6 py-3 bg-white/10 text-[#00BFFF] border-l-2 border-[#F5A623] font-['Space_Grotesk'] font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">calendar_month</span>
+<span class="text-sm">Trending</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all font-['Space_Grotesk'] font-semibold tracking-wide" href="#">
+<span class="material-symbols-outlined mr-3">person</span>
+<span class="text-sm">Artists</span>
+</a>
+</nav>
+<div class="px-6 pt-6 mt-auto border-t border-white/5">
+<div class="flex items-center space-x-3 opacity-80">
+<div class="w-8 h-8 bg-surface-variant rounded-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a man in tech setting with soft office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8kL7O6HPTA4xLFTPoPY1YrlswKKo6MLYnVHxA1wdLOVjSStdJa51290O3f-7B0o1SzP5Nv3TO7ZcqoRxUDNts06U0pxhwb0P-lH10SS-thgQX08bHTvsh5ltanv1BhUrOlzTr9eyq6INAGw4AwRy9i2a97Vn0d97fjpIkscoyuJwekH6t76k3-pgN_IIaG1yXQcGDqh3xejJuaFOWvynytVOI8UKw28k9V4xJKDISzUe6v0vLeZU6yRaNMZdaom84p7wAlAHrQ2WF"/>
+</div>
+<div>
+<p class="text-[10px] font-bold">ALEX.PRO</p>
+<p class="text-[8px] opacity-50 uppercase">Super Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[200px] p-8 lg:p-12 relative z-10">
+<!-- TopNavBar (Simplified for Admin) -->
+<header class="flex justify-between items-center mb-12">
+<div>
+<h2 class="text-3xl headline-font font-bold tracking-tight text-white">Events</h2>
+<p class="text-on-surface-variant text-sm mt-1">Manage performances, club nights, and global tours.</p>
+</div>
+<div class="flex items-center space-x-4">
+<button class="w-10 h-10 flex items-center justify-center bg-surface-container-low hover:bg-surface-container-high transition-colors rounded-sm text-on-surface">
+<span class="material-symbols-outlined text-xl">contrast</span>
+</button>
+<button class="bg-primary-container text-on-primary-container px-5 py-2.5 rounded-sm text-sm font-bold flex items-center space-x-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-lg">add</span>
+<span>Add New Event</span>
+</button>
+</div>
+</header>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- EVENTS GRID (3-column) -->
+<div class="flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Event Card 1 -->
+<div class="group relative bg-surface-container-low/40 backdrop-blur-md rounded-sm overflow-hidden transition-all hover:bg-surface-container-low/60 border border-white/5">
+<div class="h-[140px] relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="vibrant nightlife scene with crowd dancing under neon laser lights in a dark club" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsBhg96YZ2afF_bShBy2lnQ8Ys4-t74c6LEuBLkOBx6XrGVFV0PqkyyJZCqOzhI5La23yoMi0t5WLjpk2H5y2_l8otQ-Ipy6fE7EkmqO6TlvgRXGWb3pj6KR7e7rTs3AYSCMasmu8si8em691B7taEGSt_pnXCWJvTr0vBlEaiBWEuZ09rRO_Lxk_PGZyarxWncJrCaXNhj4sKH1L5IZiz926TCYW39yIFlzKMSfA9bzt3grnUXmW1a0EtbN9unTt8XH7QBLJw2pFX"/>
+<div class="absolute top-3 left-3 flex space-x-2">
+<span class="bg-[#08080F]/80 text-[#00BFFF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mono-font">Festival</span>
+</div>
+<div class="absolute top-3 right-3">
+<span class="bg-secondary text-on-secondary px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mono-font">Featured</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold headline-font mb-1 truncate text-white">Electric Horizon 2024</h3>
+<div class="flex items-center text-on-surface-variant text-xs mb-4 mono-font uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+<span>Berlin, Germany</span>
+<span class="mx-2">•</span>
+<span>Aug 12</span>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-4">
+<div class="flex items-center space-x-1">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-[10px] font-bold text-on-surface-variant opacity-50 uppercase">Toggle Featured</span>
+<div class="w-8 h-4 bg-secondary-container rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="group relative bg-surface-container-low/40 backdrop-blur-md rounded-sm overflow-hidden transition-all hover:bg-surface-container-low/60 border border-white/5">
+<div class="h-[140px] relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="close up of DJ hands on turntable mixer with dramatic blue lighting and smoke effects" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgYrqZlyVqnzE4Y_XcirIQoXTfbhOBBJL-go_Ixw47wmh0iEfdE6zO0-faAKp0Q4s2l-B9ua93GJ4uKhBYZbzeQVb5Opa38eYtxaEqpMft48jRsuHiFg81SnjEE8jMqXgbq4YvPWA7t29EejowmiCNWjBnFaiGU5lFcbawt4Xol1pJg5_1zCsn-26fGSxUYxovzLThW_YgswKpXExv8N3EFVpyVOWpxNlXLMKWpp4w6D8h6xJ_AVQzD-Qm-RxXf2iPVlbO_sp1mLnQ"/>
+<div class="absolute top-3 left-3">
+<span class="bg-[#08080F]/80 text-[#00BFFF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mono-font">Club Night</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold headline-font mb-1 truncate text-white">Midnight Sessions</h3>
+<div class="flex items-center text-on-surface-variant text-xs mb-4 mono-font uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+<span>London, UK</span>
+<span class="mx-2">•</span>
+<span>Sep 05</span>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-4">
+<div class="flex items-center space-x-1">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-[10px] font-bold text-on-surface-variant opacity-50 uppercase">Toggle Featured</span>
+<div class="w-8 h-4 bg-surface-variant rounded-full relative cursor-pointer">
+<div class="absolute left-0.5 top-0.5 w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 3 -->
+<div class="group relative bg-surface-container-low/40 backdrop-blur-md rounded-sm overflow-hidden transition-all hover:bg-surface-container-low/60 border border-white/5">
+<div class="h-[140px] relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="abstract stage lighting with deep purples and oranges reflecting off a metallic surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNqjC28qhVnvWgpeNePaG-b6ZuOc2jSqCzO34hqu6gbpXf91WdQoDeXmqykjJbpxHaPChVaTtyGpmpd6Kg3Owk3zhFtEN4rkdz4F4DcRTk5VQaPj5cVufLsYqRLcCLqZ4451_kXv8vZkDKfnG93nQNzQy5VC3JpPxq42Z3bSuMsM4LJNX5O6aTwfamUHoEI7TEDedDvtfSzhSP-trKOa5imvdBJOD9We3VkIWCNGcPcG0gVwQYv8ttwm0VkAReEtF7Vo23FycBJemz"/>
+<div class="absolute top-3 left-3">
+<span class="bg-[#08080F]/80 text-[#00BFFF] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mono-font">Tour</span>
+</div>
+</div>
+<div class="p-5">
+<h3 class="text-lg font-bold headline-font mb-1 truncate text-white">Future Funk World Tour</h3>
+<div class="flex items-center text-on-surface-variant text-xs mb-4 mono-font uppercase tracking-tighter">
+<span class="material-symbols-outlined text-sm mr-1">location_on</span>
+<span>Tokyo, JP</span>
+<span class="mx-2">•</span>
+<span>Oct 18</span>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-4">
+<div class="flex items-center space-x-1">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+<div class="flex items-center space-x-2">
+<span class="text-[10px] font-bold text-on-surface-variant opacity-50 uppercase">Toggle Featured</span>
+<div class="w-8 h-4 bg-surface-variant rounded-full relative cursor-pointer">
+<div class="absolute left-0.5 top-0.5 w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ADD / EDIT EVENT FORM (Panel 560px) -->
+<section class="w-full lg:w-[560px] flex-shrink-0">
+<div class="bg-surface-container-low/60 backdrop-blur-2xl border border-white/10 p-8 rounded-sm sticky top-8">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-xl font-bold headline-font text-white flex items-center">
+<span class="w-1 h-6 bg-primary mr-3"></span>
+                            Edit Event
+                        </h3>
+<span class="text-[10px] mono-font text-primary-container bg-primary-container/10 px-2 py-1">ID: EVT-9923</span>
+</div>
+<form class="space-y-6">
+<!-- Media Upload Zone -->
+<div class="space-y-2">
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font">Event Banner</label>
+<div class="h-[160px] border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center cursor-pointer group rounded-sm">
+<span class="material-symbols-outlined text-3xl text-outline group-hover:text-primary mb-2">cloud_upload</span>
+<p class="text-xs text-on-surface-variant">Drop your event image here or <span class="text-primary font-bold">browse</span></p>
+<p class="text-[9px] opacity-40 mt-1 uppercase mono-font">Max 5MB • 1920x1080px</p>
+</div>
+<div class="flex space-x-3 mt-4">
+<div class="relative w-16 h-16 border border-white/20 rounded-sm overflow-hidden group">
+<img class="w-full h-full object-cover" data-alt="thumbnail of concert stage lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTBpb3qdpJjCAglH75aqtlNSlVr3HEG31bPGMP_1j3PAkWI7zWAmuIcxz4R9FXOnBcqIUOFpf-8gJDcM_GU27AT-_Cq3WinyvlB0Az0nSH2XGG4beAxbnjPpomIwOkj-3ya2jEHMleWFDTwtLqlh5gFpfig_3zWeJ_igB7Tf3fhJsDIeRzmO0-A49yqOr3CDVbcNZokNmyjgkHO0c-B7iDWrtJE3bdkwxQ83FKY70PlmcPAJoNswzFYThES57slVgLytS2Y37zzYKE"/>
+<button class="absolute inset-0 bg-error/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Form Fields -->
+<div class="space-y-4">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Event Title</label>
+<input class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all" type="text" value="Electric Horizon 2024"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Type</label>
+<select class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all">
+<option selected="">Festival</option>
+<option>Club Night</option>
+<option>Tour</option>
+<option>Live Stream</option>
+</select>
+</div>
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Date</label>
+<input class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all" type="date" value="2024-08-12"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Venue</label>
+<input class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all" type="text" value="Tempelhof Field"/>
+</div>
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Location</label>
+<input class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all" type="text" value="Berlin, Germany"/>
+</div>
+</div>
+<div>
+<label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mono-font mb-2">Description</label>
+<textarea class="w-full bg-surface-container-highest border-none text-on-surface text-sm p-3 focus:ring-1 focus:ring-primary rounded-sm transition-all" rows="3">The ultimate gathering of electronic music enthusiasts under the open sky. Featuring 3 stages and 48 hours of non-stop sound.</textarea>
+</div>
+<!-- Featured Toggle -->
+<div class="flex items-center justify-between p-4 bg-surface-container-highest/50 border border-white/5 rounded-sm">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<div>
+<p class="text-xs font-bold text-white uppercase tracking-wide">Featured Event</p>
+<p class="text-[9px] text-on-surface-variant uppercase">Display on Homepage Hero</p>
+</div>
+</div>
+<div class="w-10 h-5 bg-secondary-container rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Submit Action -->
+<button class="w-full bg-primary-container text-on-primary-container font-black uppercase tracking-widest text-xs py-4 rounded-sm hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_10px_20px_rgba(0,191,255,0.2)]" type="submit">
+                            Save Event
+                        </button>
+</form>
+</div>
+</section>
+</div>
+</main>
+<!-- Suppressed BottomNavBar & FAB as per task instructions for Admin Event page -->
+</body></html>

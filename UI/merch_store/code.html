@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Merch Store</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,800;1,800&amp;family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@600;700&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed-variant": "#920027",
+                        "secondary-container": "#dc9100",
+                        "primary-container": "#00bfff",
+                        "inverse-primary": "#00668a",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#bcc8d1",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffdada",
+                        "on-error": "#690005",
+                        "secondary-fixed-dim": "#ffb955",
+                        "tertiary-container": "#ff9399",
+                        "on-surface": "#e4e1ec",
+                        "error-container": "#93000a",
+                        "surface-dim": "#13131a",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "on-primary": "#003549",
+                        "on-tertiary": "#680019",
+                        "outline": "#87929b",
+                        "secondary-fixed": "#ffddb4",
+                        "inverse-surface": "#e4e1ec",
+                        "surface-container": "#1f1f27",
+                        "on-secondary-container": "#4f3100",
+                        "on-primary-fixed-variant": "#004c69",
+                        "background": "#13131a",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-secondary-fixed": "#291800",
+                        "surface-container-highest": "#34343c",
+                        "tertiary": "#ffbdbf",
+                        "surface": "#13131a",
+                        "on-primary-container": "#004a65",
+                        "surface-variant": "#34343c",
+                        "primary-fixed": "#c3e8ff",
+                        "surface-container-high": "#2a2931",
+                        "outline-variant": "#3d4850",
+                        "on-secondary": "#452b00",
+                        "on-background": "#e4e1ec",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "inverse-on-surface": "#303038",
+                        "primary": "#8fd6ff",
+                        "surface-tint": "#7ad0ff",
+                        "on-primary-fixed": "#001e2c",
+                        "surface-bright": "#393841",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "surface-container-low": "#1b1b23",
+                        "secondary": "#ffb955",
+                        "on-tertiary-container": "#8d0025"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["Space Mono"],
+                        "display": ["Barlow Condensed"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        body {
+            background-color: #08080F;
+            color: #e4e1ec;
+            overflow-x: hidden;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3d4850;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[72px] bg-[#08080F]/80 backdrop-blur-xl flex flex-col items-center py-8 z-50 shadow-[40px_0_40px_-40px_rgba(0,0,0,0.4)]">
+<div class="mb-10 text-[#00BFFF] font-black text-xl">KC</div>
+<nav class="flex flex-col gap-6 items-center w-full">
+<!-- Home -->
+<a class="group relative flex items-center justify-center w-full py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<!-- Music -->
+<a class="group relative flex items-center justify-center w-full py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">library_music</span>
+</a>
+<!-- Merch (ACTIVE) -->
+<a class="group relative flex items-center justify-center w-full py-3 bg-white/10 text-[#00BFFF] border-l-2 border-[#00BFFF] transition-all duration-300 scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+</a>
+<!-- Events -->
+<a class="group relative flex items-center justify-center w-full py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+</a>
+<!-- Profile -->
+<a class="group relative flex items-center justify-center w-full py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all duration-300" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</aside>
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-72px)] h-16 bg-transparent flex justify-between items-center px-10 z-40">
+<div class="font-['Barlow_Condensed'] font-extrabold uppercase italic text-2xl text-[#00BFFF] drop-shadow-md">
+            KillerCutz Merch
+        </div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-[#bcc8d1] group-hover:text-[#00BFFF] cursor-pointer transition-colors">search</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-surface-container-highest p-2 rounded-full text-[#bcc8d1] hover:text-[#00BFFF] transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pl-[72px] pt-24 pb-32 min-h-screen">
+<div class="max-w-[1400px] mx-auto px-10">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="font-headline font-semibold text-[32px] text-on-surface leading-none mb-2">Merch Drop</h1>
+<p class="text-on-surface-variant">Limited runs. Shipped across Ghana.</p>
+</div>
+<button class="flex items-center gap-3 glass-panel px-5 py-2.5 rounded-full border border-outline-variant/20 hover:border-primary/40 transition-all">
+<span class="material-symbols-outlined text-on-surface">shopping_cart</span>
+<span class="font-mono text-sm uppercase tracking-widest">Cart</span>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full text-[10px] font-bold">3</span>
+</button>
+</div>
+<!-- Filter Pills -->
+<div class="flex gap-3 mb-12">
+<button class="px-6 py-2 bg-primary-container text-on-primary-container rounded-full font-medium text-sm transition-all">All</button>
+<button class="px-6 py-2 glass-panel text-on-surface-variant hover:text-on-surface rounded-full font-medium text-sm transition-all border border-transparent hover:border-outline-variant/30">Apparel</button>
+<button class="px-6 py-2 glass-panel text-on-surface-variant hover:text-on-surface rounded-full font-medium text-sm transition-all border border-transparent hover:border-outline-variant/30">Headwear</button>
+<button class="px-6 py-2 glass-panel text-on-surface-variant hover:text-on-surface rounded-full font-medium text-sm transition-all border border-transparent hover:border-outline-variant/30">Accessories</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Product Card 1 -->
+<div class="glass-panel p-4 rounded-[16px] group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-20px_rgba(0,191,255,0.3)] border border-outline-variant/10">
+<div class="relative h-[180px] bg-surface-container-lowest rounded-xl flex items-center justify-center mb-4 overflow-hidden">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🎧</span>
+<div class="absolute top-3 left-3 bg-primary-container text-on-primary-container font-mono text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">New Drop</div>
+</div>
+<div class="space-y-1 mb-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline font-semibold text-lg leading-tight">Sonic Tee v1</h3>
+<span class="font-mono text-xs text-on-surface-variant">GH₵ 120</span>
+</div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">Apparel</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-1.5">
+<span class="w-7 h-7 flex items-center justify-center glass-panel rounded-sm text-[10px] font-mono border border-outline-variant/20">S</span>
+<span class="w-7 h-7 flex items-center justify-center bg-primary-container text-on-primary-container rounded-sm text-[10px] font-mono">M</span>
+<span class="w-7 h-7 flex items-center justify-center glass-panel rounded-sm text-[10px] font-mono border border-outline-variant/20">L</span>
+</div>
+<button class="text-primary text-sm font-semibold flex items-center gap-1 hover:brightness-125 transition-all">
+                            Add to Cart
+                        </button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="glass-panel p-4 rounded-[16px] group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-20px_rgba(0,191,255,0.3)] border border-outline-variant/10">
+<div class="relative h-[180px] bg-surface-container-lowest rounded-xl flex items-center justify-center mb-4 overflow-hidden">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🧢</span>
+<div class="absolute top-3 left-3 bg-secondary text-on-secondary-container font-mono text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">Limited</div>
+</div>
+<div class="space-y-1 mb-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline font-semibold text-lg leading-tight">Neon Trucker</h3>
+<span class="font-mono text-xs text-on-surface-variant">GH₵ 85</span>
+</div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">Headwear</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-1.5">
+<span class="w-7 h-7 flex items-center justify-center bg-primary-container text-on-primary-container rounded-sm text-[10px] font-mono">OS</span>
+</div>
+<button class="text-primary text-sm font-semibold flex items-center gap-1 hover:brightness-125 transition-all">
+                            Add to Cart
+                        </button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="glass-panel p-4 rounded-[16px] group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-20px_rgba(0,191,255,0.3)] border border-outline-variant/10">
+<div class="relative h-[180px] bg-surface-container-lowest rounded-xl flex items-center justify-center mb-4 overflow-hidden">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🧥</span>
+</div>
+<div class="space-y-1 mb-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline font-semibold text-lg leading-tight">Club Bomber</h3>
+<span class="font-mono text-xs text-on-surface-variant">GH₵ 450</span>
+</div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">Apparel</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-1.5">
+<span class="w-7 h-7 flex items-center justify-center glass-panel rounded-sm text-[10px] font-mono border border-outline-variant/20">M</span>
+<span class="w-7 h-7 flex items-center justify-center glass-panel rounded-sm text-[10px] font-mono border border-outline-variant/20">L</span>
+<span class="w-7 h-7 flex items-center justify-center bg-primary-container text-on-primary-container rounded-sm text-[10px] font-mono">XL</span>
+</div>
+<button class="text-primary text-sm font-semibold flex items-center gap-1 hover:brightness-125 transition-all">
+                            Add to Cart
+                        </button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="glass-panel p-4 rounded-[16px] group transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-20px_rgba(0,191,255,0.3)] border border-outline-variant/10">
+<div class="relative h-[180px] bg-surface-container-lowest rounded-xl flex items-center justify-center mb-4 overflow-hidden">
+<span class="text-6xl group-hover:scale-110 transition-transform duration-500">🕶️</span>
+<div class="absolute top-3 left-3 bg-primary-container text-on-primary-container font-mono text-[10px] px-2 py-0.5 rounded-full uppercase font-bold">New Drop</div>
+</div>
+<div class="space-y-1 mb-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline font-semibold text-lg leading-tight">Cyber Shades</h3>
+<span class="font-mono text-xs text-on-surface-variant">GH₵ 150</span>
+</div>
+<p class="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant opacity-60">Accessories</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-1.5">
+<span class="w-7 h-7 flex items-center justify-center bg-primary-container text-on-primary-container rounded-sm text-[10px] font-mono">OS</span>
+</div>
+<button class="text-primary text-sm font-semibold flex items-center gap-1 hover:brightness-125 transition-all">
+                            Add to Cart
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Cart Drawer (Shown Open) -->
+<aside class="fixed right-0 top-0 h-full w-[380px] glass-panel z-50 shadow-2xl flex flex-col border-l border-outline-variant/10">
+<div class="p-8 flex items-center justify-between border-b border-outline-variant/10">
+<div class="flex items-baseline gap-2">
+<h2 class="font-headline font-semibold text-xl">Your Cart</h2>
+<span class="text-on-surface-variant text-sm font-mono">(3)</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+<!-- Cart Item 1 -->
+<div class="flex gap-4">
+<div class="w-20 h-20 bg-surface-container-low rounded-lg flex items-center justify-center text-3xl">🎧</div>
+<div class="flex-1 py-1 flex flex-col justify-between">
+<div>
+<h4 class="font-headline font-medium text-sm leading-tight">Sonic Tee v1</h4>
+<p class="text-[10px] text-on-surface-variant uppercase font-mono tracking-widest">Size: M</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3 bg-surface-container-highest/50 rounded-sm px-2 py-0.5">
+<button class="text-[10px] text-on-surface-variant hover:text-primary">－</button>
+<span class="font-mono text-xs">1</span>
+<button class="text-[10px] text-on-surface-variant hover:text-primary">＋</button>
+</div>
+<span class="font-mono text-xs">GH₵ 120</span>
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant/10"></div>
+<!-- Cart Item 2 -->
+<div class="flex gap-4">
+<div class="w-20 h-20 bg-surface-container-low rounded-lg flex items-center justify-center text-3xl">🧢</div>
+<div class="flex-1 py-1 flex flex-col justify-between">
+<div>
+<h4 class="font-headline font-medium text-sm leading-tight">Neon Trucker</h4>
+<p class="text-[10px] text-on-surface-variant uppercase font-mono tracking-widest">Size: OS</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3 bg-surface-container-highest/50 rounded-sm px-2 py-0.5">
+<button class="text-[10px] text-on-surface-variant hover:text-primary">－</button>
+<span class="font-mono text-xs">2</span>
+<button class="text-[10px] text-on-surface-variant hover:text-primary">＋</button>
+</div>
+<span class="font-mono text-xs">GH₵ 170</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-[#08080F]/40 space-y-6">
+<div class="flex justify-between items-baseline">
+<span class="text-on-surface-variant text-sm font-mono uppercase tracking-widest">Subtotal</span>
+<span class="font-headline font-bold text-2xl text-primary">GH₵ 290</span>
+</div>
+<!-- Payment Info Card -->
+<div class="bg-surface-container-low/50 p-4 border-l-[3px] border-primary-container rounded-r-lg">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-sm">💡</span>
+<h5 class="font-headline font-semibold text-xs uppercase tracking-wider">How to pay</h5>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">
+                    Place your order and follow the WhatsApp instructions to complete transfer via MoMo or Stanbic Bank.
+                </p>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container py-4 font-headline font-bold uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                Place Order
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</aside>
+<!-- BottomNavBar / PlayerBar (Shared Component) -->
+<div class="fixed bottom-0 left-0 w-full h-[68px] bg-[#08080F]/80 backdrop-blur-xl border-t-2 border-[#00BFFF] z-50 flex justify-between items-center px-8 shadow-[0_-10px_40px_rgba(0,191,255,0.1)]">
+<!-- Player Info -->
+<div class="flex items-center gap-4 min-w-[200px]">
+<div class="w-10 h-10 bg-surface-container-highest rounded-sm overflow-hidden flex items-center justify-center">
+<span class="text-xl">💿</span>
+</div>
+<div>
+<p class="text-[10px] font-['Space_Mono'] uppercase tracking-widest text-[#00BFFF]">Now Playing</p>
+<p class="text-xs font-semibold truncate max-w-[120px]">Accra Nights (DJ Mix)</p>
+</div>
+</div>
+<!-- Player Controls -->
+<div class="flex items-center gap-8">
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">skip_previous</span>
+</button>
+<button class="text-[#00BFFF] drop-shadow-[0_0_8px_rgba(0,191,255,0.8)] hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">skip_next</span>
+</button>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-6 min-w-[200px] justify-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#bcc8d1] text-lg">volume_up</span>
+<div class="w-20 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-[#00BFFF]"></div>
+</div>
+</div>
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="text-[#bcc8d1] hover:text-[#00BFFF]">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+</div>
+</div>
+</body></html>

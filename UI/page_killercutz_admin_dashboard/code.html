@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sonic Admin | KillerCutz Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;family=Syne:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#13131a",
+                        "on-tertiary-container": "#8d0025",
+                        "on-tertiary": "#680019",
+                        "tertiary-container": "#ff9399",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#e4e1ec",
+                        "secondary": "#ffb955",
+                        "inverse-on-surface": "#303038",
+                        "surface-container-highest": "#34343c",
+                        "surface-container": "#1f1f27",
+                        "surface-tint": "#7ad0ff",
+                        "on-secondary": "#452b00",
+                        "inverse-primary": "#00668a",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "on-primary-container": "#004a65",
+                        "on-surface-variant": "#bcc8d1",
+                        "background": "#13131a",
+                        "outline": "#87929b",
+                        "primary-container": "#00bfff",
+                        "outline-variant": "#3d4850",
+                        "tertiary": "#ffbdbf",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "surface-variant": "#34343c",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-primary-fixed": "#001e2c",
+                        "secondary-fixed-dim": "#ffb955",
+                        "on-primary-fixed-variant": "#004c69",
+                        "surface": "#13131a",
+                        "error": "#ffb4ab",
+                        "on-background": "#e4e1ec",
+                        "surface-bright": "#393841",
+                        "error-container": "#93000a",
+                        "secondary-fixed": "#ffddb4",
+                        "primary": "#8fd6ff",
+                        "on-secondary-container": "#4f3100",
+                        "primary-fixed": "#c3e8ff",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e4e1ec",
+                        "on-primary": "#003549",
+                        "surface-container-low": "#1b1b23",
+                        "secondary-container": "#dc9100",
+                        "surface-container-high": "#2a2931",
+                        "on-secondary-fixed": "#291800"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "syne": ["Syne"],
+                        "mono": ["Space Mono"],
+                        "barlow": ["Barlow Condensed"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glassmorphism {
+            background: rgba(8, 8, 15, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .glassmorphism-edge {
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 4px;
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3d4850;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Sidebar (Shared Component side-nav anchor) -->
+<aside class="fixed left-0 top-0 bottom-0 w-[200px] z-[60] bg-[#08080F]/80 backdrop-blur-xl flex flex-col h-full py-6 glassmorphism-edge shadow-2xl">
+<div class="px-6 mb-10">
+<h1 class="text-lg font-barlow font-extrabold uppercase tracking-widest text-[#00BFFF]">Sonic Futurism</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant/60 mt-1 font-mono">Admin Console</p>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm bg-white/10 text-[#00BFFF] border-l-2 border-[#FFD700] transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span class="font-medium text-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="calendar_today">calendar_today</span>
+<span class="font-medium text-sm">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="queue_music">queue_music</span>
+<span class="font-medium text-sm">Playlists</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-medium text-sm">Orders</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="audiotrack">audiotrack</span>
+<span class="font-medium text-sm">Music</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-medium text-sm">Events</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="inventory_2">inventory_2</span>
+<span class="font-medium text-sm">Packages</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="group">group</span>
+<span class="font-medium text-sm">Accounts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all active:translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="history_edu">history_edu</span>
+<span class="font-medium text-sm">Audit Log</span>
+</a>
+</nav>
+<div class="mt-auto px-3 border-t border-white/5 pt-6">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-sm text-error opacity-70 hover:bg-error/10 hover:opacity-100 transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="logout">logout</span>
+<span class="font-medium text-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[200px] min-h-screen">
+<!-- Top Navigation (Shared Component anchor) -->
+<header class="fixed top-0 right-0 left-[200px] z-50 bg-[#08080F]/80 backdrop-blur-xl flex justify-between items-center px-6 h-16 border-b border-white/5 shadow-[0_40px_40px_-15px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-4">
+<span class="text-xl font-bold text-[#00BFFF] tracking-tighter font-headline">KillerCutz Admin</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:bg-white/10 p-2 rounded-full transition-colors" data-icon="search">search</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-white/10 text-on-surface-variant active:scale-95 duration-200 transition-colors">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/10 text-on-surface-variant active:scale-95 duration-200 transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/10 text-on-surface-variant active:scale-95 duration-200 transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
+<img alt="Admin Profile" class="w-full h-full object-cover" data-alt="close-up portrait of a professional modern man with creative styling in studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4zNSqkiEIPaUt9OShwKhGof_pZKP0949q4HatBW5Lo9DNWMF6A7-pnNK4nY3YSK_TEVavOPfzJbQpQz_HN66G8ERwVduCki2nWZDy6G5o3LJWETc8D6w48J6FYJBgkw8DSg0N0Tg7ZGjceOIiSwdFu4wgpoTVEm4Oe5hhh0Lo0N406MngaSjxvNRQjB3dYAUTATM0i3tLqcf58nK84pPzJQF7cWFZmyV10tJIOPeD9NO_g6RlBcarZURfH2Xjo1qh81EPRlgLX36z"/>
+</div>
+</div>
+</header>
+<!-- Bento Grid Dashboard Content -->
+<div class="pt-24 px-8 pb-12">
+<div class="grid grid-cols-5 grid-rows-[auto_400px_auto_auto] gap-6 max-w-full">
+<!-- ROW 1: Greeting & KPIs -->
+<div class="col-span-2 bg-surface-container-low p-8 rounded-sm relative overflow-hidden flex flex-col justify-end min-h-[160px]">
+<div class="absolute top-0 right-0 p-8">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-mono tracking-widest uppercase">System Admin</span>
+</div>
+<p class="text-on-surface-variant font-mono text-xs mb-2">OCTOBER 24, 2024</p>
+<h2 class="text-[28px] font-syne font-bold leading-tight">Good morning.</h2>
+<div class="absolute -right-8 -bottom-8 opacity-5">
+<span class="material-symbols-outlined text-[160px]" data-icon="bolt">bolt</span>
+</div>
+</div>
+<!-- KPI 1: Total Bookings -->
+<div class="col-span-1 bg-surface-container-low p-6 border-l-4 border-primary-container flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-xs font-medium uppercase tracking-wider mb-2">Total Bookings</p>
+<h3 class="text-4xl font-syne font-bold text-primary-container">48</h3>
+</div>
+<div class="inline-flex items-center gap-1 text-[10px] font-bold text-[#4ade80] mt-4 uppercase">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                        ↑ +8 this month
+                    </div>
+</div>
+<!-- KPI 2: Pending -->
+<div class="col-span-1 bg-surface-container-low p-6 border-l-4 border-secondary flex flex-col justify-between">
+<div>
+<p class="text-secondary text-xs font-medium uppercase tracking-wider mb-2">Pending</p>
+<h3 class="text-4xl font-syne font-bold text-secondary">12</h3>
+</div>
+<div class="inline-flex items-center gap-1 text-[10px] font-bold text-secondary mt-4 uppercase px-2 py-1 bg-secondary/10 rounded-sm">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+                        ↑ 2 new today
+                    </div>
+</div>
+<!-- KPI 3: Revenue -->
+<div class="col-span-1 bg-surface-container-low p-6 border-l-4 border-primary-container flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-xs font-medium uppercase tracking-wider mb-2">Revenue</p>
+<h3 class="text-2xl font-syne font-bold text-on-surface">GHS 12,400</h3>
+</div>
+<div class="inline-flex items-center gap-1 text-[10px] font-bold text-[#4ade80] mt-4 uppercase">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+                        ↑ 23% vs last month
+                    </div>
+</div>
+<!-- ROW 2: Booking Trend Chart & Activity -->
+<div class="col-span-4 bg-[#08080F]/50 backdrop-blur-xl p-8 rounded-sm glassmorphism-edge relative">
+<div class="flex justify-between items-start mb-10">
+<div>
+<h4 class="text-xl font-headline font-semibold">Booking Trend</h4>
+<p class="text-on-surface-variant font-mono text-xs">Last 30 days</p>
+</div>
+<div class="bg-primary/10 text-primary-container px-3 py-1 rounded-sm text-[10px] font-bold uppercase">
+                            ↑ 23% vs last month
+                        </div>
+</div>
+<!-- Simplified Visual Area Chart Representation -->
+<div class="h-56 w-full flex items-end gap-1 relative overflow-hidden">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 200">
+<defs>
+<lineargradient id="chartGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:rgba(0,191,255,0.25);stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:rgba(0,191,255,0);stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,180 L50,160 L100,170 L150,140 L200,150 L250,100 L300,120 L350,80 L400,90 L450,40 L500,60 L550,50 L600,100 L650,80 L700,90 L750,30 L800,50 L850,20 L900,40 L1000,10 L1000,200 L0,200 Z" fill="url(#chartGrad)"></path>
+<path d="M0,180 L50,160 L100,170 L150,140 L200,150 L250,100 L300,120 L350,80 L400,90 L450,40 L500,60 L550,50 L600,100 L650,80 L700,90 L750,30 L800,50 L850,20 L900,40 L1000,10" fill="none" stroke="#00BFFF" stroke-width="3"></path>
+</svg>
+<div class="absolute bottom-0 w-full flex justify-between text-[10px] font-mono text-on-surface-variant/40 px-2">
+<span>OCT 01</span>
+<span>OCT 08</span>
+<span>OCT 15</span>
+<span>OCT 22</span>
+<span>OCT 30</span>
+</div>
+</div>
+</div>
+<div class="col-span-1 bg-surface-container-low p-6 rounded-sm">
+<h4 class="text-sm font-semibold uppercase tracking-widest mb-6 border-b border-white/5 pb-4">Recent Activity</h4>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-primary-container shrink-0"></div>
+<div>
+<p class="text-[13px] leading-tight">New booking by <span class="text-on-surface font-semibold">David K.</span></p>
+<p class="text-[10px] font-mono text-on-surface-variant mt-1">10:24 AM</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-secondary shrink-0"></div>
+<div>
+<p class="text-[13px] leading-tight">Payment received from <span class="text-on-surface font-semibold">Club Onyx</span></p>
+<p class="text-[10px] font-mono text-on-surface-variant mt-1">09:15 AM</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-error shrink-0"></div>
+<div>
+<p class="text-[13px] leading-tight">Booking cancelled: <span class="text-on-surface font-semibold">#E-4521</span></p>
+<p class="text-[10px] font-mono text-on-surface-variant mt-1">08:30 AM</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="mt-1.5 w-2 h-2 rounded-full bg-white shrink-0"></div>
+<div>
+<p class="text-[13px] leading-tight">Playlist updated: <span class="text-on-surface font-semibold">Wedding Afro-Fusion</span></p>
+<p class="text-[10px] font-mono text-on-surface-variant mt-1">04:12 PM Yesterday</p>
+</div>
+</div>
+</div>
+</div>
+<!-- ROW 3: Revenue Chart & Pending Bookings -->
+<div class="col-span-3 bg-surface-container-low p-8 rounded-sm">
+<div class="flex justify-between items-center mb-8">
+<h4 class="text-lg font-headline font-semibold">Revenue Overview</h4>
+<select class="bg-surface-container-highest border-none text-[10px] font-mono px-3 py-1.5 focus:ring-0 rounded-sm">
+<option>YEAR 2024</option>
+<option>YEAR 2023</option>
+</select>
+</div>
+<div class="flex items-end justify-between h-48 gap-4 px-2">
+<!-- Bar chart columns -->
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-24 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-16 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">JAN</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-32 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-24 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">FEB</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-40 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-32 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">MAR</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-20 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-12 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">APR</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-36 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-28 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">MAY</span>
+</div>
+<div class="flex flex-col items-center flex-1 group">
+<div class="w-full bg-secondary/20 h-44 group-hover:bg-secondary/40 transition-all rounded-t-sm relative">
+<div class="absolute bottom-0 w-full bg-secondary h-38 rounded-t-sm"></div>
+</div>
+<span class="mt-3 font-mono text-[10px] text-on-surface-variant">JUN</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 bg-surface-container-low p-6 rounded-sm border-l-4 border-secondary">
+<h4 class="text-secondary text-xs font-semibold uppercase tracking-[0.2em] mb-6">Needs Action</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-sm group hover:translate-x-1 transition-transform">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Samuel Owusu</span>
+<span class="text-[10px] px-2 py-0.5 bg-primary/10 text-primary w-fit mt-1 rounded-full uppercase font-mono">Wedding</span>
+</div>
+<button class="px-4 py-2 bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-sm group hover:translate-x-1 transition-transform">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Twist Nightclub</span>
+<span class="text-[10px] px-2 py-0.5 bg-secondary/10 text-secondary w-fit mt-1 rounded-full uppercase font-mono">Residency</span>
+</div>
+<button class="px-4 py-2 bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-highest rounded-sm group hover:translate-x-1 transition-transform">
+<div class="flex flex-col">
+<span class="text-sm font-semibold">Verna Gala</span>
+<span class="text-[10px] px-2 py-0.5 bg-primary-fixed-dim/10 text-primary-fixed-dim w-fit mt-1 rounded-full uppercase font-mono">Corporate</span>
+</div>
+<button class="px-4 py-2 bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm</button>
+</div>
+</div>
+<a class="inline-flex items-center gap-1 text-[#00BFFF] text-xs font-bold uppercase mt-6 hover:underline transition-all" href="#">
+                        View all 
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- ROW 4: Recent Orders Strip -->
+<div class="col-span-5 py-4">
+<div class="flex justify-between items-center mb-4">
+<h4 class="text-sm font-bold uppercase tracking-[0.3em]">Recent Orders</h4>
+<a class="text-[#00BFFF] text-[10px] font-bold uppercase hover:underline" href="#">View all →</a>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+<!-- Order Pills -->
+<div class="flex-none bg-surface-container-low p-4 rounded-sm flex items-center gap-6 min-w-[300px]">
+<span class="font-mono text-primary-container text-xs">#ORD-1092</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium">Akwasi Antwi</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Standard Package</span>
+</div>
+<div class="px-2 py-0.5 rounded-sm bg-[#4ade80]/10 text-[#4ade80] text-[10px] font-bold uppercase shrink-0">Paid</div>
+<span class="font-syne font-bold text-sm ml-auto">GHS 850</span>
+</div>
+<div class="flex-none bg-surface-container-low p-4 rounded-sm flex items-center gap-6 min-w-[300px]">
+<span class="font-mono text-primary-container text-xs">#ORD-1091</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium">Sandra Boateng</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Premium Sound</span>
+</div>
+<div class="px-2 py-0.5 rounded-sm bg-secondary/10 text-secondary text-[10px] font-bold uppercase shrink-0">Processing</div>
+<span class="font-syne font-bold text-sm ml-auto">GHS 2,100</span>
+</div>
+<div class="flex-none bg-surface-container-low p-4 rounded-sm flex items-center gap-6 min-w-[300px]">
+<span class="font-mono text-primary-container text-xs">#ORD-1090</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium">Kofi Osei</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">DJ Service + Gear</span>
+</div>
+<div class="px-2 py-0.5 rounded-sm bg-error/10 text-error text-[10px] font-bold uppercase shrink-0">Failed</div>
+<span class="font-syne font-bold text-sm ml-auto">GHS 1,500</span>
+</div>
+<div class="flex-none bg-surface-container-low p-4 rounded-sm flex items-center gap-6 min-w-[300px]">
+<span class="font-mono text-primary-container text-xs">#ORD-1089</span>
+<div class="flex flex-col">
+<span class="text-sm font-medium">Ama Konadu</span>
+<span class="text-[10px] text-on-surface-variant uppercase font-mono">Wedding Bundle</span>
+</div>
+<div class="px-2 py-0.5 rounded-sm bg-[#4ade80]/10 text-[#4ade80] text-[10px] font-bold uppercase shrink-0">Paid</div>
+<span class="font-syne font-bold text-sm ml-auto">GHS 5,200</span>
+</div>
+</div>
+</div>
+<!-- Bookings Detailed Tab (Full width section) -->
+<div class="col-span-5 pt-8">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-8 border-b border-white/5 w-full pb-px">
+<h2 class="text-xl font-headline font-bold border-b-2 border-primary pb-4">All Bookings</h2>
+<h2 class="text-xl font-headline font-bold text-on-surface-variant/40 hover:text-on-surface transition-colors cursor-pointer pb-4">Calendar View</h2>
+<h2 class="text-xl font-headline font-bold text-on-surface-variant/40 hover:text-on-surface transition-colors cursor-pointer pb-4">Archived</h2>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Booking Card -->
+<div class="bg-surface-container-low p-6 rounded-sm flex flex-wrap md:flex-nowrap items-center gap-8 group hover:bg-surface-container transition-colors">
+<div class="w-24 shrink-0">
+<p class="text-[10px] font-mono text-primary-container mb-1 tracking-tighter">#BK-2024-X1</p>
+<span class="px-2 py-0.5 rounded-sm bg-primary/10 text-primary text-[9px] font-bold uppercase">Wedding</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-headline font-semibold">David &amp; Sarah Wedding</h3>
+<p class="text-xs text-on-surface-variant font-medium">Kempinski Gold Coast, Accra</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Date &amp; Time</p>
+<p class="text-xs font-semibold">Dec 15, 2024 · 18:00</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Package</p>
+<p class="text-xs font-semibold">Elite Platinum</p>
+</div>
+<div class="shrink-0 px-4 py-1.5 rounded-sm bg-[#4ade80]/10 text-[#4ade80] text-[10px] font-bold uppercase">Confirmed</div>
+<div class="flex items-center gap-2 ml-auto">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95" title="View Playlist">
+<span class="material-symbols-outlined text-xl" data-icon="queue_music">queue_music</span>
+</button>
+<button class="px-4 py-2 bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm</button>
+<button class="px-4 py-2 bg-secondary text-on-secondary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Mark Paid</button>
+</div>
+</div>
+<!-- Booking Card 2 -->
+<div class="bg-surface-container-low p-6 rounded-sm flex flex-wrap md:flex-nowrap items-center gap-8 group hover:bg-surface-container transition-colors">
+<div class="w-24 shrink-0">
+<p class="text-[10px] font-mono text-primary-container mb-1 tracking-tighter">#BK-2024-Z5</p>
+<span class="px-2 py-0.5 rounded-sm bg-secondary/10 text-secondary text-[9px] font-bold uppercase">Residency</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-headline font-semibold">The Alley Nightclub</h3>
+<p class="text-xs text-on-surface-variant font-medium">Osu, Accra</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Date &amp; Time</p>
+<p class="text-xs font-semibold">Weekly Friday · 23:00</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Package</p>
+<p class="text-xs font-semibold">Nightlife Std</p>
+</div>
+<div class="shrink-0 px-4 py-1.5 rounded-sm bg-secondary/10 text-secondary text-[10px] font-bold uppercase">Processing</div>
+<div class="flex items-center gap-2 ml-auto">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95" title="View Playlist">
+<span class="material-symbols-outlined text-xl" data-icon="queue_music">queue_music</span>
+</button>
+<button class="px-4 py-2 bg-primary-container text-on-primary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Confirm</button>
+<button class="px-4 py-2 bg-secondary text-on-secondary text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">Mark Paid</button>
+</div>
+</div>
+<!-- Booking Card 3 -->
+<div class="bg-surface-container-low p-6 rounded-sm flex flex-wrap md:flex-nowrap items-center gap-8 group hover:bg-surface-container transition-colors opacity-70">
+<div class="w-24 shrink-0">
+<p class="text-[10px] font-mono text-primary-container mb-1 tracking-tighter">#BK-2024-A1</p>
+<span class="px-2 py-0.5 rounded-sm bg-primary-fixed-dim/10 text-primary-fixed-dim text-[9px] font-bold uppercase">Corporate</span>
+</div>
+<div class="flex-1">
+<h3 class="text-lg font-headline font-semibold">Fintech Awards 2024</h3>
+<p class="text-xs text-on-surface-variant font-medium">Movenpick Hotel</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Date &amp; Time</p>
+<p class="text-xs font-semibold">Oct 28, 2024 · 19:30</p>
+</div>
+<div class="shrink-0">
+<p class="text-[10px] font-mono text-on-surface-variant mb-1 uppercase">Package</p>
+<p class="text-xs font-semibold">Corporate Gold</p>
+</div>
+<div class="shrink-0 px-4 py-1.5 rounded-sm bg-error/10 text-error text-[10px] font-bold uppercase">Cancelled</div>
+<div class="flex items-center gap-2 ml-auto">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95" title="View Playlist">
+<span class="material-symbols-outlined text-xl" data-icon="queue_music">queue_music</span>
+</button>
+<button class="px-4 py-2 border border-outline-variant text-on-surface-variant text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 active:scale-95 transition-all">Details</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Visual Accents (Background Gradients) -->
+<div class="fixed top-0 left-0 w-full h-full -z-50 pointer-events-none">
+<div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-secondary/5 blur-[150px] rounded-full"></div>
+</div>
+</body></html>

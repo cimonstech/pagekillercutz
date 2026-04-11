@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Super Admin Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "surface-container": "#1f1f27",
+                "primary-fixed-dim": "#7ad0ff",
+                "surface": "#13131a",
+                "on-error": "#690005",
+                "surface-variant": "#34343c",
+                "on-tertiary-fixed-variant": "#920027",
+                "surface-container-low": "#1b1b23",
+                "inverse-on-surface": "#303038",
+                "tertiary-fixed": "#ffdada",
+                "surface-container-high": "#2a2931",
+                "primary": "#8fd6ff",
+                "on-surface-variant": "#bcc8d1",
+                "on-secondary": "#452b00",
+                "on-surface": "#e4e1ec",
+                "on-secondary-fixed": "#291800",
+                "primary-fixed": "#c3e8ff",
+                "tertiary": "#ffbdbf",
+                "outline": "#87929b",
+                "secondary-container": "#dc9100",
+                "on-primary-fixed": "#001e2c",
+                "secondary": "#ffb955",
+                "tertiary-fixed-dim": "#ffb3b5",
+                "surface-container-highest": "#34343c",
+                "on-tertiary-fixed": "#40000c",
+                "surface-bright": "#393841",
+                "on-tertiary": "#680019",
+                "surface-container-lowest": "#0e0d15",
+                "secondary-fixed-dim": "#ffb955",
+                "on-secondary-fixed-variant": "#633f00",
+                "on-primary": "#003549",
+                "surface-dim": "#13131a",
+                "on-background": "#e4e1ec",
+                "outline-variant": "#3d4850",
+                "error-container": "#93000a",
+                "on-secondary-container": "#4f3100",
+                "on-primary-fixed-variant": "#004c69",
+                "primary-container": "#00bfff",
+                "secondary-fixed": "#ffddb4",
+                "inverse-surface": "#e4e1ec",
+                "background": "#13131a",
+                "error": "#ffb4ab",
+                "surface-tint": "#7ad0ff",
+                "on-primary-container": "#004a65",
+                "tertiary-container": "#ff9399",
+                "on-tertiary-container": "#8d0025",
+                "inverse-primary": "#00668a",
+                "on-error-container": "#ffdad6"
+              },
+              fontFamily: {
+                "headline": ["Space Grotesk"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Web App Sidebar (Dashboard Style - Expanded) -->
+<aside class="w-[200px] h-full fixed left-0 top-0 z-40 bg-[#08080F]/80 backdrop-blur-xl border-r border-white/10 flex flex-col items-center py-6 shadow-[40px_0_40px_rgba(0,0,0,0.06)]">
+<div class="mb-10 w-full px-6">
+<span class="text-xl font-black text-[#00BFFF] uppercase tracking-tighter font-headline italic">KillerCutz</span>
+<span class="block font-['Space_Grotesk'] font-semibold tracking-wide text-[10px] text-on-surface-variant opacity-50 uppercase">v3 Admin</span>
+</div>
+<nav class="w-full space-y-1">
+<a class="w-full flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">home</span>
+<span class="font-headline text-sm font-medium">Home</span>
+</a>
+<a class="w-full flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">explore</span>
+<span class="font-headline text-sm font-medium">Discover</span>
+</a>
+<a class="w-full flex items-center px-6 py-3 text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:text-[#00BFFF] transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">person</span>
+<span class="font-headline text-sm font-medium">Artists</span>
+</a>
+<!-- ACTIVE TAB: Settings with Lock Icon and Purple Tint -->
+<a class="w-full flex items-center px-6 py-3 bg-[#A855F7]/10 text-[#A855F7] border-l-4 border-[#A855F7] font-bold" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">lock</span>
+<span class="font-headline text-sm">Settings</span>
+</a>
+</nav>
+<div class="mt-auto w-full px-6 pb-4">
+<div class="p-3 bg-surface-container-low rounded flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-primary/20 object-cover" data-alt="portrait of a focused professional software architect with neon accent lighting in a dark workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqM-VdUFzykVdQjA7F92UbLp9YQVvatZeyQUW9qsnqPEpqsU3G36lM7cWu06lBYZok3GP8aHVSmpkSOmlHp6vmGLbDDOsjkR9Fi5kbizMRQyipcKaK5N6aJLWQdHDfp18nwa40HnvwAnI3KL7wEWaQTW7feIMLwK2FGil39I78Hr3CpLR76bqyORqCY2BBq20NrhjXmxAM0pVXX67W1tIuBhQ82HJVdUqKuzCIVyk-915zSDMPZwGqb5uWM7M1ws6HSbZcFLTNocQr"/>
+<div class="overflow-hidden">
+<p class="text-[10px] font-bold truncate">SUPER ADMIN</p>
+<p class="text-[8px] text-on-surface-variant font-mono">ID: 001-ALPHA</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-200px)] z-30 bg-[#08080F]/50 backdrop-blur-md flex justify-between items-center px-8 h-16">
+<div class="flex items-center gap-4">
+<span class="text-on-surface-variant font-mono text-[10px] tracking-widest uppercase">System Status: Optimal</span>
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#8fd6ff]"></div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full cursor-pointer hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">light_mode</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Toggle Mode</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary">settings_ethernet</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[200px] pt-24 pb-20 px-10 max-w-7xl mx-auto">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-12 border-l-[3px] border-[#A855F7] pl-6">
+<div>
+<h1 class="text-[20px] font-headline font-bold text-on-surface tracking-tight uppercase">Platform Settings</h1>
+<p class="text-on-surface-variant text-sm mt-1">Configure global application behavior and core integrations.</p>
+</div>
+<div class="bg-[#A855F7] text-white px-3 py-1 rounded-sm text-[10px] font-black tracking-widest uppercase">
+                SUPER ADMIN
+            </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- 1. INTEGRATIONS -->
+<div class="lg:col-span-8 glass-card p-8 border-l border-white/5 relative overflow-hidden">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-primary">api</span>
+<h2 class="text-lg font-headline font-semibold">Integrations</h2>
+</div>
+<div class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-[10px] font-mono uppercase text-on-surface-variant">Fish Africa (SMS API)</label>
+<div class="flex gap-2">
+<input class="w-full bg-surface-container-lowest border-none text-sm p-3 font-mono text-primary rounded-sm focus:ring-1 focus:ring-primary" type="password" value="FA-77283-XM-29384-KJ"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-mono uppercase text-on-surface-variant">Resend (Email API)</label>
+<input class="w-full bg-surface-container-lowest border-none text-sm p-3 font-mono text-primary rounded-sm focus:ring-1 focus:ring-primary" type="password" value="RE-90021-LP-11223-ZZ"/>
+</div>
+</div>
+<div class="bg-secondary/10 border-l-2 border-secondary p-4 flex gap-4 items-start">
+<span class="material-symbols-outlined text-secondary">warning</span>
+<p class="text-xs text-secondary-fixed leading-relaxed">
+<span class="font-bold">Amber Warning:</span> Modifying these credentials will immediately disconnect production messaging services. Proceed with caution.
+                        </p>
+</div>
+<div class="flex justify-end gap-3 pt-4">
+<button class="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 transition-colors">Test Connections</button>
+<button class="px-8 py-2 text-[10px] font-bold uppercase tracking-widest bg-primary-container text-on-primary-container shadow-[0_0_15px_rgba(0,191,255,0.3)] hover:scale-105 active:scale-95 transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+<!-- 2. FEATURE FLAGS -->
+<div class="lg:col-span-4 glass-card p-8 border-l border-white/5">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">flag</span>
+<h2 class="text-lg font-headline font-semibold">Feature Flags</h2>
+</div>
+<div class="space-y-5">
+<!-- Toggle Switch Logic -->
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Bookings Module</span>
+<div class="w-10 h-5 bg-primary-container rounded-full relative p-1 flex items-center justify-end">
+<div class="w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Merch Storefront</span>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full relative p-1 flex items-center justify-start">
+<div class="w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Partner Portal</span>
+<div class="w-10 h-5 bg-primary-container rounded-full relative p-1 flex items-center justify-end">
+<div class="w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">In-App Maintenance</span>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full relative p-1 flex items-center justify-start">
+<div class="w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Dynamic Pricing</span>
+<div class="w-10 h-5 bg-primary-container rounded-full relative p-1 flex items-center justify-end">
+<div class="w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between group cursor-pointer">
+<span class="text-sm font-medium group-hover:text-primary transition-colors">Live Streaming</span>
+<div class="w-10 h-5 bg-surface-container-highest rounded-full relative p-1 flex items-center justify-start">
+<div class="w-3 h-3 bg-outline rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. MAINTENANCE MODE -->
+<div class="lg:col-span-6 glass-card p-8 border-l-[3px] border-error relative">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-error">construction</span>
+<h2 class="text-lg font-headline font-semibold text-error">Maintenance Mode</h2>
+</div>
+<div class="space-y-6">
+<div class="flex items-center justify-between p-4 bg-error/10 rounded-sm">
+<div>
+<p class="text-sm font-bold">System-Wide Lockdown</p>
+<p class="text-[10px] text-on-surface-variant opacity-70">Redirects all non-admin traffic to static page.</p>
+</div>
+<button class="bg-error px-4 py-2 text-[10px] font-black uppercase text-white rounded-sm hover:opacity-90 active:scale-95 transition-all">Toggle Off</button>
+</div>
+<div class="space-y-2">
+<label class="text-[10px] font-mono uppercase text-on-surface-variant">Maintenance Message</label>
+<textarea class="w-full bg-surface-container-lowest border-none text-sm p-4 font-body text-on-surface rounded-sm focus:ring-1 focus:ring-error" placeholder="KillerCutz is currently under scheduled maintenance. We'll be back at 04:00 UTC." rows="3"></textarea>
+</div>
+</div>
+</div>
+<!-- 4. DANGER ZONE -->
+<div class="lg:col-span-6 glass-card p-8 border-l-[3px] border-error">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-error">priority_high</span>
+<h2 class="text-lg font-headline font-semibold">Danger Zone</h2>
+</div>
+<div class="space-y-4">
+<!-- Clear Logs -->
+<div class="p-4 bg-surface-container-highest flex items-center justify-between">
+<div>
+<p class="text-sm font-semibold">Clear System Logs</p>
+<p class="text-[10px] text-on-surface-variant">Irreversibly delete all activity logs older than 30 days.</p>
+</div>
+<button class="border border-error text-error text-[10px] font-bold px-4 py-1.5 uppercase hover:bg-error hover:text-white transition-colors">Clear</button>
+</div>
+<!-- Reset Flags -->
+<div class="p-4 bg-surface-container-highest border border-error/30 relative">
+<div class="flex items-center justify-between mb-3">
+<div>
+<p class="text-sm font-semibold">Reset Feature Flags</p>
+<p class="text-[10px] text-on-surface-variant">Revert all flags to factory default states.</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-error text-white text-[10px] font-black py-2 uppercase">Confirm Reset</button>
+<button class="px-4 py-2 text-[10px] font-bold text-on-surface-variant uppercase">Cancel</button>
+</div>
+</div>
+<!-- Force Sign Out -->
+<div class="p-4 bg-surface-container-highest flex items-center justify-between">
+<div>
+<p class="text-sm font-semibold">Force Global Sign-Out</p>
+<p class="text-[10px] text-on-surface-variant">Invalidate all active user sessions immediately.</p>
+</div>
+<button class="border border-error text-error text-[10px] font-bold px-4 py-1.5 uppercase hover:bg-error hover:text-white transition-colors">Execute</button>
+</div>
+</div>
+</div>
+</div>
+<!-- System Visual Decor -->
+<div class="mt-12 flex justify-center opacity-10">
+<div class="flex gap-1">
+<div class="w-1 h-8 bg-primary"></div>
+<div class="w-1 h-12 bg-primary"></div>
+<div class="w-1 h-16 bg-[#A855F7]"></div>
+<div class="w-1 h-12 bg-primary"></div>
+<div class="w-1 h-8 bg-primary"></div>
+</div>
+</div>
+</main>
+<!-- Visual Polish: Atmosphere Elements -->
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
+<div class="absolute top-[20%] left-[30%] w-[500px] h-[500px] bg-[#00BFFF]/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-[#A855F7]/10 rounded-full blur-[100px]"></div>
+</div>
+</body></html>

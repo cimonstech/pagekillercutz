@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#1f1f27",
+              "primary-fixed-dim": "#7ad0ff",
+              "surface": "#13131a",
+              "on-error": "#690005",
+              "surface-variant": "#34343c",
+              "on-tertiary-fixed-variant": "#920027",
+              "surface-container-low": "#1b1b23",
+              "inverse-on-surface": "#303038",
+              "tertiary-fixed": "#ffdada",
+              "surface-container-high": "#2a2931",
+              "primary": "#8fd6ff",
+              "on-surface-variant": "#bcc8d1",
+              "on-secondary": "#452b00",
+              "on-surface": "#e4e1ec",
+              "on-secondary-fixed": "#291800",
+              "primary-fixed": "#c3e8ff",
+              "tertiary": "#ffbdbf",
+              "outline": "#87929b",
+              "secondary-container": "#dc9100",
+              "on-primary-fixed": "#001e2c",
+              "secondary": "#ffb955",
+              "tertiary-fixed-dim": "#ffb3b5",
+              "surface-container-highest": "#34343c",
+              "on-tertiary-fixed": "#40000c",
+              "surface-bright": "#393841",
+              "on-tertiary": "#680019",
+              "surface-container-lowest": "#0e0d15",
+              "secondary-fixed-dim": "#ffb955",
+              "on-secondary-fixed-variant": "#633f00",
+              "on-primary": "#003549",
+              "surface-dim": "#13131a",
+              "on-background": "#e4e1ec",
+              "outline-variant": "#3d4850",
+              "error-container": "#93000a",
+              "on-secondary-container": "#4f3100",
+              "on-primary-fixed-variant": "#004c69",
+              "primary-container": "#00bfff",
+              "secondary-fixed": "#ffddb4",
+              "inverse-surface": "#e4e1ec",
+              "background": "#13131a",
+              "error": "#ffb4ab",
+              "surface-tint": "#7ad0ff",
+              "on-primary-container": "#004a65",
+              "tertiary-container": "#ff9399",
+              "on-tertiary-container": "#8d0025",
+              "inverse-primary": "#00668a",
+              "on-error-container": "#ffdad6"
+            },
+            fontFamily: {
+              "display": ["Barlow Condensed"],
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["Space Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .vinyl-spin {
+            animation: spin 4s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .bg-maintenance {
+            background-color: #08080F;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 191, 255, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, rgba(8, 8, 15, 1) 0%, rgba(19, 19, 26, 1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-maintenance text-on-surface font-body min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Faint Turntable Illustration Background -->
+<div class="absolute right-[-10%] top-[10%] opacity-[0.04] pointer-events-none select-none w-1/2 max-w-4xl">
+<img class="w-full object-contain" data-alt="technical line drawing of a professional dj turntable and mixer in a minimalist architectural style on a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoRj3L9PS-ElKdwg_bbBT1VTZvd1UX9kd-9sqpMH7el5xVsJO40OsUo6az44zLLiyRRKGhE43pxqPGQs2OrWEHsrYLnDLyu6wqnuz3n5Wl44Qi2LD4OTvLAInImGpdlZvjr0tp22VJWFaOIMYgqebZUtIbvWcxJTGg3Ni75tdOPoeLfcqv6gUYRceNwgnSsFq3kJ_q74Cm93e2fz4RABAsKWjkd_CALUnS_MNPoDlOxT_Qu5zzg7_EGspKYuaBQ6o26ifgHPnJ4CAy"/>
+</div>
+<!-- Main Content Container -->
+<main class="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl">
+<!-- Spinning Vinyl Graphic -->
+<div class="mb-12 relative">
+<div class="vinyl-spin w-[120px] h-[120px] rounded-full border-[10px] border-[#1a1a24] flex items-center justify-center shadow-[0_0_40px_rgba(0,191,255,0.2)]">
+<!-- Inner Vinyl Grooves -->
+<div class="w-full h-full rounded-full border border-white/5 flex items-center justify-center" style="background: repeating-radial-gradient(circle, #13131a 0%, #13131a 2px, #1a1a24 3px, #1a1a24 4px);">
+<!-- Center Label -->
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-[#08080F]"></div>
+</div>
+</div>
+</div>
+<!-- Tone Arm Visual -->
+<div class="absolute -right-4 top-0 w-16 h-1 bg-outline/20 origin-left rotate-45 rounded-full"></div>
+</div>
+<!-- Headline -->
+<h1 class="font-display font-extrabold text-[56px] leading-[0.95] tracking-tight text-white mb-6 uppercase">
+            We're Setting Up <br/>the Next Set.
+        </h1>
+<!-- Subtext -->
+<p class="font-headline text-on-surface-variant text-xl mb-12 max-w-lg">
+            KillerCutz is currently undergoing maintenance. We'll be back shortly with a refined experience.
+        </p>
+<!-- Custom Message Card -->
+<div class="w-full max-w-md bg-surface-container-low/40 backdrop-blur-xl border-l-2 border-primary-container p-6 mb-8 text-left">
+<p class="italic text-on-surface/90 font-medium">
+                "Upgrading our digital racks to handle higher fidelity stream processing and artist dashboard integrations."
+            </p>
+</div>
+<!-- Estimated Time & Contact -->
+<div class="flex flex-col gap-4 items-center mb-20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline text-sm" data-icon="schedule">schedule</span>
+<span class="font-mono text-[10px] uppercase tracking-[0.2em] text-outline">
+                    ESTIMATED BACK: 04:00 AM UTC
+                </span>
+</div>
+<a class="group flex items-center gap-2" href="mailto:support@killercutz.com">
+<span class="material-symbols-outlined text-primary-container text-base group-hover:scale-110 transition-transform" data-icon="alternate_email">alternate_email</span>
+<span class="font-mono text-sm text-primary-container tracking-wider border-b border-transparent group-hover:border-primary-container transition-all">
+                    support@killercutz.com
+                </span>
+</a>
+</div>
+</main>
+<!-- Logo Footer -->
+<footer class="absolute bottom-12 w-full flex justify-center">
+<div class="flex flex-col items-center gap-2 opacity-50">
+<span class="font-display font-black text-2xl text-white italic tracking-tighter">
+                KILLERCUTZ
+            </span>
+<div class="h-[1px] w-8 bg-primary-container"></div>
+</div>
+</footer>
+<!-- Decorative Corner Accents -->
+<div class="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-primary-container/5 to-transparent pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-primary-container/5 to-transparent pointer-events-none"></div>
+</body></html>

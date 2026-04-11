@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Admin - Playlists</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;family=Barlow+Condensed:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary": "#680019",
+                        "on-primary": "#003549",
+                        "surface-tint": "#7ad0ff",
+                        "on-primary-container": "#004a65",
+                        "surface-variant": "#34343c",
+                        "surface": "#13131a",
+                        "on-surface": "#e4e1ec",
+                        "surface-container-lowest": "#0e0d15",
+                        "surface-container-high": "#2a2931",
+                        "on-error": "#690005",
+                        "primary-container": "#00bfff",
+                        "tertiary-fixed": "#ffdada",
+                        "tertiary": "#ffbdbf",
+                        "on-background": "#e4e1ec",
+                        "surface-bright": "#393841",
+                        "on-error-container": "#ffdad6",
+                        "secondary-container": "#dc9100",
+                        "surface-dim": "#13131a",
+                        "surface-container-low": "#1b1b23",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "on-tertiary-fixed": "#40000c",
+                        "inverse-surface": "#e4e1ec",
+                        "on-primary-fixed-variant": "#004c69",
+                        "surface-container-highest": "#34343c",
+                        "inverse-primary": "#00668a",
+                        "primary": "#8fd6ff",
+                        "inverse-on-surface": "#303038",
+                        "on-secondary-container": "#4f3100",
+                        "outline": "#87929b",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "surface-container": "#1f1f27",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "secondary": "#ffb955",
+                        "on-surface-variant": "#bcc8d1",
+                        "on-primary-fixed": "#001e2c",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#c3e8ff",
+                        "on-tertiary-container": "#8d0025",
+                        "secondary-fixed-dim": "#ffb955",
+                        "outline-variant": "#3d4850",
+                        "tertiary-container": "#ff9399",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "on-secondary-fixed": "#291800",
+                        "background": "#13131a",
+                        "secondary-fixed": "#ffddb4",
+                        "on-secondary": "#452b00"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Space Mono"],
+                        "brand": ["Barlow Condensed"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #08080F;
+            color: #e4e1ec;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .premium-glow {
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #34343c;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar (Expanded) -->
+<aside class="w-[200px] h-screen fixed left-0 top-0 bg-[#08080F]/80 backdrop-blur-xl flex flex-col py-6 px-4 z-50 shadow-[40px_0_40px_rgba(0,0,0,0.06)]">
+<div class="mb-10 px-2">
+<h1 class="text-xl font-bold tracking-tighter text-[#00BFFF] font-brand uppercase">Pulse Admin</h1>
+<p class="text-[10px] font-label text-on-surface-variant/60 tracking-widest">OPERATIONAL HUB</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span class="font-body text-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="event_available">event_available</span>
+<span class="font-body text-sm">Bookings</span>
+</a>
+<!-- Active Tab: Playlists -->
+<a class="flex items-center gap-3 px-3 py-2 bg-white/10 dark:bg-white/5 text-[#00BFFF] font-bold border-l-2 border-[#D4AF37] scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="queue_music">queue_music</span>
+<span class="font-body text-sm">Playlists</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="person_celebrate">person_celebrate</span>
+<span class="font-body text-sm">Artists</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="monitoring">monitoring</span>
+<span class="font-body text-sm">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+<span class="font-body text-sm">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-white/5 space-y-2">
+<button class="flex items-center gap-3 px-3 py-2 w-full text-[#bcc8d1] hover:text-[#00BFFF] transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="light_mode">light_mode</span>
+<span class="font-body text-sm">Light Mode</span>
+</button>
+<button class="flex items-center gap-3 px-3 py-2 w-full text-[#bcc8d1] hover:text-error transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="logout">logout</span>
+<span class="font-body text-sm">Logout</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[200px] flex-1 min-h-screen relative flex">
+<!-- Content Area -->
+<div class="flex-1 p-8 pr-[512px]"> <!-- Added right padding to account for detail drawer -->
+<!-- Page Header Row -->
+<header class="flex items-center justify-between mb-10">
+<div class="flex items-center gap-4">
+<h2 class="font-headline font-semibold text-[28px] text-white tracking-tight">Playlists</h2>
+<span class="bg-surface-container-highest/50 text-primary px-3 py-1 rounded-full font-label text-[11px] uppercase tracking-wider">28 playlists</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
+<input class="bg-white/5 border-none rounded-lg pl-10 pr-4 py-2 text-sm w-64 focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50 transition-all font-body" placeholder="Search playlists..." type="text"/>
+</div>
+<div class="relative">
+<select class="bg-white/5 border-none rounded-lg px-4 py-2 text-sm appearance-none pr-10 focus:ring-1 focus:ring-primary font-body text-on-surface-variant">
+<option>All Playlists</option>
+<option>Unlocked</option>
+<option>Locked</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<button class="w-10 h-10 rounded-full glass-panel flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-on-surface">notifications</span>
+</button>
+</div>
+</header>
+<!-- Playlists List -->
+<section class="space-y-4">
+<!-- Playlist Card 1 (Active/Selected) -->
+<div class="glass-panel p-5 rounded-[16px] flex items-center justify-between border-l-4 border-primary transition-all duration-300">
+<div class="flex flex-col gap-1 w-1/4">
+<span class="font-label text-[13px] text-primary tracking-tighter">EVT-8829-KC</span>
+<h3 class="font-headline font-semibold text-lg text-white">Alexandra &amp; Marcus</h3>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">Wedding</span>
+<span class="text-on-surface-variant text-[12px] font-body">June 14, 2024</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex gap-2">
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="text-[11px] font-semibold text-primary">5 MUST-PLAY</span>
+</div>
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="text-[11px] font-semibold text-error">2 DO-NOT-PLAY</span>
+</div>
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-secondary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="text-[11px] font-semibold text-secondary">3 TIMELINE MOMENTS</span>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant/60 font-body italic ml-1">Last updated 2 hours ago</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="lock_open">lock_open</span> Unlocked
+                        </span>
+<div class="flex items-center gap-2">
+<button class="text-primary hover:text-white text-sm font-semibold transition-colors px-3 py-2">View Full Playlist</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Playlist Card 2 -->
+<div class="glass-panel p-5 rounded-[16px] flex items-center justify-between hover:bg-white/10 transition-all duration-300">
+<div class="flex flex-col gap-1 w-1/4">
+<span class="font-label text-[13px] text-primary/70 tracking-tighter">EVT-9012-KC</span>
+<h3 class="font-headline font-semibold text-lg text-white/80">Neon Nights Corp Gala</h3>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">Corporate</span>
+<span class="text-on-surface-variant text-[12px] font-body">July 02, 2024</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex gap-2">
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10 opacity-60">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/50"></span>
+<span class="text-[11px] font-semibold text-on-surface-variant">12 MUST-PLAY</span>
+</div>
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10 opacity-60">
+<span class="w-1.5 h-1.5 rounded-full bg-error/50"></span>
+<span class="text-[11px] font-semibold text-on-surface-variant">0 DO-NOT-PLAY</span>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant/40 font-body italic ml-1">Last updated 1 day ago</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="bg-surface-container-highest text-on-surface-variant/80 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span> Locked
+                        </span>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-white text-sm font-semibold transition-colors px-3 py-2">View Full Playlist</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg glass-panel text-primary hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="lock_open">lock_open</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Playlist Card 3 -->
+<div class="glass-panel p-5 rounded-[16px] flex items-center justify-between hover:bg-white/10 transition-all duration-300">
+<div class="flex flex-col gap-1 w-1/4">
+<span class="font-label text-[13px] text-primary/70 tracking-tighter">EVT-7741-KC</span>
+<h3 class="font-headline font-semibold text-lg text-white/80">Skyline Rooftop Launch</h3>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider">Social</span>
+<span class="text-on-surface-variant text-[12px] font-body">Aug 12, 2024</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex gap-2">
+<div class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10 opacity-60">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/50"></span>
+<span class="text-[11px] font-semibold text-on-surface-variant">8 MUST-PLAY</span>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant/40 font-body italic ml-1">Last updated 4 hours ago</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="bg-primary/20 text-primary px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="lock_open">lock_open</span> Unlocked
+                        </span>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-white text-sm font-semibold transition-colors px-3 py-2">View Full Playlist</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="lock">lock</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Playlist Detail Drawer (Sidebar Panel) -->
+<aside class="w-[480px] h-screen fixed right-0 top-0 glass-panel border-l border-white/10 flex flex-col z-[60] shadow-[-20px_0_50px_rgba(0,0,0,0.4)]">
+<!-- Drawer Header -->
+<div class="p-6 border-b border-white/5 flex items-start justify-between">
+<div>
+<span class="font-label text-xs text-primary mb-1 block">EVT-8829-KC</span>
+<h2 class="font-headline text-2xl font-bold text-white leading-tight">Alexandra &amp; Marcus</h2>
+<div class="flex items-center gap-2 mt-2">
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-widest">Wedding Reception</span>
+<span class="text-on-surface-variant text-xs font-body">June 14, 2024 • 6:00 PM</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+<!-- Genres & Vibe -->
+<div class="grid grid-cols-2 gap-6">
+<div>
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-3">Core Genres</h4>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary/10 text-primary text-[11px] px-3 py-1 rounded font-medium border border-primary/20">Afrobeats</span>
+<span class="bg-primary/10 text-primary text-[11px] px-3 py-1 rounded font-medium border border-primary/20">90s R&amp;B</span>
+<span class="bg-primary/10 text-primary text-[11px] px-3 py-1 rounded font-medium border border-primary/20">Amapiano</span>
+</div>
+</div>
+<div>
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-3">Event Vibe</h4>
+<span class="bg-secondary/10 text-secondary text-[11px] px-3 py-1 rounded font-medium border border-secondary/20 inline-block">High Energy Editorial</span>
+</div>
+</div>
+<!-- Must-Play Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em]">Must-Play (5)</h4>
+<span class="material-symbols-outlined text-primary text-sm">stars</span>
+</div>
+<ul class="space-y-2">
+<li class="glass-panel p-3 rounded flex items-center gap-4 group hover:bg-white/10 transition-colors">
+<span class="font-label text-primary text-xs">01</span>
+<div>
+<p class="text-sm font-semibold text-white">Last Last</p>
+<p class="text-[11px] text-on-surface-variant">Burna Boy</p>
+</div>
+</li>
+<li class="glass-panel p-3 rounded flex items-center gap-4 group hover:bg-white/10 transition-colors">
+<span class="font-label text-primary text-xs">02</span>
+<div>
+<p class="text-sm font-semibold text-white">Asiwaju</p>
+<p class="text-[11px] text-on-surface-variant">Ruger</p>
+</div>
+</li>
+<li class="glass-panel p-3 rounded flex items-center gap-4 group hover:bg-white/10 transition-colors">
+<span class="font-label text-primary text-xs">03</span>
+<div>
+<p class="text-sm font-semibold text-white">Before You Wake Up</p>
+<p class="text-[11px] text-on-surface-variant">Adekunle Gold</p>
+</div>
+</li>
+</ul>
+</section>
+<!-- Do-Not-Play Section -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em]">Do-Not-Play (2)</h4>
+<span class="material-symbols-outlined text-error text-sm">block</span>
+</div>
+<ul class="space-y-2">
+<li class="bg-error/5 p-3 rounded flex items-center gap-4">
+<span class="material-symbols-outlined text-error text-sm">close</span>
+<p class="text-sm font-medium text-white/60 line-through">Macarena</p>
+</li>
+<li class="bg-error/5 p-3 rounded flex items-center gap-4">
+<span class="material-symbols-outlined text-error text-sm">close</span>
+<p class="text-sm font-medium text-white/60 line-through">Cotton Eye Joe</p>
+</li>
+</ul>
+</section>
+<!-- Timeline Section -->
+<section>
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-4">Timeline Moments</h4>
+<div class="space-y-3">
+<div class="flex gap-4">
+<span class="bg-secondary/20 text-secondary font-label text-[10px] h-fit px-2 py-1 rounded w-16 text-center">19:30</span>
+<div class="flex-1 border-l border-white/10 pl-4 pb-4">
+<p class="text-sm font-semibold text-white">Grand Entrance</p>
+<p class="text-xs text-on-surface-variant mt-1">Track: Special Someone - Simi</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="bg-secondary/20 text-secondary font-label text-[10px] h-fit px-2 py-1 rounded w-16 text-center">20:45</span>
+<div class="flex-1 border-l border-white/10 pl-4 pb-4">
+<p class="text-sm font-semibold text-white">First Dance</p>
+<p class="text-xs text-on-surface-variant mt-1">Track: If - Davido (Acoustic Mix)</p>
+</div>
+</div>
+<div class="flex gap-4">
+<span class="bg-secondary/20 text-secondary font-label text-[10px] h-fit px-2 py-1 rounded w-16 text-center">22:00</span>
+<div class="flex-1 border-l border-white/10 pl-4">
+<p class="text-sm font-semibold text-white">Cake Cutting</p>
+<p class="text-xs text-on-surface-variant mt-1">Upbeat Afro-pop background</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Notes Section -->
+<section>
+<h4 class="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-[0.2em] mb-3">Admin Notes</h4>
+<div class="glass-panel p-4 rounded text-sm text-on-surface-variant/80 font-body leading-relaxed border border-white/5">
+                        Client specifically requested no EDM during dinner. Emphasize classic Highlife for elders between 18:00 and 19:30. Ensure the transition to Amapiano at midnight is seamless.
+                    </div>
+</section>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 border-t border-white/5 flex gap-3">
+<button class="flex-1 h-12 bg-primary text-black font-bold text-sm rounded flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined" data-icon="lock">lock</span> LOCK PLAYLIST
+                </button>
+<button class="px-6 h-12 glass-panel text-on-surface font-semibold text-sm rounded hover:bg-white/10 transition-all">
+                    CLOSE
+                </button>
+</div>
+</aside>
+<!-- Dynamic Background Elements -->
+<div class="fixed top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+<div class="fixed bottom-[-10%] left-[200px] w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+</main>
+</body></html>

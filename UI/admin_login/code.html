@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Admin Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@600&amp;family=Inter:wght@400;500&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#1f1f27",
+              "primary-fixed-dim": "#7ad0ff",
+              "surface": "#13131a",
+              "on-error": "#690005",
+              "surface-variant": "#34343c",
+              "on-tertiary-fixed-variant": "#920027",
+              "surface-container-low": "#1b1b23",
+              "inverse-on-surface": "#303038",
+              "tertiary-fixed": "#ffdada",
+              "surface-container-high": "#2a2931",
+              "primary": "#8fd6ff",
+              "on-surface-variant": "#bcc8d1",
+              "on-secondary": "#452b00",
+              "on-surface": "#e4e1ec",
+              "on-secondary-fixed": "#291800",
+              "primary-fixed": "#c3e8ff",
+              "tertiary": "#ffbdbf",
+              "outline": "#87929b",
+              "secondary-container": "#dc9100",
+              "on-primary-fixed": "#001e2c",
+              "secondary": "#ffb955",
+              "tertiary-fixed-dim": "#ffb3b5",
+              "surface-container-highest": "#34343c",
+              "on-tertiary-fixed": "#40000c",
+              "surface-bright": "#393841",
+              "on-tertiary": "#680019",
+              "surface-container-lowest": "#0e0d15",
+              "secondary-fixed-dim": "#ffb955",
+              "on-secondary-fixed-variant": "#633f00",
+              "on-primary": "#003549",
+              "surface-dim": "#13131a",
+              "on-background": "#e4e1ec",
+              "outline-variant": "#3d4850",
+              "error-container": "#93000a",
+              "on-secondary-container": "#4f3100",
+              "on-primary-fixed-variant": "#004c69",
+              "primary-container": "#00bfff",
+              "secondary-fixed": "#ffddb4",
+              "inverse-surface": "#e4e1ec",
+              "background": "#13131a",
+              "error": "#ffb4ab",
+              "surface-tint": "#7ad0ff",
+              "on-primary-container": "#004a65",
+              "tertiary-container": "#ff9399",
+              "on-tertiary-container": "#8d0025",
+              "inverse-primary": "#00668a",
+              "on-error-container": "#ffdad6"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "mono": ["Space Mono"],
+              "display": ["Barlow Condensed"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #08080F;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .admin-glass {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+        .glow-hint {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-on-surface font-body overflow-hidden">
+<!-- Subtle Glow behind the card -->
+<div class="glow-hint"></div>
+<main class="w-full max-w-[420px] px-6 relative z-10">
+<!-- Admin Card -->
+<div class="admin-glass rounded-[20px] p-8 flex flex-col items-center">
+<!-- Shield Icon Header -->
+<div class="w-12 h-12 bg-primary-container/20 rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary-container" style="font-size: 24px;">admin_panel_settings</span>
+</div>
+<h1 class="font-headline text-[22px] font-semibold text-white leading-tight">Admin Portal</h1>
+<p class="font-mono text-[11px] text-on-surface-variant mt-1">Page KillerCutz Operations</p>
+<!-- Divider -->
+<div class="w-full h-[1px] bg-primary-container/30 my-6"></div>
+<!-- Login Form -->
+<form class="w-full space-y-5">
+<!-- Email Field -->
+<div class="space-y-2">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary-container transition-colors">alternate_email</span>
+<input class="w-full h-[46px] bg-surface-container-lowest border border-outline-variant/30 rounded-sm pl-10 pr-4 text-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container/20 outline-none transition-all placeholder:text-outline/50" placeholder="Admin Email" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary-container transition-colors">lock</span>
+<input class="w-full h-[46px] bg-surface-container-lowest border border-outline-variant/30 rounded-sm pl-10 pr-12 text-sm focus:border-primary-container focus:ring-1 focus:ring-primary-container/20 outline-none transition-all placeholder:text-outline/50" placeholder="Password" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Forgot Password -->
+<div class="flex justify-end">
+<a class="text-[12px] text-primary-container font-medium hover:text-primary transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- Action Button -->
+<button class="w-full h-[46px] bg-primary-container hover:bg-primary text-on-primary-container font-headline font-semibold text-sm transition-all active:scale-[0.98] rounded-sm flex items-center justify-center gap-2" type="submit">
+                    Sign In to Admin 
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Links -->
+<div class="mt-8 flex flex-col items-center gap-4">
+<a class="text-xs text-primary-container hover:underline flex items-center gap-1 group" href="#">
+                    Not an admin? Go to the main site 
+                    <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+<p class="font-mono text-[10px] text-on-surface-variant opacity-60 text-center px-4">
+                    Super Admin access uses separate credentials.
+                </p>
+</div>
+</div>
+<!-- Decorative brand elements at bottom -->
+<div class="mt-12 flex items-center justify-center opacity-10">
+<span class="font-display text-4xl tracking-tighter italic font-black uppercase text-white">KillerCutz</span>
+</div>
+</main>
+<!-- Content-free placeholder images would go here if visual assets were needed, but this is a focused admin login UI -->
+</body></html>

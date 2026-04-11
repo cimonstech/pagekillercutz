@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Admin - DJ Packages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&amp;family=Space+Grotesk:wght@600&amp;family=Inter:wght@400;500&amp;family=Space+Mono&amp;family=Syne:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-error-container": "#ffdad6",
+              "error": "#ffb4ab",
+              "surface-tint": "#7ad0ff",
+              "on-primary-container": "#004a65",
+              "secondary": "#ffb955",
+              "error-container": "#93000a",
+              "tertiary": "#ffbdbf",
+              "surface-container-low": "#1b1b23",
+              "surface-container": "#1f1f27",
+              "surface": "#13131a",
+              "primary": "#8fd6ff",
+              "on-tertiary-container": "#8d0025",
+              "inverse-primary": "#00668a",
+              "surface-bright": "#393841",
+              "on-error": "#690005",
+              "surface-variant": "#34343c",
+              "on-primary-fixed-variant": "#004c69",
+              "surface-container-highest": "#34343c",
+              "outline-variant": "#3d4850",
+              "on-surface": "#e4e1ec",
+              "primary-container": "#00bfff",
+              "on-surface-variant": "#bcc8d1",
+              "surface-dim": "#13131a",
+              "on-secondary-container": "#4f3100",
+              "inverse-on-surface": "#303038",
+              "secondary-fixed": "#ffddb4",
+              "on-tertiary-fixed": "#40000c",
+              "on-primary": "#003549",
+              "tertiary-fixed-dim": "#ffb3b5",
+              "secondary-container": "#dc9100",
+              "on-tertiary-fixed-variant": "#920027",
+              "on-primary-fixed": "#001e2c",
+              "background": "#13131a",
+              "tertiary-fixed": "#ffdada",
+              "tertiary-container": "#ff9399",
+              "on-secondary-fixed-variant": "#633f00",
+              "outline": "#87929b",
+              "on-tertiary": "#680019",
+              "primary-fixed-dim": "#7ad0ff",
+              "surface-container-high": "#2a2931",
+              "on-secondary-fixed": "#291800",
+              "on-background": "#e4e1ec",
+              "surface-container-lowest": "#0e0d15",
+              "secondary-fixed-dim": "#ffb955",
+              "primary-fixed": "#c3e8ff",
+              "on-secondary": "#452b00",
+              "inverse-surface": "#e4e1ec"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"],
+              "syne": ["Syne"],
+              "mono": ["Space Mono"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .hardware-btn {
+        transition: transform 0.1s ease;
+      }
+      .hardware-btn:active {
+        transform: scale(0.98);
+      }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<!-- Dashboard Sidebar (200px) -->
+<aside class="w-[200px] h-screen fixed left-0 top-0 bg-slate-950/80 backdrop-blur-2xl flex flex-col px-4 py-6 z-50 overflow-y-auto">
+<div class="mb-10 px-2">
+<span class="text-lg font-bold text-white font-headline tracking-tighter">KillerCutz Admin</span>
+<p class="text-[10px] uppercase tracking-widest text-primary/60 mt-1">Super Admin</p>
+</div>
+<nav class="flex flex-col gap-1 flex-grow">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm text-slate-400 hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm text-slate-400 hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">leaderboard</span>
+<span class="text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm text-slate-400 hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">group</span>
+<span class="text-sm font-medium">Artists</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm bg-white/10 text-purple-400 border-r-2 border-purple-500 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span class="text-sm font-medium">Packages</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm text-slate-400 hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">payments</span>
+<span class="text-sm font-medium">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-sm text-slate-400 hover:bg-white/5 transition-all duration-200 group" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-white/5">
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 bg-surface-container-highest rounded-sm flex items-center justify-center border border-white/10 overflow-hidden">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="close-up portrait of a professional male administrator in a modern office environment with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUh2ZEq3AO53F5dKNv54EyYrIrB7ctFFBsNsVKiVg3sM33i7yHh8Zt0Lz-l6xWI3jnyRdylq21F_m6fssx3tRzQRgUpl9c1Sxid1DKbs-to7TdSta8-myXChm5TcfW98uLqK9JsGlr3xZY-qamOmHAquCGTRG380KZwQAkWuIjHA84-EpxFq21K6URKfdU7Ph7uOXd19vYiv1Za3p4QIKvU_-N30VOBbmDFAqu2pjkMv0LmB9POmd_Hfp9oS2YLlQWoLokv50GIYyU"/>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-white">Alex Rivera</span>
+<span class="text-[10px] text-slate-500">Log Out</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[200px] min-h-screen p-10 relative">
+<!-- Header Section -->
+<header class="flex justify-between items-end mb-12">
+<div>
+<h1 class="text-[28px] font-headline text-white leading-tight">DJ Packages</h1>
+<p class="text-on-surface-variant text-sm mt-1">Configure and manage service tiers for artist bookings.</p>
+</div>
+<button class="hardware-btn bg-primary text-on-primary px-6 py-2.5 text-sm font-bold flex items-center gap-2 rounded-sm shadow-[0_0_20px_rgba(143,214,255,0.3)] hover:shadow-[0_0_30px_rgba(143,214,255,0.5)] transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                Add New Package
+            </button>
+</header>
+<!-- Search & Filter Bar (Subtle) -->
+<div class="flex gap-4 mb-8">
+<div class="relative flex-grow max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none focus:ring-1 focus:ring-primary/50 text-sm py-2.5 pl-10 rounded-sm" placeholder="Search packages..." type="text"/>
+</div>
+<div class="flex items-center gap-2 px-4 bg-surface-container-low rounded-sm text-xs font-mono text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">sort</span>
+                MANUAL REORDER ENABLED
+            </div>
+</div>
+<!-- Packages List -->
+<div class="space-y-4">
+<!-- Package Card 1 -->
+<div class="glass-card p-6 flex items-center gap-6 group hover:bg-white/[0.05] transition-colors border-l-2 border-transparent hover:border-primary">
+<div class="cursor-grab active:cursor-grabbing text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</div>
+<div class="flex-grow grid grid-cols-12 items-center gap-8">
+<!-- Basic Info -->
+<div class="col-span-3">
+<h3 class="text-lg font-headline text-white">The Pulse Hybrid</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-[10px] font-mono text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5">ORD: 001</span>
+<span class="text-[10px] font-mono text-primary/80 uppercase tracking-tighter">Premium Tier</span>
+</div>
+</div>
+<!-- Price -->
+<div class="col-span-2">
+<span class="text-2xl font-syne text-secondary tracking-tight">$850</span>
+<span class="block text-[10px] text-on-surface-variant uppercase">Per Event</span>
+</div>
+<!-- Inclusions -->
+<div class="col-span-4">
+<ul class="grid grid-cols-2 gap-x-4 gap-y-1">
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                4hr Performance
+                            </li>
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                JBL Pro Audio
+                            </li>
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Wireless Mic
+                            </li>
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Basic Lighting
+                            </li>
+</ul>
+</div>
+<!-- Status & Actions -->
+<div class="col-span-3 flex items-center justify-end gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse shadow-[0_0_8px_#00bfff]"></span>
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest">Active</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-white/10 rounded-sm text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-sm text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">toggle_on</span>
+</button>
+<button class="p-2 hover:bg-error/10 rounded-sm text-error/60 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Package Card 2 -->
+<div class="glass-card p-6 flex items-center gap-6 group hover:bg-white/[0.05] transition-colors border-l-2 border-transparent">
+<div class="cursor-grab active:cursor-grabbing text-outline-variant">
+<span class="material-symbols-outlined">drag_indicator</span>
+</div>
+<div class="flex-grow grid grid-cols-12 items-center gap-8">
+<div class="col-span-3">
+<h3 class="text-lg font-headline text-white">Classic Club Set</h3>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-[10px] font-mono text-on-surface-variant bg-surface-container-highest px-1.5 py-0.5">ORD: 002</span>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-2xl font-syne text-secondary tracking-tight">$450</span>
+<span class="block text-[10px] text-on-surface-variant uppercase">Per Event</span>
+</div>
+<div class="col-span-4">
+<ul class="grid grid-cols-2 gap-x-4 gap-y-1">
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                2hr Performance
+                            </li>
+<li class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                USB Delivery
+                            </li>
+</ul>
+</div>
+<div class="col-span-3 flex items-center justify-end gap-6">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Inactive</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-white/10 rounded-sm text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-white/10 rounded-sm text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">toggle_off</span>
+</button>
+<button class="p-2 hover:bg-error/10 rounded-sm text-error/60 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Example (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center py-32 border-2 border-dashed border-outline-variant/20 rounded-lg">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 border border-white/5">
+<span class="material-symbols-outlined text-primary text-3xl">album</span>
+</div>
+<h3 class="text-white font-headline text-xl">No packages yet.</h3>
+<p class="text-on-surface-variant text-sm mt-2 mb-6">Start by creating a service tier for your roster.</p>
+<button class="text-primary font-bold text-sm border-b-2 border-primary/30 hover:border-primary transition-all">Create your first package</button>
+</div>
+<!-- Edit/Add Modal Overlay (Simulated) -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+<div class="w-full max-w-[560px] glass-card border border-white/10 shadow-2xl overflow-hidden">
+<div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+<h2 class="font-headline text-xl text-white">Create New Package</h2>
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined">close</span></button>
+</div>
+<form class="p-8 space-y-6">
+<div class="grid grid-cols-2 gap-6">
+<div class="col-span-2">
+<label class="block text-[10px] font-mono text-primary uppercase mb-2">Package Name</label>
+<input class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary text-sm py-3 px-4 rounded-sm" placeholder="e.g. Neon Nights Premium" type="text"/>
+</div>
+<div>
+<label class="block text-[10px] font-mono text-primary uppercase mb-2">Price (USD)</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-secondary font-syne">$</span>
+<input class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary text-sm py-3 pl-8 pr-4 rounded-sm font-syne text-secondary" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div>
+<label class="block text-[10px] font-mono text-primary uppercase mb-2">Display Order</label>
+<input class="w-full bg-surface-container border-none focus:ring-1 focus:ring-primary text-sm py-3 px-4 rounded-sm font-mono" placeholder="001" type="number"/>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="block text-[10px] font-mono text-primary uppercase">Inclusions</label>
+<button class="text-[10px] font-bold text-primary hover:text-primary-container transition-colors" type="button">+ ADD INCLUSION</button>
+</div>
+<div class="space-y-2">
+<div class="flex gap-2">
+<input class="flex-grow bg-surface-container border-none text-xs py-2 px-3 rounded-sm" type="text" value="High Fidelity Audio"/>
+<button class="text-error/60 hover:text-error"><span class="material-symbols-outlined text-lg">remove_circle</span></button>
+</div>
+<div class="flex gap-2">
+<input class="flex-grow bg-surface-container border-none text-xs py-2 px-3 rounded-sm" type="text" value="Multi-point Lighting Rig"/>
+<button class="text-error/60 hover:text-error"><span class="material-symbols-outlined text-lg">remove_circle</span></button>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-sm">
+<div>
+<span class="block text-xs font-bold text-white uppercase">Package Status</span>
+<span class="text-[10px] text-on-surface-variant uppercase">Toggle to enable visibility on booking page</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="pt-6 border-t border-white/5 flex gap-4 justify-end">
+<button class="px-6 py-2.5 text-xs font-bold text-on-surface-variant hover:text-white transition-colors" type="button">CANCEL</button>
+<button class="hardware-btn bg-primary text-on-primary px-8 py-2.5 text-xs font-black rounded-sm shadow-[0_0_15px_rgba(143,214,255,0.2)]" type="submit">SAVE PACKAGE</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+<!-- Background Atmospheric Elements -->
+<div class="fixed top-0 right-0 -z-10 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
+<div class="fixed bottom-0 left-[200px] -z-10 w-[400px] h-[400px] bg-secondary/5 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2"></div>
+</body></html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KillerCutz Merch Store - Cart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800;900&amp;family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#34343c",
+                        "on-primary-container": "#004a65",
+                        "on-primary-fixed": "#001e2c",
+                        "inverse-primary": "#00668a",
+                        "outline-variant": "#3d4850",
+                        "primary-container": "#00bfff",
+                        "secondary-fixed-dim": "#ffb955",
+                        "secondary-container": "#dc9100",
+                        "tertiary-fixed": "#ffdada",
+                        "on-secondary-fixed-variant": "#633f00",
+                        "surface-bright": "#393841",
+                        "primary": "#8fd6ff",
+                        "surface-container-low": "#1b1b23",
+                        "inverse-surface": "#e4e1ec",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#40000c",
+                        "on-tertiary-container": "#8d0025",
+                        "surface-container-high": "#2a2931",
+                        "background": "#13131a",
+                        "surface-dim": "#13131a",
+                        "secondary": "#ffb955",
+                        "surface-container-highest": "#34343c",
+                        "surface-container": "#1f1f27",
+                        "outline": "#87929b",
+                        "primary-fixed-dim": "#7ad0ff",
+                        "on-surface-variant": "#bcc8d1",
+                        "tertiary-container": "#ff9399",
+                        "surface": "#13131a",
+                        "secondary-fixed": "#ffddb4",
+                        "on-secondary-fixed": "#291800",
+                        "on-primary-fixed-variant": "#004c69",
+                        "on-secondary-container": "#4f3100",
+                        "on-secondary": "#452b00",
+                        "surface-tint": "#7ad0ff",
+                        "surface-container-lowest": "#0e0d15",
+                        "on-surface": "#e4e1ec",
+                        "inverse-on-surface": "#303038",
+                        "error": "#ffb4ab",
+                        "on-primary": "#003549",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "on-tertiary": "#680019",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "tertiary": "#ffbdbf",
+                        "on-background": "#e4e1ec",
+                        "on-error": "#690005",
+                        "primary-fixed": "#c3e8ff"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-drawer {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(28px);
+        }
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+        .scrolling-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scrolling-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scrolling-container::-webkit-scrollbar-thumb {
+            background: rgba(143, 214, 255, 0.2);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary overflow-hidden">
+<!-- Sidebar Navigation (The Anchor) -->
+<aside class="fixed left-0 top-0 h-full w-[72px] bg-[#08080F]/80 backdrop-blur-xl flex flex-col items-center py-8 z-50 shadow-[40px_0_40px_-15px_rgba(0,0,0,0.3)] font-['Space_Grotesk'] tracking-wide">
+<div class="mb-12">
+<span class="text-xl font-bold font-['Barlow_Condensed'] text-[#00BFFF]">SP</span>
+</div>
+<nav class="flex flex-col gap-8 flex-1">
+<div class="group cursor-pointer flex flex-col items-center gap-1 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-200">
+<span class="material-symbols-outlined">home</span>
+</div>
+<div class="group cursor-pointer flex flex-col items-center gap-1 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-200">
+<span class="material-symbols-outlined">library_music</span>
+</div>
+<!-- ACTIVE: Store/Merch -->
+<div class="group cursor-pointer flex flex-col items-center gap-1 bg-white/10 text-[#00BFFF] border-l-2 border-[#FFD700] py-2 px-1 scale-95 duration-200">
+<span class="material-symbols-outlined">shopping_bag</span>
+</div>
+<div class="group cursor-pointer flex flex-col items-center gap-1 text-[#bcc8d1] hover:text-[#00BFFF] transition-all duration-200">
+<span class="material-symbols-outlined">event</span>
+</div>
+</nav>
+<div class="mt-auto group cursor-pointer text-[#bcc8d1] hover:text-[#00BFFF] transition-all">
+<span class="material-symbols-outlined">settings</span>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-72px)] h-16 bg-transparent backdrop-blur-md flex justify-between items-center px-12 z-40 font-['Barlow_Condensed'] uppercase tracking-tighter">
+<div class="text-3xl font-black text-[#00BFFF]">Sonic Merch</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-1 rounded-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-label uppercase tracking-widest w-48" placeholder="Search Merch..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#00BFFF] relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] transition-opacity duration-300">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content (Dimmed Store View) -->
+<main class="ml-[72px] pt-16 min-h-screen opacity-30 grayscale-[0.5]">
+<div class="p-12">
+<section class="mb-12">
+<h1 class="font-headline font-semibold text-5xl mb-8">Drop 004: Electric Pulse</h1>
+<div class="grid grid-cols-3 gap-6">
+<!-- Placeholder Grid -->
+<div class="aspect-[3/4] bg-surface-container-low p-4 flex flex-col justify-end">
+<img class="object-cover h-full w-full mb-4 grayscale" data-alt="high-end minimalist black hoodie with neon cyan embroidery on a dark studio background with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVzMIz_7BYJ_LwLX-Q5Dw_IBIoRMIzXFbG9i0M7bku-OhPOFZsbNlbJryJLKMNUY89xua_mQI3nP8QV__OrLtJyKOT-H7OOgRikRAnBX27dc0MYc3-mGuCc4GWwRPhSYLxcleXeFAs6WEgygsLApPx5-mo7M0LTyK6srGIzredmADXiovdCud9MLBd1vo4zsid6WkwKLiRsb-dsdr_hU4G2h1azowXRM4oG0l9vdmONa3UAQVhkLQ0BggNktZ1dsncDYbj5qnphxrm"/>
+<p class="font-headline text-xl">Pulse Hoodie</p>
+<p class="font-label text-primary-container">GHS 250</p>
+</div>
+<div class="aspect-[3/4] bg-surface-container-low p-4 flex flex-col justify-end">
+<img class="object-cover h-full w-full mb-4 grayscale" data-alt="premium white organic cotton t-shirt with geometric abstract art print in shades of gold and electric blue" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBU42Z1noV8WA2g0y-CTH1sEjtY9TYmSDz1EGPsFoCL9c7AeaoZzwaXO0YeczcJr-AzNr-aUg1jhBrE9-m39woEf3xaU9vbrKOBgTKndwY5Jt6C5_YjkPywXnpWuYJZ_rZ0fM0o5BkR97P6l8TaitPV-NR85s5dCrIphQE0VT92SaYVDROjOjhj--XqSto15gtXNZBKwPnaKokLMphR7CpekF_K_I5Bh1OVIErE-OtZHnC2azQc5k-a9LUWpZteBDPNI62I6iRnKbc"/>
+<p class="font-headline text-xl">Sonic Tee</p>
+<p class="font-label text-primary-container">GHS 120</p>
+</div>
+<div class="aspect-[3/4] bg-surface-container-low p-4 flex flex-col justify-end">
+<img class="object-cover h-full w-full mb-4 grayscale" data-alt="futuristic street wear cap in matte black technical fabric with reflective silver details and adjustable strap" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSKGQ-MBYTNKPS2MeLGX7et00l96Pldh9glA0BvXuHILRoiEkB7j4SqvINkOPZ0fiDYWTDWS_xmoeyKNV-Tg8d8fW8hhIIl1VWHd33U62_640jfERrxgPcGI3HHq98O22oM9s5oD5boO8bfeBZXZyOHew21lQwsI-JG7tU75Hw2Ph8Cyw112D14jAG0VIIveMxoHFNVe2nLn3hIVRSkFLmc054GxAFTBQuvmCtZIMIMoOdd3rN0CRunK1mWc6yo8b2d-C80QZW1nXL"/>
+<p class="font-headline text-xl">Tech Cap</p>
+<p class="font-label text-primary-container">GHS 70</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Cart Drawer Overlay (Clicking background would close) -->
+<div class="fixed inset-0 bg-background/40 backdrop-blur-sm z-[60] flex justify-end">
+<!-- The Drawer -->
+<div class="w-[400px] h-full glass-drawer shadow-2xl flex flex-col border-l border-white/5">
+<!-- Drawer Header -->
+<div class="p-8 pb-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<h2 class="font-headline text-2xl font-bold tracking-tight">Your Cart</h2>
+<span class="bg-primary-container text-on-primary-container text-[10px] font-bold px-2 py-0.5 rounded-full">3 ITEMS</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Cart Items List -->
+<div class="flex-1 overflow-y-auto scrolling-container px-8 space-y-6 pt-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 group">
+<div class="w-16 h-16 bg-surface-container-high rounded-sm overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="close up of premium black fabric hoodie texture with high quality cyan stitching details" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJNyGyFcs_6oifMvYHFz7MtCnwpcnObHWMqSGVg2FWOWFWniIaAkBNYtzeFIyQfeoJO8-9c96wzbDi2KtdtbfFqF-yCzJZm9_XEwriZkuawdTb2i2UZeYeUL-C-K7ibGpfCvdeJWsr0gqHUQF330rf9PlbLGGomFUkPGzmyJnJR6bLpVn-e9cdQ1l1bUpfk8QZADykk3kaKUaIyNy4ZS2SJUTeP_c0szzHS6QrvkbHK77cH7qx6CT20G62S0xsMyVjbd5y-MYIhjuj"/>
+</div>
+<div class="flex-1">
+<h3 class="font-headline font-semibold text-sm leading-tight mb-1">Pulse Oversized Hoodie</h3>
+<p class="text-[12px] text-on-surface-variant font-label uppercase tracking-tighter">XL / PHANTOM BLACK</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<p class="font-label text-xs text-primary font-bold">GHS 250</p>
+<div class="flex items-center glass-pill rounded-full border border-white/5 px-1 py-0.5">
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">remove</span></button>
+<span class="px-2 text-[10px] font-mono">01</span>
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">add</span></button>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 group">
+<div class="w-16 h-16 bg-surface-container-high rounded-sm overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="studio shot of white organic cotton t-shirt with electric blue graphic print texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVLBl_-eJwMiOpSzQngqiI04cJrGWIDhxr4Ro7zik_ZMCR_WGv7R1XyH5R9nfDlk8dqflQNAh89rN1ON8LjOfzoQ9q2tFUGBwccOfoK3mhZja_iHe-0IkUuhOzXYJhmrf0UGnmfXNeZZyIObxcbkP_NccDjPjiIEridDC6jdeg6tRB8G_GEUH6yLB5RWpYdxHm8kqW3wTgICyNL0bsEOY84aDcx5HOuuc1JcRP6V5f3PEf8d2lp0V5xZ2wjeP46dpVE9H46Iytg4wg"/>
+</div>
+<div class="flex-1">
+<h3 class="font-headline font-semibold text-sm leading-tight mb-1">Sonic Frequency Tee</h3>
+<p class="text-[12px] text-on-surface-variant font-label uppercase tracking-tighter">L / STROBE WHITE</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<p class="font-label text-xs text-primary font-bold">GHS 120</p>
+<div class="flex items-center glass-pill rounded-full border border-white/5 px-1 py-0.5">
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">remove</span></button>
+<span class="px-2 text-[10px] font-mono">01</span>
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">add</span></button>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center gap-4 group">
+<div class="w-16 h-16 bg-surface-container-high rounded-sm overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="close up of matte black technical fabric of a street wear baseball cap" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOH8WPj7JWpQuPDdXa_J0pIsjobzeSHkidGn0Jz7F62Gwgo_kvRmCipW4oGwG4mUuPOvIoeB6NJsIHMx49lBcAjUftX1Ne8q1CUXaWLFH-PsXKDqGiiAav3kvt7VQ2kSAE9PM16Q7LV7g2USV6WZDwBtsVFnSCDR7bQzZmeVxjNkBB6nsJoZiqauklwAQvxLQYtVAF7JTaAgfW7jRzF5upKfSxay7Oqn-Qoum4E4MJXeXfrXgIc_zS9ivlr6-_WtknaljKFGa0Gf4T"/>
+</div>
+<div class="flex-1">
+<h3 class="font-headline font-semibold text-sm leading-tight mb-1">Tech Low-Profile Cap</h3>
+<p class="text-[12px] text-on-surface-variant font-label uppercase tracking-tighter">OS / MATTE BLACK</p>
+</div>
+<div class="flex flex-col items-end gap-2">
+<p class="font-label text-xs text-primary font-bold">GHS 70</p>
+<div class="flex items-center glass-pill rounded-full border border-white/5 px-1 py-0.5">
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">remove</span></button>
+<span class="px-2 text-[10px] font-mono">01</span>
+<button class="p-0.5 hover:text-primary"><span class="material-symbols-outlined text-xs">add</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="p-8 space-y-6 bg-surface-container-lowest/40 border-t border-white/5">
+<!-- Payment Card -->
+<div class="bg-surface-container-low border-l-2 border-primary-container p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">contactless</span>
+<div>
+<p class="text-[10px] uppercase font-label tracking-widest text-on-surface-variant">Default Payment</p>
+<p class="text-xs font-mono">MOMO ****5540</p>
+</div>
+</div>
+<button class="text-[10px] font-bold text-primary-container uppercase hover:underline">Change</button>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end">
+<span class="text-on-surface-variant text-sm font-label uppercase">Subtotal</span>
+<span class="text-xl font-bold font-headline text-on-surface">GHS 440</span>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant uppercase tracking-widest">
+<span>Shipping</span>
+<span>Calculated at next step</span>
+</div>
+</div>
+<button class="w-full bg-primary-container text-on-primary-fixed font-black font-['Barlow_Condensed'] uppercase tracking-widest py-4 text-lg rounded-sm hover:bg-primary transition-all active:scale-95">
+                    Proceed to Checkout
+                </button>
+</div>
+</div>
+</div>
+<!-- Global Player Bar (Anchor) -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-72px)] h-[68px] bg-white/5 backdrop-blur-lg flex justify-between items-center px-8 z-[70] border-t-2 border-[#00BFFF] shadow-[0_-10px_40px_rgba(0,191,255,0.06)]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded-sm flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="blurred neon lights and shadows of a DJ deck in a dark night club atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA70SkImZa5hDlGOOpL8apFQk8wSCJkAFTM9vbp3iF-RsTtYIaDmbtNVmOP0q6U6zLO1rDWt1aAL5rDIjLFZeaVSRTi0N-Lk7roDfk7-tCewv_JQbd--TcMeR5DxC5UeIM7_9Hqc8F3VOBqd4v5F24R9XIu_5rxWxJWC_5pHxBDsggtIWl4bdmq09fsKyLxZgXPZJ1yAn6DgnRbH4KLVdPMiPDP2TBNuczrTmEUscoATmozGmckO0SQ5J6s1Nx6nn0PLQOmPj5RBSeI"/>
+</div>
+<div>
+<p class="text-xs font-headline font-bold text-primary leading-none mb-1">SYNTHETIC NIGHTS</p>
+<p class="text-[10px] font-mono text-on-surface-variant">DJ KILLER - 128 BPM</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] transition-all active:scale-90">
+<span class="material-symbols-outlined">queue_music</span>
+</button>
+<button class="w-10 h-10 bg-primary-container text-on-primary-fixed rounded-full flex items-center justify-center drop-shadow-[0_0_8px_#00BFFF] transition-transform active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-[#bcc8d1] hover:text-[#00BFFF] transition-all active:scale-90">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+</div>
+<div class="hidden md:flex flex-col items-end gap-1">
+<span class="text-[10px] font-mono text-on-surface-variant">02:45 / 04:12</span>
+<div class="w-32 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-primary-container"></div>
+</div>
+</div>
+</footer>
+</body></html>
