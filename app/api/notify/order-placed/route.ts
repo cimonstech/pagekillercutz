@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/notify/email";
 import { orderPlacedClient } from "@/lib/notify/emailTemplates";
+import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { sendSMS } from "@/lib/notify/sms";
 import { logger } from "@/lib/logger";
 
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Body;
     const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
     const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
-    const DJ_PHONE = process.env.DJ_PHONE;
+    const djPhones = getDjSmsRecipients();
 
     if (!body.orderNumber || !body.customerPhone) {
       return Response.json({ error: "Invalid payload" }, { status: 400 });
@@ -61,13 +62,13 @@ export async function POST(request: Request) {
       }),
     });
 
-    if (DJ_PHONE) {
+    if (djPhones.length) {
       const djSMS =
         `[New Order] ${body.orderNumber} — ` +
         `${body.customerName}. ` +
         `GH₵${body.total.toLocaleString("en-GH")}. ` +
         `Admin: ${BASE_URL}/admin`;
-      await sendSMS(DJ_PHONE, djSMS);
+      await sendSMS(djPhones, djSMS);
     }
 
     return Response.json({ success: true });

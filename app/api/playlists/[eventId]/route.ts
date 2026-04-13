@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
 import type { Database } from "@/lib/database.types";
+import { getPrimaryDjPhone } from "@/lib/notify/djPhones";
 import { notifyPlaylistLocked } from "@/lib/notify/dispatch";
 
 type PlaylistRow = Database["public"]["Tables"]["playlists"]["Row"];
@@ -65,7 +66,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
           eventType: booking.event_type,
           eventDate: booking.event_date,
           venue: booking.venue,
-          djPhone: process.env.DJ_PHONE!,
+          djPhone: getPrimaryDjPhone(),
           djEmail: process.env.DJ_EMAIL!,
           portalUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/sign-in`,
         });

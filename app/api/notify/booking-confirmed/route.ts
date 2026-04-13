@@ -4,6 +4,7 @@ import { bookingRowToData } from "@/lib/notify/bookingAdapter";
 import * as ET from "@/lib/notify/emailTemplates";
 import { sendSMS } from "@/lib/notify/sms";
 import * as T from "@/lib/notify/templates";
+import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -27,9 +28,9 @@ export async function POST(request: Request) {
     }
 
     const d = bookingRowToData(row as BookingRow);
-    const DJ_PHONE = process.env.DJ_PHONE;
+    const djPhones = getDjSmsRecipients();
     const DJ_EMAIL = process.env.DJ_EMAIL;
-    if (!DJ_PHONE || !DJ_EMAIL) {
+    if (!djPhones.length || !DJ_EMAIL) {
       return Response.json({ error: "DJ contact not configured" }, { status: 500 });
     }
 
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
           portalUrl: d.portalUrl || `${BASE_URL}/sign-in`,
         }),
       }),
-      sendSMS(DJ_PHONE, T.sms_bookingConfirmed_dj(d)),
+      sendSMS(djPhones, T.sms_bookingConfirmed_dj(d)),
       sendEmail({
         to: DJ_EMAIL,
         subject: `[Confirmed] ${d.eventId} — ${d.clientName}`,

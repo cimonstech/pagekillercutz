@@ -1,3 +1,4 @@
+import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { sendSMS } from "@/lib/notify/sms";
 import { sendEmail } from "@/lib/notify/email";
 import { logger } from "@/lib/logger";
@@ -72,15 +73,22 @@ export async function POST(request: Request) {
       return Response.json({ email: result });
     }
 
-    const target = body.phone?.trim() || process.env.DJ_PHONE;
-    if (!target) {
+    const explicit = body.phone?.trim();
+    const targets = explicit ? [explicit] : getDjSmsRecipients();
+    if (!targets.length) {
       return Response.json(
-        { error: "Provide body.phone or set DJ_PHONE in the environment." },
+        {
+          error:
+            "Provide body.phone, or set DJ_PHONE and optionally DJ_PHONE_2 (or DJ_PHONES for multiple numbers).",
+        },
         { status: 400 },
       );
     }
 
-    const smsResult = await sendSMS(target, "Test SMS from Page KillerCutz. If you received this, SMS is working!");
+    const smsResult = await sendSMS(
+      targets,
+      "Test SMS from Page KillerCutz. If you received this, SMS is working!",
+    );
 
     logger.infoRaw("route", "[notify/test] SMS result:", smsResult);
 

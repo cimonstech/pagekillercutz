@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/database.types";
+import { getPrimaryDjPhone } from "./djPhones";
 import type { BookingData } from "./templates";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
@@ -12,7 +13,7 @@ export function bookingRowToData(row: BookingRow): BookingData {
     eventType: row.event_type,
     eventDate: row.event_date,
     venue: row.venue,
-    djPhone: process.env.DJ_PHONE ?? "",
+    djPhone: getPrimaryDjPhone(),
     djEmail: process.env.DJ_EMAIL ?? "",
     portalUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://pagekillercutz.com"}/sign-in`,
     packageName: row.package_name,

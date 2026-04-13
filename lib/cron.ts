@@ -6,6 +6,7 @@ import {
   notifyReminder1Day,
   notifyMorningOf,
 } from "./notify/dispatch";
+import { getPrimaryDjPhone } from "./notify/djPhones";
 import type { BookingData } from "./notify/templates";
 
 function getSupabase() {
@@ -44,7 +45,7 @@ function toBookingData(b: Record<string, unknown>): BookingData {
     eventType: b.event_type as string,
     eventDate: b.event_date as string,
     venue: b.venue as string,
-    djPhone: process.env.DJ_PHONE!,
+    djPhone: getPrimaryDjPhone(),
     djEmail: process.env.DJ_EMAIL!,
     portalUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/sign-in`,
     packageName: (b.package_name as string | null) ?? null,

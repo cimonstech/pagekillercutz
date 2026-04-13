@@ -1,4 +1,5 @@
 import { sendEmail } from "./email";
+import { getDjSmsRecipients } from "./djPhones";
 import { sendSMS } from "./sms";
 import * as ET from "./emailTemplates";
 
@@ -17,10 +18,10 @@ const baseUrl = () => process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercut
 
 /** DJ only — new booking request submitted (Trigger 1). */
 export async function sendNewBookingRequestToDj(payload: NewBookingRequestPayload): Promise<void> {
-  const DJ_PHONE = process.env.DJ_PHONE;
+  const djPhones = getDjSmsRecipients();
   const DJ_EMAIL = process.env.DJ_EMAIL;
-  if (!DJ_PHONE || !DJ_EMAIL) {
-    throw new Error("DJ_PHONE or DJ_EMAIL not configured");
+  if (!djPhones.length || !DJ_EMAIL) {
+    throw new Error("DJ_PHONE (or DJ_PHONES) and DJ_EMAIL must be configured");
   }
 
   const eventDate = new Date(`${payload.eventDate}T00:00:00`).toLocaleDateString("en-GH", {
@@ -38,7 +39,7 @@ export async function sendNewBookingRequestToDj(payload: NewBookingRequestPayloa
     `Package: ${payload.packageName || "Not selected"}\n` +
     `Review: ${baseUrl()}/admin`;
 
-  await sendSMS(DJ_PHONE, sms);
+  await sendSMS(djPhones, sms);
 
   await sendEmail({
     to: DJ_EMAIL,

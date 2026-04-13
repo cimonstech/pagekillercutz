@@ -3,8 +3,8 @@ import { sendSMS } from "./sms";
 import { sendEmail } from "./email";
 import * as ET from "./emailTemplates";
 import * as T from "./templates";
+import { getDjSmsRecipients, getPrimaryDjPhone } from "./djPhones";
 
-const DJ_PHONE = process.env.DJ_PHONE!;
 const DJ_EMAIL = process.env.DJ_EMAIL!;
 
 const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
@@ -15,12 +15,13 @@ function portalUrl(d: T.BookingData): string {
 }
 
 export async function notifyBookingConfirmed(data: T.BookingData) {
-  const d = { ...data, djPhone: DJ_PHONE, djEmail: DJ_EMAIL };
+  const djPhones = getDjSmsRecipients();
+  const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
   const pkg = d.packageName?.trim() || "Signature";
   const results = await Promise.allSettled([
     sendSMS(d.clientPhone, T.sms_bookingConfirmed_client(d)),
-    sendSMS(DJ_PHONE, T.sms_bookingConfirmed_dj(d)),
+    ...(djPhones.length ? [sendSMS(djPhones, T.sms_bookingConfirmed_dj(d))] : []),
     sendEmail({
       to: d.clientEmail,
       subject: `Booking Confirmed — ${d.eventId}`,
@@ -52,11 +53,12 @@ export async function notifyBookingConfirmed(data: T.BookingData) {
 }
 
 export async function notifyReminder7Day(data: T.BookingData) {
-  const d = { ...data, djPhone: DJ_PHONE, djEmail: DJ_EMAIL };
+  const djPhones = getDjSmsRecipients();
+  const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
   await Promise.allSettled([
     sendSMS(d.clientPhone, T.sms_reminder7day_client(d)),
-    sendSMS(DJ_PHONE, T.sms_reminder7day_dj(d)),
+    ...(djPhones.length ? [sendSMS(djPhones, T.sms_reminder7day_dj(d))] : []),
     sendEmail({
       to: d.clientEmail,
       subject: `7 Days to Go — ${d.eventId}`,
@@ -72,11 +74,12 @@ export async function notifyReminder7Day(data: T.BookingData) {
 }
 
 export async function notifyReminder1Day(data: T.BookingData) {
-  const d = { ...data, djPhone: DJ_PHONE, djEmail: DJ_EMAIL };
+  const djPhones = getDjSmsRecipients();
+  const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
   await Promise.allSettled([
     sendSMS(d.clientPhone, T.sms_reminder1day_client(d)),
-    sendSMS(DJ_PHONE, T.sms_reminder1day_dj(d)),
+    ...(djPhones.length ? [sendSMS(djPhones, T.sms_reminder1day_dj(d))] : []),
     sendEmail({
       to: d.clientEmail,
       subject: `Tomorrow! — ${d.eventId}`,
@@ -103,12 +106,13 @@ export async function notifyReminder1Day(data: T.BookingData) {
 }
 
 export async function notifyMorningOf(data: T.BookingData) {
-  const d = { ...data, djPhone: DJ_PHONE, djEmail: DJ_EMAIL };
-  await sendSMS(DJ_PHONE, T.sms_morningOf_dj(d));
+  const djPhones = getDjSmsRecipients();
+  const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
+  if (djPhones.length) await sendSMS(djPhones, T.sms_morningOf_dj(d));
 }
 
 export async function notifyPlaylistLocked(data: T.BookingData) {
-  const d = { ...data, djPhone: DJ_PHONE, djEmail: DJ_EMAIL };
+  const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
   await Promise.allSettled([
     sendSMS(d.clientPhone, T.sms_playlistLocked_client(d)),
