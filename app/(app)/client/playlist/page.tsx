@@ -3,8 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock, Info, Loader2, Pencil, Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import type { Database } from "@/lib/database.types";
+import { useAuth } from "@/hooks/useAuth";
+import { useStaffAdmin } from "@/hooks/useStaffAdmin";
 
 type BookingsRow = Database["public"]["Tables"]["bookings"]["Row"];
 type PlaylistRow = Database["public"]["Tables"]["playlists"]["Row"];
@@ -345,6 +348,14 @@ function useDeezerSearch(genreBias?: string[]) {
 }
 
 export default function ClientPlaylistPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const staffAdmin = useStaffAdmin(user);
+
+  useEffect(() => {
+    if (staffAdmin) router.replace("/admin");
+  }, [staffAdmin, router]);
+
   const [booking, setBooking] = useState<BookingsRow | null>(null);
   const [playlist, setPlaylist] = useState<PlaylistRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -374,6 +385,10 @@ export default function ClientPlaylistPage() {
   const locked = playlist?.locked === true;
 
   useEffect(() => {
+    if (staffAdmin) {
+      setLoading(false);
+      return;
+    }
     const lastEventId = sessionStorage.getItem("lastEventId");
     const url = lastEventId
       ? `/api/client/dashboard?eventId=${encodeURIComponent(lastEventId)}`
@@ -409,7 +424,7 @@ export default function ClientPlaylistPage() {
         setFetchError(e instanceof Error ? e.message : "Failed to load");
         setLoading(false);
       });
-  }, []);
+  }, [staffAdmin]);
 
   const handleSave = useCallback(async () => {
     if (!booking) return;
@@ -558,6 +573,14 @@ export default function ClientPlaylistPage() {
     if (locked) return;
     setTimeline((prev) => prev.filter((_, idx) => idx !== i));
   };
+
+  if (staffAdmin) {
+    return (
+      <main className="relative z-[1] flex min-h-[40vh] w-full items-center justify-center pb-8 text-on-surface">
+        <p className="font-body text-sm text-on-surface-variant">Redirecting…</p>
+      </main>
+    );
+  }
 
   return (
     <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">

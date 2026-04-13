@@ -1,5 +1,6 @@
 import AdminGate from "@/components/admin/AdminGate";
 import AdminSidebar from "@/components/layout/AdminSidebar";
+import BottomPlayerBar from "@/components/layout/BottomPlayerBar";
 
 export default function AdminLayout({
   children,
@@ -23,10 +24,12 @@ export default function AdminLayout({
             minHeight: "100vh",
             overflowY: "auto",
             padding: "32px",
+            paddingBottom: "calc(32px + var(--player-offset, 0px))",
           }}
         >
           {children}
         </main>
+        <BottomPlayerBar />
       </div>
     </AdminGate>
   );

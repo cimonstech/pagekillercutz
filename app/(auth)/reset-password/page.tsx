@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   AlertCircle,
@@ -69,6 +69,8 @@ function strengthFill(score: number): { width: string; bg: string } {
   return { width: "100%", bg: "#22c55e" };
 }
 
+type RecoverySessionStatus = "idle" | "checking" | "ready" | "missing";
+
 function ResetPasswordInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,12 +84,105 @@ function ResetPasswordInner() {
   const [error, setError] = useState("");
   const [strength, setStrength] = useState(0);
   const [countdown, setCountdown] = useState(3);
+  const [recoverySessionStatus, setRecoverySessionStatus] = useState<RecoverySessionStatus>("idle");
+  const recoveryPkceAttemptedRef = useRef(false);
 
   useEffect(() => {
     const s = searchParams.get("step");
     if (s === "3") setStep(3);
     else if (s === "2") setStep(2);
   }, [searchParams]);
+
+  /** Ensure PKCE / hash recovery tokens become a client session before updateUser. */
+  useEffect(() => {
+    if (step !== 3) {
+      recoveryPkceAttemptedRef.current = false;
+      setRecoverySessionStatus("idle");
+      return;
+    }
+
+    let cancelled = false;
+    setRecoverySessionStatus("checking");
+    setError("");
+
+    void (async () => {
+      const supabase = createClient();
+
+      const code = searchParams.get("code");
+      if (code && !recoveryPkceAttemptedRef.current) {
+        recoveryPkceAttemptedRef.current = true;
+        const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+        if (exErr) {
+          recoveryPkceAttemptedRef.current = false;
+          if (!cancelled) {
+            setRecoverySessionStatus("missing");
+            setError(exErr.message);
+          }
+          return;
+        }
+        if (typeof window !== "undefined") {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("code");
+          window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+        }
+      }
+
+      if (typeof window !== "undefined" && window.location.hash?.length > 1) {
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const access_token = hashParams.get("access_token");
+        const refresh_token = hashParams.get("refresh_token");
+        if (access_token && refresh_token) {
+          const { error: sessErr } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (sessErr && !cancelled) {
+            setRecoverySessionStatus("missing");
+            setError(sessErr.message);
+            return;
+          }
+          window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+        }
+      }
+
+      const readSession = async () => {
+        const { data } = await supabase.auth.getSession();
+        return data.session;
+      };
+
+      let session = await readSession();
+      if (!session) {
+        await new Promise((r) => setTimeout(r, 150));
+        session = await readSession();
+      }
+
+      if (cancelled) return;
+      if (session) {
+        setRecoverySessionStatus("ready");
+        return;
+      }
+
+      const sessionFromEvent = await new Promise<Awaited<ReturnType<typeof readSession>> | null>((resolve) => {
+        const timeout = window.setTimeout(() => {
+          subscription.unsubscribe();
+          resolve(null);
+        }, 2500);
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+          if (nextSession) {
+            window.clearTimeout(timeout);
+            subscription.unsubscribe();
+            resolve(nextSession);
+          }
+        });
+      });
+
+      if (cancelled) return;
+      setRecoverySessionStatus(sessionFromEvent ? "ready" : "missing");
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, searchParams]);
 
   useEffect(() => {
     setStrength(calculateStrength(password));
@@ -110,6 +205,10 @@ function ResetPasswordInner() {
   };
 
   const handleStep3 = async () => {
+    if (recoverySessionStatus !== "ready") {
+      setError("Your reset session is not ready yet. Wait a moment, or open the link from your email again.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -121,6 +220,17 @@ function ResetPasswordInner() {
     setLoading(true);
     setError("");
     const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      setLoading(false);
+      setRecoverySessionStatus("missing");
+      setError(
+        "We couldn’t find your reset session. Open the link from your latest password email, or request a new reset link.",
+      );
+      return;
+    }
     const { error: upErr } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (upErr) {
@@ -150,7 +260,11 @@ function ResetPasswordInner() {
   const confirmMismatch = Boolean(confirmPassword && password !== confirmPassword);
   const confirmMatch = Boolean(confirmPassword && password === confirmPassword);
   const canSubmit =
-    password.length >= 8 && password === confirmPassword && strength >= 2 && !loading;
+    recoverySessionStatus === "ready" &&
+    password.length >= 8 &&
+    password === confirmPassword &&
+    strength >= 2 &&
+    !loading;
 
   return (
     <div
@@ -342,6 +456,32 @@ function ResetPasswordInner() {
             <p className="mb-8 text-[14px] leading-relaxed text-[#A0A8C0]" style={{ fontFamily: fontInter }}>
               Choose a strong password for your Page KillerCutz account.
             </p>
+
+            {recoverySessionStatus === "checking" ? (
+              <p className="mb-4 flex items-center justify-center gap-2 text-[13px] text-[#A0A8C0]" style={{ fontFamily: fontInter }}>
+                <Loader2 className="size-4 shrink-0 animate-spin text-[#00BFFF]" aria-hidden />
+                Verifying your reset link…
+              </p>
+            ) : null}
+            {recoverySessionStatus === "missing" ? (
+              <div className="mb-4 rounded-xl border border-[#FF4560]/25 bg-[#FF4560]/10 px-4 py-3 text-left">
+                <p className="text-[13px] text-[#FF4560]" style={{ fontFamily: fontInter }}>
+                  This page needs a valid link from your reset email (or the link expired). Request a new link below.
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 text-[13px] font-medium text-[#00BFFF] hover:underline"
+                  style={{ fontFamily: fontInter }}
+                  onClick={() => {
+                    setStep(1);
+                    setRecoverySessionStatus("idle");
+                    router.replace("/reset-password");
+                  }}
+                >
+                  Start over →
+                </button>
+              </div>
+            ) : null}
 
             <label className="mb-1.5 block w-full text-left text-[12px] font-medium text-white" style={{ fontFamily: fontInter }}>
               New password

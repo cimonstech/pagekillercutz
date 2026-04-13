@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Database } from "@/lib/database.types";
 import { DJ_INFO, DJ_STATS } from "@/lib/constants";
 import { MemberAvatarStack } from "@/components/MemberAvatarStack";
@@ -16,6 +16,7 @@ import PublicSidebar from "@/components/layout/PublicSidebar";
 import PublicTopBar from "@/components/layout/PublicTopBar";
 import PublicFooter from "@/components/layout/PublicFooter";
 import AnimateIn from "@/components/ui/AnimateIn";
+import { buildAlbumPlayerQueue } from "@/lib/album-playback";
 import { formatDuration } from "@/lib/player-utils";
 import { usePlayerStore } from "@/lib/store/playerStore";
 import { gsap } from "@/lib/gsap";
@@ -61,6 +62,7 @@ export default function Home() {
   const router = useRouter();
   const setTrack = usePlayerStore((s) => s.setTrack);
   const setQueue = usePlayerStore((s) => s.setQueue);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -111,17 +113,11 @@ export default function Home() {
       setPopularLoading(true);
       setPopularError(null);
       try {
-        let res = await fetch("/api/music?limit=5&featured=true");
-        let json = (await res.json()) as { music?: MusicRow[]; error?: string };
+        /** Popular list: see GET /api/music/popular — featured first (by plays), then most-played, then newest; max 6. */
+        const res = await fetch("/api/music/popular");
+        const json = (await res.json()) as { music?: MusicRow[]; error?: string };
         if (!res.ok) throw new Error(json.error || "Failed to load popular tracks");
-        let tracks = json.music ?? [];
-        if (tracks.length === 0) {
-          res = await fetch("/api/music?limit=5");
-          json = (await res.json()) as { music?: MusicRow[]; error?: string };
-          if (!res.ok) throw new Error(json.error || "Failed to load music");
-          tracks = json.music ?? [];
-        }
-        if (!cancelled) setPopularTracks(tracks);
+        if (!cancelled) setPopularTracks(json.music ?? []);
       } catch (e) {
         if (!cancelled) setPopularError(e instanceof Error ? e.message : "Something went wrong");
       } finally {
@@ -133,21 +129,20 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const queue = [...popularTracks, ...newReleases].map((t) => ({
-      id: t.id,
-      musicId: t.id,
-      title: t.title,
-      artist: ARTIST,
-      coverUrl: isAbsoluteUrl(t.cover_url) ? (t.cover_url as string) : "/killercutz-logo.webp",
-      audioUrl: t.audio_url,
-      type: t.type,
-      releaseType: t.type,
-      duration: t.duration ?? 0,
-      durationSec: t.duration ?? 0,
-    }));
-    if (queue.length) setQueue(queue);
-  }, [popularTracks, newReleases, setQueue]);
+  const playMusicRow = useCallback(
+    async (m: MusicRow) => {
+      const q = buildAlbumPlayerQueue(m);
+      const start = q.find((t) => t.audioUrl) ?? q[0];
+      if (!start) return;
+      if (currentTrack?.musicId === m.id) {
+        togglePlay();
+        return;
+      }
+      setQueue(q);
+      await setTrack(start);
+    },
+    [currentTrack?.musicId, setQueue, setTrack, togglePlay],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -380,20 +375,7 @@ export default function Home() {
                             key={t.id}
                             type="button"
                             className="group flex w-full items-center gap-4 rounded-full px-4 py-2 text-left transition-[background-color] hover:bg-white/5 active:scale-[0.96] active:transition-transform active:duration-150 active:ease-out"
-                            onClick={() =>
-                              void setTrack({
-                                id: t.id,
-                                musicId: t.id,
-                                title: t.title,
-                                artist: ARTIST,
-                                coverUrl: cover,
-                                audioUrl: t.audio_url,
-                                durationSec: t.duration ?? 0,
-                                releaseType: t.type,
-                                type: t.type,
-                                duration: t.duration ?? 0,
-                              })
-                            }
+                            onClick={() => void playMusicRow(t)}
                           >
                             <span className="w-4 shrink-0 text-right font-label text-sm text-on-surface-variant group-hover:hidden">
                               {i + 1}
@@ -403,7 +385,11 @@ export default function Home() {
                               style={{ fontVariationSettings: "'FILL' 1" }}
                               title={!t.audio_url ? "No audio preview" : undefined}
                             >
-                              {!t.audio_url ? "music_note" : currentTrack?.id === t.id && isPlaying ? "pause" : "play_arrow"}
+                              {!t.audio_url
+                                ? "music_note"
+                                : currentTrack?.musicId === t.id && isPlaying
+                                  ? "pause"
+                                  : "play_arrow"}
                             </span>
                             <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-surface-container">
                               <Image
@@ -672,27 +658,18 @@ export default function Home() {
                               type="button"
                               className="absolute bottom-2 right-2 z-20 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-primary opacity-0 shadow-[0_4px_16px_rgba(0,191,255,0.5)] transition-[transform,opacity] duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-[0.96]"
                               aria-label={`Play ${r.title}`}
-                              onClick={() =>
-                                setTrack({
-                                  id: r.id,
-                                  musicId: r.id,
-                                  title: r.title,
-                                  artist: ARTIST,
-                                  coverUrl: cover,
-                                  audioUrl: r.audio_url,
-                                  durationSec: dur,
-                                  releaseType: r.type,
-                                  type: r.type,
-                                  duration: dur,
-                                })
-                              }
+                              onClick={() => void playMusicRow(r)}
                             >
                                 <span
                                   className="material-symbols-outlined ml-[2px] text-[20px] text-on-primary-fixed"
                                   style={{ fontVariationSettings: "'FILL' 1" }}
                                   title={!r.audio_url ? "No audio preview" : undefined}
                                 >
-                                  {!r.audio_url ? "music_note" : currentTrack?.id === r.id && isPlaying ? "pause" : "play_arrow"}
+                                  {!r.audio_url
+                                    ? "music_note"
+                                    : currentTrack?.musicId === r.id && isPlaying
+                                      ? "pause"
+                                      : "play_arrow"}
                                 </span>
                             </button>
                           </div>

@@ -8,6 +8,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { ChevronDown, LayoutDashboard, ListMusic, LogOut } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 import { useAuth } from "@/hooks/useAuth";
+import { useStaffAdmin } from "@/hooks/useStaffAdmin";
 import { getDisplayName, getInitials } from "@/lib/user-display";
 import { createClient } from "@/lib/supabase/client";
 import { PAGE_ICON_URL } from "@/lib/constants";
@@ -20,7 +21,16 @@ const CENTER_LINKS = [
   { href: "/about", label: "About", match: "about" },
 ] as const;
 
-function DesktopUserAuth({ user, loading }: { user: User | null; loading: boolean }) {
+function DesktopUserAuth({
+  user,
+  loading,
+  showClientPlaylist,
+}: {
+  user: User | null;
+  loading: boolean;
+  /** Client playlist portal — hidden for admin / super_admin staff accounts. */
+  showClientPlaylist: boolean;
+}) {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -123,18 +133,20 @@ function DesktopUserAuth({ user, loading }: { user: User | null; loading: boolea
             <LayoutDashboard className="size-[15px] shrink-0 text-white/40" aria-hidden />
             <span className="font-body text-[13px] text-white">My Dashboard</span>
           </button>
-          <button
-            type="button"
-            role="menuitem"
-            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
-            onClick={() => {
-              setDropdownOpen(false);
-              router.push("/client/playlist");
-            }}
-          >
-            <ListMusic className="size-[15px] shrink-0 text-white/40" aria-hidden />
-            <span className="font-body text-[13px] text-white">My Playlist</span>
-          </button>
+          {showClientPlaylist ? (
+            <button
+              type="button"
+              role="menuitem"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
+              onClick={() => {
+                setDropdownOpen(false);
+                router.push("/client/playlist");
+              }}
+            >
+              <ListMusic className="size-[15px] shrink-0 text-white/40" aria-hidden />
+              <span className="font-body text-[13px] text-white">My Playlist</span>
+            </button>
+          ) : null}
 
           <div className="my-1 h-px bg-white/[0.06]" />
 
@@ -166,11 +178,13 @@ function PublicTopBarInner({
   onToggle,
   user,
   loading,
+  showClientPlaylist,
 }: {
   mobileOpen: boolean;
   onToggle: () => void;
   user: User | null;
   loading: boolean;
+  showClientPlaylist: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -224,7 +238,7 @@ function PublicTopBarInner({
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        <DesktopUserAuth user={user} loading={loading} />
+        <DesktopUserAuth user={user} loading={loading} showClientPlaylist={showClientPlaylist} />
 
         <button
           className="flex h-10 w-10 items-center justify-center rounded-lg text-white/70 transition-colors hover:text-white md:hidden"
@@ -246,11 +260,13 @@ function MobileNavDrawer({
   onClose,
   user,
   loading,
+  showClientPlaylist,
 }: {
   open: boolean;
   onClose: () => void;
   user: User | null;
   loading: boolean;
+  showClientPlaylist: boolean;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -359,17 +375,19 @@ function MobileNavDrawer({
                   <LayoutDashboard className="size-[15px] text-white/40" />
                   My Dashboard
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    router.push("/client/playlist");
-                  }}
-                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left font-headline text-sm text-white transition-colors hover:bg-white/[0.06]"
-                >
-                  <ListMusic className="size-[15px] text-white/40" />
-                  My Playlist
-                </button>
+                {showClientPlaylist ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      router.push("/client/playlist");
+                    }}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left font-headline text-sm text-white transition-colors hover:bg-white/[0.06]"
+                  >
+                    <ListMusic className="size-[15px] text-white/40" />
+                    My Playlist
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => {
@@ -437,6 +455,8 @@ function PublicTopBarFallback({
 
 export default function PublicTopBar() {
   const { user, loading } = useAuth();
+  const staffAdmin = useStaffAdmin(user);
+  const showClientPlaylist = !staffAdmin;
   const [mobileOpen, setMobileOpen] = useState(false);
   const toggle = () => setMobileOpen((v) => !v);
   const headerRef = useRef<HTMLElement>(null);
@@ -461,11 +481,23 @@ export default function PublicTopBar() {
       <Suspense
         fallback={<PublicTopBarFallback mobileOpen={mobileOpen} onToggle={toggle} loading={loading} />}
       >
-        <PublicTopBarInner mobileOpen={mobileOpen} onToggle={toggle} user={user} loading={loading} />
+        <PublicTopBarInner
+          mobileOpen={mobileOpen}
+          onToggle={toggle}
+          user={user}
+          loading={loading}
+          showClientPlaylist={showClientPlaylist}
+        />
       </Suspense>
 
       <Suspense fallback={null}>
-        <MobileNavDrawer open={mobileOpen} onClose={closeMobile} user={user} loading={loading} />
+        <MobileNavDrawer
+          open={mobileOpen}
+          onClose={closeMobile}
+          user={user}
+          loading={loading}
+          showClientPlaylist={showClientPlaylist}
+        />
       </Suspense>
     </header>
   );

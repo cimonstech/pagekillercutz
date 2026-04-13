@@ -1,16 +1,33 @@
 "use client";
 
 import Image from "next/image";
-import { CalendarDays, CheckCircle2, Clock3, FileAudio, ImagePlus, Music2, Plus, UploadCloud, X } from "lucide-react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Clock3,
+  FileAudio,
+  ImagePlus,
+  Music2,
+  Pause,
+  Play,
+  Plus,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AlbumTrack, Database } from "@/lib/database.types";
 import { writeAuditLog } from "@/lib/writeAuditLog";
 import { useAdminToast } from "@/hooks/useAdminToast";
+import { buildAlbumPlayerQueue } from "@/lib/album-playback";
 import { formatDuration } from "@/lib/player-utils";
+import { usePlayerStore } from "@/lib/store/playerStore";
 
 type MusicRow = Database["public"]["Tables"]["music"]["Row"];
 type MusicType = MusicRow["type"];
 type TrackFormRow = {
+  id: string;
   title: string;
   duration: string;
   durationSeconds: number | null;
@@ -19,6 +36,40 @@ type TrackFormRow = {
   uploading: boolean;
   uploadProgress: number;
 };
+
+function newTrackId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `tr-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function emptyTrackRow(): TrackFormRow {
+  return {
+    id: newTrackId(),
+    title: "",
+    duration: "",
+    durationSeconds: null,
+    audioFile: null,
+    audioUrl: null,
+    uploading: false,
+    uploadProgress: 0,
+  };
+}
+
+function isValidAudioFile(file: File): boolean {
+  return (
+    ["audio/mpeg", "audio/wav", "audio/flac", "audio/mp4", "audio/x-m4a"].includes(file.type) ||
+    /\.(mp3|wav|flac|m4a)$/i.test(file.name)
+  );
+}
+
+function titleFromAudioFilename(name: string): string {
+  return name.replace(/\.[^.]+$/i, "").trim() || "Track";
+}
+
+type AlbumTrackJson = AlbumTrack & { duration_seconds?: number | null };
+
+function hasPlayableAudio(m: MusicRow): boolean {
+  return buildAlbumPlayerQueue(m).some((t) => Boolean(t.audioUrl));
+}
 const GENRE_OPTIONS = [
   "Afrobeats",
   "Highlife",
@@ -50,9 +101,7 @@ export default function MusicTab() {
     releaseType: "album" as MusicType,
     featured: false,
   });
-  const [tracks, setTracks] = useState<TrackFormRow[]>([
-    { title: "", duration: "", durationSeconds: null, audioFile: null, audioUrl: null, uploading: false, uploadProgress: 0 },
-  ]);
+  const [tracks, setTracks] = useState<TrackFormRow[]>([emptyTrackRow()]);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -136,7 +185,7 @@ export default function MusicTab() {
 
   const releaseTypeHint =
     activeType === "album"
-      ? "Multiple tracks with individual titles and durations. Upload one combined audio file or leave audio empty."
+      ? "Add tracks with Add Track, then upload one audio file per row. Titles can default from the filename when you pick a file."
       : activeType === "single"
         ? "One track. Upload the audio file for this single."
         : "A continuous DJ mix. Upload the full mix audio file.";
@@ -160,7 +209,7 @@ export default function MusicTab() {
     setDetectedDuration(null);
     setExistingCover(null);
     setExistingAudio(null);
-    setTracks([{ title: "", duration: "", durationSeconds: null, audioFile: null, audioUrl: null, uploading: false, uploadProgress: 0 }]);
+    setTracks([emptyTrackRow()]);
     setPublishError("");
     setPublishStatus("");
   };
@@ -193,6 +242,7 @@ export default function MusicTab() {
     if (tr && tr.length) {
       setTracks(
         tr.map((t) => ({
+          id: newTrackId(),
           title: t.title,
           duration: formatDuration(t.duration),
           durationSeconds: t.duration ?? null,
@@ -205,6 +255,7 @@ export default function MusicTab() {
     } else {
       setTracks([
         {
+          id: newTrackId(),
           title: m.title,
           duration: formatDuration(m.duration),
           durationSeconds: m.duration ?? null,
@@ -248,8 +299,7 @@ export default function MusicTab() {
 
   const handleAudioSelect = (file: File | null) => {
     if (!file) return;
-    const ok = ["audio/mpeg", "audio/wav", "audio/flac", "audio/mp4", "audio/x-m4a"].includes(file.type) || /\.(mp3|wav|flac|m4a)$/i.test(file.name);
-    if (!ok) {
+    if (!isValidAudioFile(file)) {
       setPublishError("Audio file must be MP3, WAV, FLAC, or M4A.");
       return;
     }
@@ -261,10 +311,7 @@ export default function MusicTab() {
 
   const handleTrackAudioSelect = async (file: File | null, trackIndex: number) => {
     if (!file) return;
-    const ok =
-      ["audio/mpeg", "audio/wav", "audio/flac", "audio/mp4", "audio/x-m4a"].includes(file.type) ||
-      /\.(mp3|wav|flac|m4a)$/i.test(file.name);
-    if (!ok) {
+    if (!isValidAudioFile(file)) {
       setPublishError("Track audio must be MP3, WAV, FLAC, or M4A.");
       return;
     }
@@ -281,11 +328,14 @@ export default function MusicTab() {
               audioUrl: null,
               uploadProgress: 0,
               uploading: false,
+              title: t.title.trim() || titleFromAudioFilename(file.name),
             }
           : t,
       ),
     );
+    setPublishError("");
   };
+
   const clearTrackAudio = (trackIndex: number) => {
     setTracks((prev) =>
       prev.map((t, i) =>
@@ -392,14 +442,28 @@ export default function MusicTab() {
             ...row,
             audioUrl: uploadedByIndex[idx]?.url ?? row.audioUrl,
             duration: uploadedByIndex[idx]?.duration ? formatDuration(uploadedByIndex[idx]?.duration) : row.duration,
+            durationSeconds:
+              uploadedByIndex[idx]?.duration != null && uploadedByIndex[idx]!.duration! > 0
+                ? uploadedByIndex[idx]!.duration
+                : row.durationSeconds,
           }))
-          .filter((r) => r.title.trim())
-          .map((r) => ({
-            title: r.title.trim(),
-            duration: parseDuration(r.duration),
-            duration_seconds: r.durationSeconds ?? null,
-            audio_url: r.audioUrl ?? null,
-          }));
+          .filter((r) => r.title.trim() || r.audioFile || r.audioUrl)
+          .map((r, trackIdx) => {
+            const trimmedTitle = r.title.trim();
+            const fallbackTitle =
+              trimmedTitle ||
+              titleFromAudioFilename(r.audioFile?.name ?? "") ||
+              `Track ${trackIdx + 1}`;
+            return {
+              title: fallbackTitle.slice(0, 240),
+              duration: parseDuration(r.duration),
+              duration_seconds: r.durationSeconds ?? null,
+              audio_url: r.audioUrl ?? null,
+            };
+          });
+        if (!releaseTracks.length) {
+          throw new Error("Add at least one track (title and/or per-track audio) to this album.");
+        }
         duration = detectedDuration && detectedDuration > 0 ? detectedDuration : releaseTracks[0]?.duration ?? null;
       } else {
         duration = detectedDuration && detectedDuration > 0 ? detectedDuration : null;
@@ -514,6 +578,38 @@ export default function MusicTab() {
     if (libTab === "Mixes") return m.type === "mix";
     return true;
   });
+
+  const setTrack = usePlayerStore((s) => s.setTrack);
+  const setQueue = usePlayerStore((s) => s.setQueue);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null);
+
+  const handlePlayRelease = (m: MusicRow) => {
+    if (!hasPlayableAudio(m)) return;
+    const q = buildAlbumPlayerQueue(m);
+    const start = q.find((t) => t.audioUrl) ?? q[0];
+    if (!start?.audioUrl) return;
+    if (currentTrack?.musicId === m.id) {
+      togglePlay();
+      return;
+    }
+    void setQueue(q);
+    void setTrack(start);
+  };
+
+  const handlePlayAlbumTrack = (release: MusicRow, idx: number, _t: AlbumTrackJson) => {
+    const q = buildAlbumPlayerQueue(release);
+    const target = q[idx];
+    if (!target?.audioUrl) return;
+    if (currentTrack?.id === target.id && isPlaying) {
+      togglePlay();
+      return;
+    }
+    void setQueue(q);
+    void setTrack(target);
+  };
 
   const releaseTypeTabs = useMemo(
     () => [
@@ -727,7 +823,7 @@ export default function MusicTab() {
 
               {activeType === "album" && (
                 <div className="bg-surface-container-lowest p-5 rounded-sm space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <h3 className="font-mono text-[10px] uppercase tracking-widest text-[#00BFFF]">TRACKLIST</h3>
                       <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-[#5A6080]">
@@ -738,20 +834,20 @@ export default function MusicTab() {
                       type="button"
                       className="inline-flex items-center gap-1 rounded-full border border-[#00BFFF]/25 bg-[#00BFFF]/8 px-3 py-1 text-[12px] font-medium text-[#00BFFF]"
                       onClick={() => {
-                        setTracks((prev) => [
-                          ...prev,
-                          { title: "", duration: "", durationSeconds: null, audioFile: null, audioUrl: null, uploading: false, uploadProgress: 0 },
-                        ]);
-                        setTimeout(() => {
-                          const idx = tracks.length;
-                          titleInputRefs.current[idx]?.focus();
-                        }, 0);
+                        setTracks((prev) => {
+                          const idx = prev.length;
+                          queueMicrotask(() => titleInputRefs.current[idx]?.focus());
+                          return [...prev, emptyTrackRow()];
+                        });
                       }}
                     >
                       <Plus className="size-3.5" />
                       Add Track
                     </button>
                   </div>
+                  <p className="text-[11px] text-[#5A6080]">
+                    Use Upload MP3 on each row for that track. Empty titles fill from the filename when you choose a file.
+                  </p>
                   <div className="mb-1 grid grid-cols-[24px_1fr_200px_80px_32px] items-center gap-[10px] border-b border-white/6 pb-1.5">
                     <span className="font-mono text-[10px] text-[#5A6080]">#</span>
                     <span className="font-mono text-[10px] text-[#5A6080]">TITLE</span>
@@ -761,7 +857,7 @@ export default function MusicTab() {
                   </div>
                   <div className="space-y-0">
                     {tracks.map((row, i) => (
-                      <div key={i} className="grid grid-cols-[24px_1fr_200px_80px_32px] items-center gap-[10px] border-b border-white/4 py-2">
+                      <div key={row.id} className="grid grid-cols-[24px_1fr_200px_80px_32px] items-center gap-[10px] border-b border-white/4 py-2">
                         <span className="w-6 font-mono text-[13px] text-[#00BFFF]">{String(i + 1).padStart(2, "0")}</span>
                         <input
                           ref={(el) => {
@@ -784,7 +880,11 @@ export default function MusicTab() {
                             type="file"
                             accept=".mp3,.wav,.flac,.m4a,audio/*"
                             className="hidden"
-                            onChange={(e) => void handleTrackAudioSelect(e.target.files?.[0] ?? null, i)}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0] ?? null;
+                              e.target.value = "";
+                              void handleTrackAudioSelect(f, i);
+                            }}
                           />
                           {!row.audioFile && !row.audioUrl && !row.uploading ? (
                             <button
@@ -900,66 +1000,209 @@ export default function MusicTab() {
             {loading ? (
               <p className="text-on-surface-variant text-sm">Loading…</p>
             ) : (
-              filteredLib.map((m) => (
-                <div
-                  key={m.id}
-                  className="group relative flex items-center gap-4 p-4 bg-surface-container-low hover:bg-surface-container-highest transition-all duration-300"
-                >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-white/6">
-                    {m.cover_url && (m.cover_url.startsWith("https://") || m.cover_url.startsWith("http://")) ? (
-                      <Image
-                        src={m.cover_url}
-                        alt={m.title}
-                        width={56}
-                        height={56}
-                        unoptimized
-                        style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[rgba(0,191,255,0.08)]">
-                        <Music2 className="size-5 text-[#00BFFF]" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 bg-primary/20 text-primary rounded-[2px] tracking-tighter">
-                        {m.type}
-                      </span>
-                      <h4 className="text-sm font-semibold text-white truncate">{m.title}</h4>
-                    </div>
-                    <p className="text-[10px] text-on-surface-variant" title={m.genre ?? ""}>
-                      {m.genre ? truncateGenre(m.genre) : "—"}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      className={`flex h-8 w-8 items-center justify-center rounded-sm ${
-                        m.featured ? "bg-[#F5A623]/15 text-[#F5A623]" : "bg-white/5 text-[rgba(255,255,255,0.25)] hover:text-[#F5A623]"
+              filteredLib.map((m) => {
+                const playable = hasPlayableAudio(m);
+                const albumTracks = m.type === "album" && Array.isArray(m.tracks) && m.tracks.length ? (m.tracks as AlbumTrackJson[]) : null;
+                const rowHighlight =
+                  currentTrack &&
+                  isPlaying &&
+                  (currentTrack.musicId === m.id || currentTrack.id === m.id || currentTrack.id.startsWith(`${m.id}::`));
+                const mainPause = currentTrack?.id === m.id && isPlaying;
+                return (
+                  <div key={m.id}>
+                    <div
+                      className={`group relative flex items-center gap-4 p-4 transition-all duration-300 ${
+                        rowHighlight
+                          ? "border-l-2 border-[#00BFFF] bg-[rgba(0,191,255,0.04)]"
+                          : "bg-surface-container-low hover:bg-surface-container-highest"
                       }`}
-                      title={m.featured ? "Remove from featured" : "Set as featured"}
-                      onClick={() => void handleToggleFeatured(m)}
                     >
-                      <span className="material-symbols-outlined text-lg">{m.featured ? "star" : "star_outline"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 text-on-surface rounded-sm"
-                      onClick={() => startEdit(m)}
-                    >
-                      <span className="material-symbols-outlined text-lg">edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="w-8 h-8 flex items-center justify-center bg-error/10 hover:bg-error/20 text-error rounded-sm"
-                      onClick={() => void remove(m)}
-                    >
-                      <span className="material-symbols-outlined text-lg">delete</span>
-                    </button>
+                      {albumTracks ? (
+                        <button
+                          type="button"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-[#5A6080] hover:text-white"
+                          aria-expanded={expandedReleaseId === m.id}
+                          onClick={() => setExpandedReleaseId((id) => (id === m.id ? null : m.id))}
+                          title={expandedReleaseId === m.id ? "Collapse tracks" : "Expand tracks"}
+                        >
+                          {expandedReleaseId === m.id ? (
+                            <ChevronDown className="size-4" strokeWidth={2} />
+                          ) : (
+                            <ChevronRight className="size-4" strokeWidth={2} />
+                          )}
+                        </button>
+                      ) : (
+                        <span className="w-8 shrink-0" aria-hidden />
+                      )}
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-white/6">
+                        {m.cover_url && (m.cover_url.startsWith("https://") || m.cover_url.startsWith("http://")) ? (
+                          <Image
+                            src={m.cover_url}
+                            alt={m.title}
+                            width={56}
+                            height={56}
+                            unoptimized
+                            style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-[rgba(0,191,255,0.08)]">
+                            <Music2 className="size-5 text-[#00BFFF]" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-[2px] bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-tighter text-primary">
+                            {m.type}
+                          </span>
+                          <h4 className="truncate text-sm font-semibold text-white">{m.title}</h4>
+                        </div>
+                        <p className="text-[10px] text-on-surface-variant" title={m.genre ?? ""}>
+                          {m.genre ? truncateGenre(m.genre) : "—"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        title={!playable ? "No audio uploaded" : mainPause ? "Pause" : "Play"}
+                        disabled={!playable}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayRelease(m);
+                        }}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-30"
+                        style={
+                          mainPause
+                            ? {
+                                background: "rgba(0,191,255,0.15)",
+                                border: "1px solid #00BFFF",
+                              }
+                            : {
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.10)",
+                              }
+                        }
+                        onMouseEnter={(e) => {
+                          if (!playable) return;
+                          if (!mainPause) {
+                            e.currentTarget.style.background = "rgba(0,191,255,0.12)";
+                            e.currentTarget.style.border = "1px solid #00BFFF";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!playable) return;
+                          if (mainPause) {
+                            e.currentTarget.style.background = "rgba(0,191,255,0.15)";
+                            e.currentTarget.style.border = "1px solid #00BFFF";
+                          } else {
+                            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                            e.currentTarget.style.border = "1px solid rgba(255,255,255,0.10)";
+                          }
+                        }}
+                      >
+                        {mainPause ? (
+                          <Pause className="size-[14px] text-[#00BFFF]" strokeWidth={2.5} fill="currentColor" />
+                        ) : (
+                          <Play className="size-[14px] text-white" strokeWidth={2.5} fill="currentColor" />
+                        )}
+                      </button>
+                      <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          className={`flex h-8 w-8 items-center justify-center rounded-sm ${
+                            m.featured ? "bg-[#F5A623]/15 text-[#F5A623]" : "bg-white/5 text-[rgba(255,255,255,0.25)] hover:text-[#F5A623]"
+                          }`}
+                          title={m.featured ? "Remove from featured" : "Set as featured"}
+                          onClick={() => void handleToggleFeatured(m)}
+                        >
+                          <span className="material-symbols-outlined text-lg">{m.featured ? "star" : "star_outline"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="flex h-8 w-8 items-center justify-center rounded-sm bg-white/5 text-on-surface hover:bg-white/10"
+                          onClick={() => startEdit(m)}
+                        >
+                          <span className="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="flex h-8 w-8 items-center justify-center rounded-sm bg-error/10 text-error hover:bg-error/20"
+                          onClick={() => void remove(m)}
+                        >
+                          <span className="material-symbols-outlined text-lg">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                    {albumTracks && expandedReleaseId === m.id ? (
+                      <div className="border-b border-white/6 bg-[rgba(0,0,0,0.15)] px-4 py-2">
+                        {albumTracks.map((t, idx) => {
+                          const subId = `${m.id}::tr::${idx}`;
+                          const audio = t.audio_url || m.audio_url;
+                          const subPlay = currentTrack?.id === subId && isPlaying;
+                          const durSec =
+                            typeof t.duration_seconds === "number" && t.duration_seconds > 0
+                              ? t.duration_seconds
+                              : t.duration > 0
+                                ? t.duration
+                                : null;
+                          return (
+                            <div
+                              key={`${m.id}-tr-${idx}`}
+                              className="ml-14 flex items-center gap-3 border-b border-white/[0.04] py-2 last:border-0"
+                            >
+                              <span className="w-6 shrink-0 font-mono text-[11px] text-[#5A6080]">{String(idx + 1).padStart(2, "0")}</span>
+                              <span className="min-w-0 flex-1 truncate font-body text-[13px] text-white">{t.title}</span>
+                              <span className="shrink-0 font-mono text-[11px] text-[#5A6080]">
+                                {durSec != null ? formatDuration(durSec) : "--:--"}
+                              </span>
+                              <button
+                                type="button"
+                                title={!audio ? "No audio uploaded" : subPlay ? "Pause" : "Play"}
+                                disabled={!audio}
+                                onClick={() => handlePlayAlbumTrack(m, idx, t)}
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-30"
+                                style={
+                                  subPlay
+                                    ? {
+                                        background: "rgba(0,191,255,0.15)",
+                                        border: "1px solid #00BFFF",
+                                      }
+                                    : {
+                                        background: "rgba(255,255,255,0.06)",
+                                        border: "1px solid rgba(255,255,255,0.10)",
+                                      }
+                                }
+                                onMouseEnter={(e) => {
+                                  if (!audio) return;
+                                  if (!subPlay) {
+                                    e.currentTarget.style.background = "rgba(0,191,255,0.12)";
+                                    e.currentTarget.style.border = "1px solid #00BFFF";
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!audio) return;
+                                  if (subPlay) {
+                                    e.currentTarget.style.background = "rgba(0,191,255,0.15)";
+                                    e.currentTarget.style.border = "1px solid #00BFFF";
+                                  } else {
+                                    e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+                                    e.currentTarget.style.border = "1px solid rgba(255,255,255,0.10)";
+                                  }
+                                }}
+                              >
+                                {subPlay ? (
+                                  <Pause className="size-3 text-[#00BFFF]" strokeWidth={2.5} fill="currentColor" />
+                                ) : (
+                                  <Play className="size-3 text-white" strokeWidth={2.5} fill="currentColor" />
+                                )}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : null}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </section>

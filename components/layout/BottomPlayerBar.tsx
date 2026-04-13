@@ -59,6 +59,8 @@ export default function BottomPlayerBar() {
   const volume = usePlayerStore((s) => s.volume);
   const shuffle = usePlayerStore((s) => s.shuffle);
   const isVisible = usePlayerStore((s) => s.isVisible);
+  const playerBarMinimized = usePlayerStore((s) => s.playerBarMinimized);
+  const setPlayerBarMinimized = usePlayerStore((s) => s.setPlayerBarMinimized);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const setProgress = usePlayerStore((s) => s.setProgress);
   const setDuration = usePlayerStore((s) => s.setDuration);
@@ -137,6 +139,9 @@ export default function BottomPlayerBar() {
 
   const currentCover = current.coverUrl && current.coverUrl.startsWith("http") ? current.coverUrl : null;
 
+  /** Clears the sidebar pill (~56px) + gap; on small screens the pill is hidden. */
+  const miniLeftClass = "left-4 sm:left-[80px]";
+
   return (
     <>
       <audio
@@ -157,11 +162,85 @@ export default function BottomPlayerBar() {
           setIsPlaying(false);
         }}
       />
+      {playerBarMinimized ? (
+        <div
+          className={`fixed bottom-4 z-[100] flex flex-col items-center gap-2 ${miniLeftClass}`}
+          role="region"
+          aria-label="Now playing (minimized)"
+        >
+          <div className="relative">
+            <button
+              type="button"
+              className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-[#141418]/95 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl ring-2 ring-[#00BFFF]/25 transition-transform hover:scale-[1.04] active:scale-[0.98] sm:h-[52px] sm:w-[52px]"
+              style={{ WebkitBackdropFilter: "blur(16px)" }}
+              aria-label="Expand player"
+              onClick={() => setPlayerBarMinimized(false)}
+            >
+              {currentCover ? (
+                <Image
+                  src={currentCover}
+                  alt=""
+                  width={56}
+                  height={56}
+                  unoptimized
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="material-symbols-outlined text-white/50">music_note</span>
+              )}
+            </button>
+            {isPlaying ? (
+              <span
+                className="pointer-events-none absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[#00BFFF] shadow-[0_0_8px_rgba(0,191,255,0.9)]"
+                aria-hidden
+              />
+            ) : null}
+          </div>
+          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/40 p-0.5 backdrop-blur-md">
+            <button
+              type="button"
+              className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10"
+              aria-label="Previous track"
+              onClick={() => prevTrack()}
+            >
+              <span className="material-symbols-outlined text-[20px]">skip_previous</span>
+            </button>
+            <button
+              type="button"
+              disabled={noAudio}
+              className={`flex h-9 w-9 items-center justify-center rounded-full ${noAudio ? "cursor-not-allowed opacity-40" : ""}`}
+              style={{ backgroundColor: ACCENT, color: "#000000" }}
+              aria-label={isPlaying ? "Pause" : "Play"}
+              onClick={() => togglePlay()}
+            >
+              <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                {isPlaying ? "pause" : "play_arrow"}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="rounded-full p-1.5 text-white/80 transition-colors hover:bg-white/10"
+              aria-label="Next track"
+              onClick={() => nextTrack()}
+            >
+              <span className="material-symbols-outlined text-[20px]">skip_next</span>
+            </button>
+          </div>
+        </div>
+      ) : (
       <footer
         className="fixed bottom-4 left-1/2 z-[100] flex w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 items-center gap-4 rounded-full border border-white/10 bg-[#141418]/90 px-4 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl md:gap-6 md:px-6 md:py-3"
         style={{ WebkitBackdropFilter: "blur(16px)" }}
       >
-        <div className="flex min-w-0 flex-[0_1_200px] items-center gap-3 md:flex-[0_1_240px]">
+        <div className="flex min-w-0 flex-[0_1_200px] items-center gap-2 md:flex-[0_1_240px] md:gap-3">
+          <button
+            type="button"
+            className="shrink-0 rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white sm:hidden"
+            aria-label="Minimize player"
+            onClick={() => setPlayerBarMinimized(true)}
+          >
+            <span className="material-symbols-outlined text-[22px]">expand_more</span>
+          </button>
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#11131a] ring-1 ring-white/10">
             {currentCover ? (
               <Image
@@ -247,6 +326,15 @@ export default function BottomPlayerBar() {
         <div className="hidden shrink-0 items-center gap-1 sm:flex md:gap-2">
           <button
             type="button"
+            className="rounded-full p-1.5 text-white/70 transition-colors hover:text-white"
+            aria-label="Minimize player"
+            title="Minimize player"
+            onClick={() => setPlayerBarMinimized(true)}
+          >
+            <span className="material-symbols-outlined text-[22px]">expand_more</span>
+          </button>
+          <button
+            type="button"
             className={`rounded-full p-1.5 transition-colors ${shuffle ? "text-[#EEFF00]" : "text-white/70 hover:text-white"}`}
             aria-label="Shuffle"
             onClick={() => toggleShuffle()}
@@ -271,6 +359,7 @@ export default function BottomPlayerBar() {
           </div>
         </div>
       </footer>
+      )}
     </>
   );
 }

@@ -2,42 +2,19 @@
 
 import Image from "next/image";
 import { FastForward, MoreHorizontal, Pause, Play, Rewind, SkipBack, SkipForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { buildAlbumPlayerQueue } from "@/lib/album-playback";
+import type { Database } from "@/lib/database.types";
 import { formatDuration } from "@/lib/player-utils";
 import { usePlayerStore } from "@/lib/store/playerStore";
-import type { PlayerTrack } from "@/lib/store/playerStore";
 
-type HeroTrack = {
-  id: string;
-  title: string;
-  type: string;
-  cover_url: string | null;
-  audio_url: string | null;
-  duration: number | null;
-  featured?: boolean;
-};
+type MusicRow = Database["public"]["Tables"]["music"]["Row"];
 
 interface HeroMusicCardProps {
-  tracks: HeroTrack[];
+  tracks: MusicRow[];
 }
 
-const ARTIST = "Page KillerCutz";
 const FALLBACK_COVER = "/killercutz-logo.webp";
-
-function mapTrack(t: HeroTrack): PlayerTrack {
-  return {
-    id: t.id,
-    musicId: t.id,
-    title: t.title,
-    artist: ARTIST,
-    coverUrl: t.cover_url ?? FALLBACK_COVER,
-    audioUrl: t.audio_url,
-    type: t.type,
-    releaseType: t.type,
-    duration: t.duration ?? 0,
-    durationSec: t.duration ?? 0,
-  };
-}
 
 export default function HeroMusicCard({ tracks }: HeroMusicCardProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -51,27 +28,38 @@ export default function HeroMusicCard({ tracks }: HeroMusicCardProps) {
   const duration = usePlayerStore((s) => s.duration);
 
   const safeTracks = tracks.slice(0, 3);
-  const globalActiveIndex = currentTrack ? safeTracks.findIndex((t) => t.id === currentTrack.id) : -1;
+  const globalActiveIndex = currentTrack
+    ? safeTracks.findIndex((t) => t.id === currentTrack.musicId)
+    : -1;
   const resolvedActiveIndex = globalActiveIndex !== -1 ? globalActiveIndex : activeIndex;
   const activeTrack = safeTracks[resolvedActiveIndex];
 
-  useEffect(() => {
-    if (!safeTracks.length) return;
-    setQueue(safeTracks.map(mapTrack));
-  }, [safeTracks, setQueue]);
-
-  const isThisTrackActive = currentTrack?.id === activeTrack?.id;
+  const isThisTrackActive = Boolean(activeTrack && currentTrack?.musicId === activeTrack.id);
   const isThisCardPlaying = Boolean(isThisTrackActive && isPlaying);
 
   const displayProgress = isThisTrackActive ? progress : 0;
   const displayDuration = isThisTrackActive ? duration : activeTrack?.duration ?? 0;
   const progressPct = displayDuration > 0 ? Math.min(100, (displayProgress / displayDuration) * 100) : 0;
 
-  const handleTrackClick = (index: number) => {
-    const track = safeTracks[index];
-    if (!track) return;
+  const playReleaseAtIndex = (index: number) => {
+    const m = safeTracks[index];
+    if (!m) return;
     setActiveIndex(index);
-    void setTrack(mapTrack(track));
+    const q = buildAlbumPlayerQueue(m);
+    const start = q.find((t) => t.audioUrl) ?? q[0];
+    if (!start) return;
+    setQueue(q);
+    void setTrack(start);
+  };
+
+  const handleTrackClick = (index: number) => {
+    const m = safeTracks[index];
+    if (!m) return;
+    if (currentTrack?.musicId === m.id) {
+      togglePlay();
+      return;
+    }
+    playReleaseAtIndex(index);
   };
 
   const handlePlayPause = () => {
@@ -80,16 +68,18 @@ export default function HeroMusicCard({ tracks }: HeroMusicCardProps) {
       togglePlay();
       return;
     }
-    void setTrack(mapTrack(activeTrack));
+    playReleaseAtIndex(resolvedActiveIndex);
   };
 
   const handlePrev = () => {
-    const nextIndex = activeIndex > 0 ? activeIndex - 1 : safeTracks.length - 1;
+    const from = resolvedActiveIndex;
+    const nextIndex = from > 0 ? from - 1 : safeTracks.length - 1;
     handleTrackClick(nextIndex);
   };
 
   const handleNext = () => {
-    const nextIndex = activeIndex < safeTracks.length - 1 ? activeIndex + 1 : 0;
+    const from = resolvedActiveIndex;
+    const nextIndex = from < safeTracks.length - 1 ? from + 1 : 0;
     handleTrackClick(nextIndex);
   };
 
@@ -177,7 +167,7 @@ export default function HeroMusicCard({ tracks }: HeroMusicCardProps) {
           <div className="px-5 pb-2 font-label text-[9px] font-bold uppercase tracking-[0.15em] text-[#5A6080]">Tracklist</div>
           {safeTracks.map((track, i) => {
             const isActive = i === resolvedActiveIndex;
-            const isThisPlaying = currentTrack?.id === track.id && isPlaying;
+            const isThisPlaying = currentTrack?.musicId === track.id && isPlaying;
             return (
               <button
                 key={track.id}

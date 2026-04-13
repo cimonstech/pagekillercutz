@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowLeft, CalendarDays, Clock3, Copy, Music, Music2, Play, Share2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { buildAlbumPlayerQueue } from "@/lib/album-playback";
 import { usePlayerStore } from "@/lib/store/playerStore";
 import type { AlbumTrack, Database } from "@/lib/database.types";
 import { formatDuration } from "@/lib/player-utils";
@@ -103,6 +104,7 @@ export default function MusicDetailPage() {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const setTrack = usePlayerStore((s) => s.setTrack);
+  const setQueue = usePlayerStore((s) => s.setQueue);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
 
   useEffect(() => {
@@ -142,7 +144,11 @@ export default function MusicDetailPage() {
   if (loading) return <LoadingSkeleton />;
   if (notFound || !music) return <NotFound />;
 
-  const isThisPlaying = currentTrack?.id === music.id && isPlaying;
+  const playingThisRelease =
+    currentTrack?.musicId === music.id ||
+    currentTrack?.id === music.id ||
+    (typeof currentTrack?.id === "string" && currentTrack.id.startsWith(`${music.id}::`));
+  const isThisPlaying = playingThisRelease && isPlaying;
   const cover = music.cover_url && music.cover_url.startsWith("http") ? music.cover_url : null;
   const typeColor =
     music.type === "album" ? "#00BFFF" : music.type === "single" ? "#F5A623" : "#9B7BFF";
@@ -236,19 +242,15 @@ export default function MusicDetailPage() {
             <button
               type="button"
               onClick={() => {
-                if (isThisPlaying) {
+                const queue = buildAlbumPlayerQueue(music);
+                const first = queue.find((t) => t.audioUrl) ?? queue[0];
+                if (!first) return;
+                if (playingThisRelease) {
                   togglePlay();
                   return;
                 }
-                void setTrack({
-                  id: music.id,
-                  title: music.title,
-                  artist: "Page KillerCutz",
-                  coverUrl: music.cover_url,
-                  audioUrl: music.audio_url,
-                  type: music.type,
-                  releaseType: music.type,
-                });
+                void setQueue(queue);
+                void setTrack(first);
               }}
               className="inline-flex h-14 items-center gap-2 rounded-full px-8 font-headline text-[16px] font-semibold text-black shadow-[0_0_28px_rgba(0,191,255,0.35)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: "#00BFFF" }}
@@ -293,20 +295,13 @@ export default function MusicDetailPage() {
                     <span className="font-mono text-[12px] text-[#5A6080]">{formatDuration(track.duration)}</span>
                     <button
                       type="button"
-                      onClick={() =>
-                        void setTrack({
-                          id: `${music.id}-${i}`,
-                          musicId: music.id,
-                          title: track.title,
-                          artist: "Page KillerCutz",
-                          coverUrl: music.cover_url,
-                          audioUrl: track.audio_url ?? music.audio_url,
-                          type: music.type,
-                          releaseType: music.type,
-                          duration: track.duration ?? undefined,
-                          durationSec: track.duration ?? undefined,
-                        })
-                      }
+                      onClick={() => {
+                        const queue = buildAlbumPlayerQueue(music);
+                        const target = queue[i];
+                        if (!target?.audioUrl) return;
+                        void setQueue(queue);
+                        void setTrack(target);
+                      }}
                       className="text-white/40 transition-colors hover:text-[#00BFFF]"
                       aria-label={`Play ${track.title}`}
                     >

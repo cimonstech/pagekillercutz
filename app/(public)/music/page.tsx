@@ -7,9 +7,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AnimateIn from "@/components/ui/AnimateIn";
 import { gsap } from "@/lib/gsap";
 import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
+import { buildAlbumPlayerQueue } from "@/lib/album-playback";
+import type { Database } from "@/lib/database.types";
 import { formatDuration } from "@/lib/player-utils";
 import type { PlayerTrack } from "@/lib/store/playerStore";
 import { usePlayerStore } from "@/lib/store/playerStore";
+
+type MusicRow = Database["public"]["Tables"]["music"]["Row"];
 
 const TABS = ["Discography", "Mixes", "Singles", "Videos"] as const;
 type Tab = (typeof TABS)[number];
@@ -42,10 +46,26 @@ function releaseToTrack(item: Release): PlayerTrack {
   };
 }
 
-async function playReleaseFromApi(item: Release, setTrack: (t: PlayerTrack) => void) {
+async function fetchMusicRow(id: string): Promise<MusicRow | null> {
+  try {
+    const res = await fetch(`/api/music/${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { music?: MusicRow };
+    return json.music ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function playReleaseFromApi(
+  item: Release,
+  setTrack: (t: PlayerTrack) => Promise<void>,
+  setQueue: (tracks: PlayerTrack[]) => void,
+) {
   const track = releaseToTrack(item);
+  setQueue([track]);
   if (track.audioUrl) {
-    setTrack(track);
+    await setTrack(track);
     return;
   }
   try {
@@ -56,18 +76,20 @@ async function playReleaseFromApi(item: Release, setTrack: (t: PlayerTrack) => v
     };
     const m = json.music;
     if (m && (m.audio_url != null || (m.duration != null && m.duration > 0))) {
-      setTrack({
+      const next = {
         ...track,
         audioUrl: m.audio_url ?? null,
         durationSec:
           typeof m.duration === "number" && m.duration > 0 ? m.duration : track.durationSec,
-      });
+      };
+      setQueue([next]);
+      await setTrack(next);
       return;
     }
   } catch {
     /* fall through to simulated */
   }
-  setTrack({ ...track, audioUrl: null });
+  await setTrack({ ...track, audioUrl: null });
 }
 
 function tabToApiUrl(tab: Tab): string | null {
@@ -113,15 +135,27 @@ export default function MusicPage() {
   }, []);
 
   const playRelease = useCallback(
-    (item: Release) => {
-      setQueue(releases.map((r) => releaseToTrack(r)));
-      if (currentTrack?.id === item.id) {
+    async (item: Release) => {
+      const full = await fetchMusicRow(item.id);
+      if (full) {
+        const queue = buildAlbumPlayerQueue(full);
+        const start = queue.find((t) => t.audioUrl) ?? queue[0];
+        if (!start) return;
+        if (currentTrack?.musicId === item.id) {
+          togglePlay();
+          return;
+        }
+        setQueue(queue);
+        await setTrack(start);
+        return;
+      }
+      if (currentTrack?.musicId === item.id || currentTrack?.id === item.id) {
         togglePlay();
         return;
       }
-      void playReleaseFromApi(item, setTrack);
+      await playReleaseFromApi(item, setTrack, setQueue);
     },
-    [currentTrack?.id, releases, setQueue, setTrack, togglePlay],
+    [currentTrack?.id, currentTrack?.musicId, setQueue, setTrack, togglePlay],
   );
 
   const handleCardClick = useCallback(
@@ -182,24 +216,6 @@ export default function MusicPage() {
       cancelled = true;
     };
   }, [activeTab]);
-
-  useEffect(() => {
-    if (!releases.length) return;
-    setQueue(
-      releases.map((r) => ({
-        id: r.id,
-        musicId: r.id,
-        title: r.title,
-        artist: ARTIST,
-        coverUrl: r.src,
-        audioUrl: r.audioUrl ?? null,
-        type: r.releaseType,
-        releaseType: r.releaseType,
-        duration: r.durationSec ?? 0,
-        durationSec: r.durationSec ?? 0,
-      })),
-    );
-  }, [releases, setQueue]);
 
   useEffect(() => {
     let cancelled = false;
@@ -293,7 +309,7 @@ export default function MusicPage() {
               className="pl-6 pr-5 py-2.5 bg-primary text-on-primary-fixed font-headline font-bold text-sm uppercase tracking-widest rounded-full active:scale-[0.96] transition-transform duration-150 ease-out glow-btn flex items-center gap-2"
               onClick={() => {
                 const first = releases[0];
-                if (first) playRelease(first);
+                if (first) void playRelease(first);
                 else if (featuredRow)
                   void playReleaseFromApi(
                     {
@@ -304,6 +320,7 @@ export default function MusicPage() {
                       releaseType: featuredRow.type,
                     },
                     setTrack,
+                    setQueue,
                   );
               }}
             >
@@ -368,7 +385,9 @@ export default function MusicPage() {
             ) : (
               releases.map((item) => (
                 (() => {
-                  const isActive = currentTrack?.id === item.id;
+                  const isActive =
+                    currentTrack?.musicId === item.id ||
+                    currentTrack?.id === item.id;
                   const showEq = isActive && isPlaying;
                   return (
                 <div
@@ -410,7 +429,11 @@ export default function MusicPage() {
                           className="material-symbols-outlined ml-[2px] text-[20px] text-on-primary-fixed"
                           style={{ fontVariationSettings: "'FILL' 1" }}
                         >
-                          {!item.audioUrl ? "music_note" : currentTrack?.id === item.id && isPlaying ? "pause" : "play_arrow"}
+                          {!item.audioUrl
+                            ? "music_note"
+                            : (currentTrack?.musicId === item.id || currentTrack?.id === item.id) && isPlaying
+                              ? "pause"
+                              : "play_arrow"}
                         </span>
                       </button>
                     </div>
@@ -474,7 +497,9 @@ export default function MusicPage() {
                     {featuredRow.tracks.map((tr, i) => {
                       const n = String(i + 1).padStart(2, "0");
                       const duration = formatDuration(tr.duration);
-                      const active = i === 0;
+                      const rowId = `${featuredRow.id}::tr::${i}`;
+                      const active =
+                        currentTrack?.musicId === featuredRow.id && currentTrack?.id === rowId;
                       return (
                         <button
                           key={`${tr.title}-${i}`}
@@ -483,20 +508,31 @@ export default function MusicPage() {
                             "group flex w-full items-center gap-5 rounded-lg px-3 py-2.5 text-left transition-[background-color] active:scale-[0.96] active:transition-transform active:duration-150",
                             active ? "bg-primary/8 shadow-[0_0_0_1px_rgba(0,191,255,0.15)]" : "hover:bg-white/5",
                           ].join(" ")}
-                          onClick={() =>
-                            setTrack({
-                              id: `featured-${featuredRow.id}-${i}`,
-                              musicId: featuredRow.id,
-                              title: tr.title,
-                              artist: ARTIST,
-                              coverUrl: featuredRow.cover,
-                              audioUrl: tr.audio_url ?? null,
-                              durationSec: tr.duration > 0 ? tr.duration : 0,
-                              releaseType: featuredRow.type,
-                              type: featuredRow.type,
-                              duration: tr.duration > 0 ? tr.duration : 0,
-                            })
-                          }
+                          onClick={async () => {
+                            const m = await fetchMusicRow(featuredRow.id);
+                            if (!m) {
+                              const fallback = {
+                                id: rowId,
+                                musicId: featuredRow.id,
+                                title: tr.title,
+                                artist: ARTIST,
+                                coverUrl: featuredRow.cover,
+                                audioUrl: tr.audio_url ?? null,
+                                durationSec: tr.duration > 0 ? tr.duration : 0,
+                                releaseType: featuredRow.type,
+                                type: featuredRow.type,
+                                duration: tr.duration > 0 ? tr.duration : 0,
+                              };
+                              setQueue([fallback]);
+                              await setTrack(fallback);
+                              return;
+                            }
+                            const q = buildAlbumPlayerQueue(m);
+                            const target = q[i];
+                            if (!target) return;
+                            setQueue(q);
+                            await setTrack(target);
+                          }}
                         >
                           <span
                             className={`w-5 font-label text-xs ${active ? "text-primary" : "text-on-surface-variant"}`}

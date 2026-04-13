@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   type LucideIcon,
   Calendar,
@@ -16,6 +17,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   Tag,
+  UserCircle,
   Users,
 } from "lucide-react";
 import { useAdminStore } from "@/lib/store/adminStore";
@@ -41,11 +43,22 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/audit-log", label: "Audit Log", superOnly: true, Icon: ClipboardList },
 ];
 
+function emailInitials(email: string): string {
+  const local = email.split("@")[0] ?? "";
+  if (local.length >= 2) return local.slice(0, 2).toUpperCase();
+  return (email.slice(0, 2) || "AD").toUpperCase();
+}
+
 export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const role = useAdminStore((s) => s.role);
   const supabase = createClient();
+  const [footerEmail, setFooterEmail] = useState("");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setFooterEmail(localStorage.getItem("adminEmail") || "");
+  }, []);
 
   const onLogout = async () => {
     await supabase.auth.signOut();
@@ -105,6 +118,21 @@ export default function AdminSidebar() {
           );
         })}
 
+        <div className="mt-2 border-t border-white/[0.06] pt-2">
+          <Link
+            href="/admin/profile"
+            className={[
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all duration-150 border-l-[3px]",
+              pathname === "/admin/profile"
+                ? "bg-white/[0.06] text-white border-white/30"
+                : "border-transparent text-[rgba(255,255,255,0.50)] hover:bg-white/[0.04] hover:text-white/85",
+            ].join(" ")}
+          >
+            <UserCircle className="shrink-0" size={18} strokeWidth={pathname === "/admin/profile" ? 2.25 : 2} aria-hidden />
+            <span className="font-medium text-sm flex-1 text-left">My Profile</span>
+          </Link>
+        </div>
+
         {role === "super_admin" ? (
           <Link
             href="/admin/settings"
@@ -122,7 +150,32 @@ export default function AdminSidebar() {
         ) : null}
       </nav>
 
-      <div className="mt-auto px-3 border-t border-white/5 pt-6">
+      <div className="mt-auto px-3 border-t border-white/5 pt-4 space-y-3">
+        <div className="flex items-center gap-2.5 px-2">
+          <div
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-headline text-[11px] font-bold text-black"
+            style={{
+              background: role === "super_admin" ? "#a78bfa" : "#00BFFF",
+            }}
+            aria-hidden
+          >
+            {emailInitials(footerEmail || "admin")}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-mono text-[10px] text-[#5A6080]" title={footerEmail || undefined}>
+              {footerEmail.length > 16 ? `${footerEmail.slice(0, 16)}…` : footerEmail || "—"}
+            </p>
+            <span
+              className="mt-0.5 inline-block rounded-full px-1.5 py-0 font-mono text-[9px] font-bold uppercase tracking-wide"
+              style={{
+                background: role === "super_admin" ? "rgba(167,139,250,0.2)" : "rgba(0,191,255,0.15)",
+                color: role === "super_admin" ? "#c4b5fd" : "#7ad8ff",
+              }}
+            >
+              {role === "super_admin" ? "Super admin" : "Admin"}
+            </span>
+          </div>
+        </div>
         <button
           type="button"
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-error opacity-70 hover:bg-error/10 hover:opacity-100 transition-all duration-150"

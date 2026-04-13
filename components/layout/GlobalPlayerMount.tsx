@@ -18,17 +18,31 @@ function isAuthShellPath(pathname: string) {
   return NO_PLAYER_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+/** Admin app mounts its own BottomPlayerBar in app/admin/layout.tsx (with padded main). */
+function isAdminAppPath(pathname: string) {
+  return pathname.startsWith("/admin") && pathname !== "/admin/login";
+}
+
 export default function GlobalPlayerMount() {
   const pathname = usePathname();
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const barVisible = usePlayerStore((s) => s.isVisible);
+  const playerBarMinimized = usePlayerStore((s) => s.playerBarMinimized);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--player-offset", barVisible ? "6.25rem" : "0px");
+    const show = Boolean(barVisible && currentTrack);
+    if (!show) {
+      document.documentElement.style.setProperty("--player-offset", "0px");
+      return () => {
+        document.documentElement.style.setProperty("--player-offset", "0px");
+      };
+    }
+    const offset = playerBarMinimized ? "5rem" : "6.25rem";
+    document.documentElement.style.setProperty("--player-offset", offset);
     return () => {
       document.documentElement.style.setProperty("--player-offset", "0px");
     };
-  }, [barVisible]);
+  }, [barVisible, currentTrack, playerBarMinimized]);
 
   if (isAuthShellPath(pathname)) {
     return null;
@@ -36,6 +50,10 @@ export default function GlobalPlayerMount() {
 
   if (pathname === "/merch" || pathname.startsWith("/merch/")) {
     return null;
+  }
+
+  if (isAdminAppPath(pathname)) {
+    return <PlayTrackingBridge />;
   }
 
   return (

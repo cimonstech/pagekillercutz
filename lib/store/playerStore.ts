@@ -26,9 +26,12 @@ type PlayerState = {
   currentTime: number;
   volume: number;
   isVisible: boolean;
+  /** When true, full bottom bar is hidden and a small circular control shows (see BottomPlayerBar). */
+  playerBarMinimized: boolean;
   queue: PlayerTrack[];
   shuffle: boolean;
   setTrack: (track: PlayerTrack) => Promise<void>;
+  setPlayerBarMinimized: (minimized: boolean) => void;
   togglePlay: () => void;
   setIsPlaying: (playing: boolean) => void;
   setVolume: (v: number) => void;
@@ -65,12 +68,15 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTime: 0,
   volume: 0.85,
   isVisible: false,
+  playerBarMinimized: false,
   queue: [],
   shuffle: false,
 
   setTrack: async (track) => {
     let audioUrl = track.audioUrl;
-    if (!audioUrl) {
+    /** Deezer is only for discovery-style playback without a catalog row — never replace missing R2 uploads. */
+    const allowDeezerPreview = !track.musicId;
+    if (!audioUrl && allowDeezerPreview) {
       try {
         const res = await fetch(`/api/music-search?q=${encodeURIComponent(track.title)}&limit=1`);
         const data = (await res.json()) as { results?: Array<{ previewUrl?: string }> };
@@ -94,6 +100,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       duration: trackDuration(nextTrack),
     });
   },
+
+  setPlayerBarMinimized: (minimized) => set({ playerBarMinimized: minimized }),
 
   togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
@@ -139,6 +147,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       currentTime: 0,
       duration: 0,
       isVisible: false,
+      playerBarMinimized: false,
     }),
   skipNext: () => get().nextTrack(),
   skipPrev: () => get().prevTrack(),

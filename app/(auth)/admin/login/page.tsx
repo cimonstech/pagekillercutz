@@ -322,9 +322,6 @@ export default function AdminLoginPage() {
                   arrow_forward
                 </span>
               </Link>
-              <p className="px-4 text-center font-mono text-[10px] text-on-surface-variant opacity-60">
-                Super Admin access uses separate credentials.
-              </p>
             </div>
           </div>
           <div className="mt-12 flex items-center justify-center opacity-10">
