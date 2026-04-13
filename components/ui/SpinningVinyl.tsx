@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PAGE_ICON_URL } from "@/lib/constants";
 
 export type SpinningVinylProps = {
   /** Full rotation duration in seconds (e.g. 4 idle, 8 typing, 1.5 submit hover). */
@@ -61,7 +62,14 @@ export function SpinningVinyl({ spinDurationSec }: SpinningVinylProps) {
 
         {/* Centre label — static, does not spin */}
         <div className="playlist-vinyl-label pointer-events-none absolute left-1/2 top-1/2 z-[3] flex h-[88px] w-[88px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-[rgba(255,255,255,0.10)] bg-[#161616]">
-          <Image src="/pageicon.png" alt="" width={28} height={28} className="size-[28px] object-contain" />
+          <Image
+            src={PAGE_ICON_URL}
+            alt=""
+            width={28}
+            height={28}
+            className="size-[28px] object-contain"
+            unoptimized
+          />
           <span className="font-label text-[8px] font-normal leading-tight text-white">PAGE</span>
           <span className="font-label text-[8px] font-normal leading-tight text-[#00BFFF]">KILLERCUTZ</span>
         </div>

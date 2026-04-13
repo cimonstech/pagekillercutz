@@ -10,6 +10,7 @@ import { gsap } from "@/lib/gsap";
 import { useAuth } from "@/hooks/useAuth";
 import { getDisplayName, getInitials } from "@/lib/user-display";
 import { createClient } from "@/lib/supabase/client";
+import { PAGE_ICON_URL } from "@/lib/constants";
 
 const CENTER_LINKS = [
   { href: "/", label: "Home", match: "home" },
@@ -188,7 +189,7 @@ function PublicTopBarInner({
     <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-10">
       <Link href="/" className="flex shrink-0 items-center gap-2.5">
         <Image
-          src="https://assets.pagekillercutz.com/pageicon.png"
+          src={PAGE_ICON_URL}
           alt=""
           width={32}
           height={32}

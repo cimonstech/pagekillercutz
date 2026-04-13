@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { PAGE_ICON_URL } from "@/lib/constants";
 import { SpinningVinyl } from "@/components/ui/SpinningVinyl";
 
 const DASHBOARD = "/client/dashboard";
@@ -186,7 +187,15 @@ function SignInPageInner() {
         className="fixed left-8 top-6 z-10 flex items-center gap-2 outline-none ring-offset-2 ring-offset-[#08080F] focus-visible:ring-2 focus-visible:ring-[#00BFFF]"
         aria-label="Page KillerCutz home"
       >
-        <Image src="/pageicon.png" alt="" width={28} height={28} className="h-7 w-auto object-contain" priority />
+        <Image
+          src={PAGE_ICON_URL}
+          alt=""
+          width={28}
+          height={28}
+          className="h-7 w-auto object-contain"
+          priority
+          unoptimized
+        />
       </Link>
 
       <div className="relative z-[1] flex min-h-0 flex-1 flex-col overflow-hidden">

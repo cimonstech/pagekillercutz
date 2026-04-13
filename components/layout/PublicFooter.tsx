@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PAGE_ICON_URL } from "@/lib/constants";
 
 export default function PublicFooter() {
   return (
@@ -7,11 +8,12 @@ export default function PublicFooter() {
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2 opacity-70">
           <Image
-            src="/pageicon.png"
+            src={PAGE_ICON_URL}
             alt=""
             width={20}
             height={20}
             className="h-5 w-auto object-contain"
+            unoptimized
           />
           <span className="font-display text-base uppercase tracking-tighter">Page KillerCutz</span>
         </div>

@@ -3,6 +3,8 @@
  * Used by dispatch, API routes, and auth hook; Supabase dashboard copies in docs.
  */
 
+import { PAGE_ICON_URL } from "../constants";
+
 function esc(s: string | undefined | null): string {
   if (s == null || s === "") return "";
   return String(s)
@@ -241,7 +243,7 @@ export function baseTemplate(previewText: string, content: string): string {
       <div class="header">
         <div style="margin-bottom:12px">
           <img
-            src="https://assets.pagekillercutz.com/pageicon.png"
+            src="${PAGE_ICON_URL}"
             alt="Page KillerCutz"
             width="44"
             height="44"

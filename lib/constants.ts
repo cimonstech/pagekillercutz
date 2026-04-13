@@ -1,3 +1,6 @@
+/** Nav logo / favor-style mark on R2 (custom domain path includes prefix). */
+export const PAGE_ICON_URL = "https://assets.pagekillercutz.com/pagekillercutz/pageicon.png";
+
 /** Homepage / About — DJ stats (update in one place). */
 export const DJ_STATS = {
   eventsPlayed: "500+",

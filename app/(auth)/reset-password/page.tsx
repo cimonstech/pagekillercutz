@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { authCallbackUrl } from "@/lib/auth/site-url";
 import { createClient } from "@/lib/supabase/client";
+import { PAGE_ICON_URL } from "@/lib/constants";
 
 const glassCard =
   "w-full max-w-[440px] rounded-[24px] border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.05)] px-10 py-12 text-center backdrop-blur-[24px]";
@@ -186,7 +187,15 @@ function ResetPasswordInner() {
         className="fixed z-20 flex items-center gap-2.5 outline-none"
         style={{ top: 24, left: 32 }}
       >
-        <Image src="/pageicon.png" alt="" width={24} height={24} className="h-6 w-auto object-contain" priority />
+        <Image
+          src={PAGE_ICON_URL}
+          alt=""
+          width={24}
+          height={24}
+          className="h-6 w-auto object-contain"
+          priority
+          unoptimized
+        />
         <span className="text-[15px] font-bold tracking-tight text-white" style={{ fontFamily: fontGrotesk }}>
           PAGE KILLERCUTZ
         </span>
