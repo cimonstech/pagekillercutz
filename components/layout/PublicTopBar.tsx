@@ -1,10 +1,15 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { ChevronDown, LayoutDashboard, ListMusic, LogOut } from "lucide-react";
 import { gsap } from "@/lib/gsap";
+import { useAuth } from "@/hooks/useAuth";
+import { getDisplayName, getInitials } from "@/lib/user-display";
+import { createClient } from "@/lib/supabase/client";
 
 const CENTER_LINKS = [
   { href: "/", label: "Home", match: "home" },
@@ -14,12 +19,157 @@ const CENTER_LINKS = [
   { href: "/about", label: "About", match: "about" },
 ] as const;
 
+function DesktopUserAuth({ user, loading }: { user: User | null; loading: boolean }) {
+  const router = useRouter();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        className="hidden shrink-0 rounded-pill md:block"
+        style={{
+          width: 80,
+          height: 32,
+          background: "rgba(255,255,255,0.06)",
+        }}
+        aria-hidden
+      />
+    );
+  }
+
+  if (!user) {
+    return (
+      <button
+        type="button"
+        onClick={() => router.push("/sign-in")}
+        className="hidden shrink-0 rounded-pill border border-[#00BFFF] bg-transparent px-5 py-2 font-headline text-[13px] font-semibold text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/10 md:inline-flex md:items-center md:justify-center"
+      >
+        Sign In
+      </button>
+    );
+  }
+
+  const headerTitle =
+    (typeof user.user_metadata?.full_name === "string" && user.user_metadata.full_name.trim()) ||
+    user.email ||
+    "Account";
+  const headerEmail = user.email ?? "";
+
+  return (
+    <div ref={dropdownRef} className="relative hidden shrink-0 md:block">
+      <button
+        type="button"
+        onClick={() => setDropdownOpen((v) => !v)}
+        className="flex cursor-pointer items-center gap-2 rounded-pill border border-white/[0.10] bg-white/[0.06] py-1 pl-1 pr-3.5 transition-all duration-150 ease-in-out hover:border-white/[0.16] hover:bg-white/[0.10]"
+        aria-expanded={dropdownOpen}
+        aria-haspopup="menu"
+      >
+        <span
+          className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#00BFFF] font-headline text-[11px] font-bold text-black uppercase"
+          aria-hidden
+        >
+          {getInitials(user)}
+        </span>
+        <span className="max-w-[140px] truncate font-headline text-[13px] font-medium text-white">
+          {getDisplayName(user)}
+        </span>
+        <ChevronDown
+          className={[
+            "size-[14px] shrink-0 text-white/40 transition-transform duration-150",
+            dropdownOpen ? "rotate-180" : "",
+          ].join(" ")}
+          aria-hidden
+        />
+      </button>
+
+      {dropdownOpen ? (
+        <div
+          className="absolute right-0 z-[100] overflow-hidden rounded-[14px] border border-white/[0.10] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,0.60)]"
+          style={{
+            top: "calc(100% + 8px)",
+            width: 200,
+            background: "rgba(15,15,25,0.95)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
+          role="menu"
+        >
+          <div className="mb-1 border-b border-white/[0.06] px-3 pb-2 pt-2.5">
+            <p className="max-w-[160px] truncate font-headline text-[13px] font-semibold text-white">{headerTitle}</p>
+            <p className="mt-0.5 max-w-[160px] truncate font-body text-[11px] text-[#5A6080]">{headerEmail}</p>
+          </div>
+
+          <button
+            type="button"
+            role="menuitem"
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
+            onClick={() => {
+              setDropdownOpen(false);
+              router.push("/client/dashboard");
+            }}
+          >
+            <LayoutDashboard className="size-[15px] shrink-0 text-white/40" aria-hidden />
+            <span className="font-body text-[13px] text-white">My Dashboard</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
+            onClick={() => {
+              setDropdownOpen(false);
+              router.push("/client/playlist");
+            }}
+          >
+            <ListMusic className="size-[15px] shrink-0 text-white/40" aria-hidden />
+            <span className="font-body text-[13px] text-white">My Playlist</span>
+          </button>
+
+          <div className="my-1 h-px bg-white/[0.06]" />
+
+          <button
+            type="button"
+            role="menuitem"
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[#FF4560] transition-colors hover:bg-white/[0.06]"
+            onClick={() => {
+              void (async () => {
+                setDropdownOpen(false);
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                localStorage.removeItem("adminRole");
+                router.push("/");
+              })();
+            }}
+          >
+            <LogOut className="size-[15px] shrink-0 text-[#FF4560]" aria-hidden />
+            <span className="font-body text-[13px] font-medium text-[#FF4560]">Sign Out</span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function PublicTopBarInner({
   mobileOpen,
   onToggle,
+  user,
+  loading,
 }: {
   mobileOpen: boolean;
   onToggle: () => void;
+  user: User | null;
+  loading: boolean;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,11 +188,12 @@ function PublicTopBarInner({
     <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-10">
       <Link href="/" className="flex shrink-0 items-center gap-2.5">
         <Image
-          src="/favicon/apple-touch-icon.png"
+          src="https://assets.pagekillercutz.com/pageicon.png"
           alt=""
-          width={28}
-          height={28}
-          className="h-7 w-7 object-contain"
+          width={32}
+          height={32}
+          className="h-8 w-8 rounded-[8px] object-contain"
+          unoptimized
           priority
         />
         <span className="font-headline text-[15px] font-bold tracking-[-0.04em] text-white">
@@ -50,7 +201,6 @@ function PublicTopBarInner({
         </span>
       </Link>
 
-      {/* Desktop nav */}
       <nav
         className="hidden md:flex flex-1 items-center justify-center gap-8 lg:gap-10"
         aria-label="Primary"
@@ -73,17 +223,10 @@ function PublicTopBarInner({
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        {/* Desktop sign-in */}
-        <Link
-          href="/sign-in"
-          className="hidden md:inline-flex items-center justify-center rounded-full border border-[#00BFFF] px-6 py-2.5 font-headline text-[13px] font-semibold text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/10"
-        >
-          Sign In
-        </Link>
+        <DesktopUserAuth user={user} loading={loading} />
 
-        {/* Mobile hamburger */}
         <button
-          className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/70 hover:text-white transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-white/70 transition-colors hover:text-white md:hidden"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
           onClick={onToggle}
@@ -97,8 +240,19 @@ function PublicTopBarInner({
   );
 }
 
-function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MobileNavDrawer({
+  open,
+  onClose,
+  user,
+  loading,
+}: {
+  open: boolean;
+  onClose: () => void;
+  user: User | null;
+  loading: boolean;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const chartsView = pathname === "/music" && searchParams.get("view") === "charts";
 
@@ -172,13 +326,68 @@ function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () => void
               </Link>
             );
           })}
-          <Link
-            href="/sign-in"
-            onClick={onClose}
-            className="mt-4 flex items-center justify-center rounded-full border border-[#00BFFF] px-6 py-2.5 font-headline text-[13px] font-semibold text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/10"
-          >
-            Sign In
-          </Link>
+
+          <div className="mt-4 border-t border-white/[0.06] pt-4">
+            {loading ? (
+              <div
+                className="rounded-pill"
+                style={{ width: 80, height: 32, background: "rgba(255,255,255,0.06)" }}
+                aria-hidden
+              />
+            ) : !user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  router.push("/sign-in");
+                }}
+                className="flex w-full items-center justify-center rounded-pill border border-[#00BFFF] px-6 py-2.5 font-headline text-[13px] font-semibold text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/10"
+              >
+                Sign In
+              </button>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    router.push("/client/dashboard");
+                  }}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left font-headline text-sm text-white transition-colors hover:bg-white/[0.06]"
+                >
+                  <LayoutDashboard className="size-[15px] text-white/40" />
+                  My Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    router.push("/client/playlist");
+                  }}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left font-headline text-sm text-white transition-colors hover:bg-white/[0.06]"
+                >
+                  <ListMusic className="size-[15px] text-white/40" />
+                  My Playlist
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      onClose();
+                      const supabase = createClient();
+                      await supabase.auth.signOut();
+                      localStorage.removeItem("adminRole");
+                      router.push("/");
+                    })();
+                  }}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left font-headline text-sm text-[#FF4560] transition-colors hover:bg-white/[0.06]"
+                >
+                  <LogOut className="size-[15px]" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
       </div>
     </div>
@@ -188,9 +397,11 @@ function MobileNavDrawer({ open, onClose }: { open: boolean; onClose: () => void
 function PublicTopBarFallback({
   mobileOpen,
   onToggle,
+  loading,
 }: {
   mobileOpen: boolean;
   onToggle: () => void;
+  loading: boolean;
 }) {
   return (
     <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-10">
@@ -202,9 +413,17 @@ function PublicTopBarFallback({
       </div>
       <div className="hidden md:flex flex-1" />
       <div className="ml-auto flex items-center gap-3">
-        <div className="hidden md:block h-10 w-[100px] rounded-full border border-[#00BFFF]/40" />
+        {loading ? (
+          <div
+            className="hidden rounded-pill md:block"
+            style={{ width: 80, height: 32, background: "rgba(255,255,255,0.06)" }}
+            aria-hidden
+          />
+        ) : (
+          <div className="hidden h-10 w-[100px] rounded-full border border-[#00BFFF]/40 md:block" />
+        )}
         <button
-          className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/70"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-white/70 md:hidden"
           onClick={onToggle}
           aria-label="Open menu"
         >
@@ -216,6 +435,7 @@ function PublicTopBarFallback({
 }
 
 export default function PublicTopBar() {
+  const { user, loading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const toggle = () => setMobileOpen((v) => !v);
   const headerRef = useRef<HTMLElement>(null);
@@ -237,12 +457,14 @@ export default function PublicTopBar() {
 
   return (
     <header ref={headerRef} className="sticky top-0 z-40 border-b border-white/5 bg-[rgba(8,8,15,0.92)] backdrop-blur-xl">
-      <Suspense fallback={<PublicTopBarFallback mobileOpen={mobileOpen} onToggle={toggle} />}>
-        <PublicTopBarInner mobileOpen={mobileOpen} onToggle={toggle} />
+      <Suspense
+        fallback={<PublicTopBarFallback mobileOpen={mobileOpen} onToggle={toggle} loading={loading} />}
+      >
+        <PublicTopBarInner mobileOpen={mobileOpen} onToggle={toggle} user={user} loading={loading} />
       </Suspense>
 
       <Suspense fallback={null}>
-        <MobileNavDrawer open={mobileOpen} onClose={closeMobile} />
+        <MobileNavDrawer open={mobileOpen} onClose={closeMobile} user={user} loading={loading} />
       </Suspense>
     </header>
   );

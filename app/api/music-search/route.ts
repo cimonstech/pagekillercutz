@@ -1,35 +1,59 @@
 import { logger } from "@/lib/logger";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q");
 
-  if (!q || q.length < 2) {
+  if (!q || q.trim().length < 2) {
     return Response.json({ results: [] });
   }
 
   try {
-    const url = new URL("https://musicbrainz.org/ws/2/recording/");
-    url.searchParams.set("query", q);
-    url.searchParams.set("fmt", "json");
-    url.searchParams.set("limit", "10");
+    const url = new URL("https://api.deezer.com/search");
+    url.searchParams.set("q", q.trim());
+    url.searchParams.set("limit", "8");
+    url.searchParams.set("output", "json");
 
     const res = await fetch(url.toString(), {
       headers: {
-        "User-Agent": "Page KillerCutz/1.0 (contact@pagekillercutz.com)",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
+      next: { revalidate: 60 },
     });
 
     if (!res.ok) {
+      logger.errorRaw("route", "[music-search] Deezer error:", res.status);
       return Response.json({ results: [] });
     }
 
-    const data = (await res.json()) as { recordings?: Record<string, unknown>[] };
-    const results = (data.recordings || []).map((r: Record<string, unknown>) => ({
-      id: r.id,
-      title: r.title,
-      artist: (r["artist-credit"] as Array<{ artist: { name: string } }>)?.[0]?.artist?.name || "Unknown Artist",
-      duration: r.length ? Math.round((r.length as number) / 1000) : null,
+    const data = (await res.json()) as {
+      data?: Array<{
+        id: number;
+        title: string;
+        artist: { name: string };
+        album: {
+          title: string;
+          cover_small: string;
+          cover_medium: string;
+        };
+        duration: number;
+        preview: string;
+      }>;
+      error?: unknown;
+    };
+
+    if (!data.data || data.error) {
+      return Response.json({ results: [] });
+    }
+
+    const results = data.data.map((track) => ({
+      id: String(track.id),
+      title: track.title,
+      artist: track.artist?.name ?? "Unknown",
+      album: track.album?.title ?? "",
+      coverUrl: track.album?.cover_small ?? "",
+      duration: track.duration ?? 0,
+      previewUrl: track.preview ?? "",
     }));
 
     return Response.json({ results });
@@ -38,4 +62,3 @@ export async function GET(request: Request) {
     return Response.json({ results: [] });
   }
 }
-

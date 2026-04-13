@@ -1,25 +1,57 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { Calendar, DoorOpen, Home, Layers, Music, ShoppingBag, Tag } from "lucide-react";
+import { ArrowRight, Calendar, Home, Mic, Music, ShoppingBag, Tag, User as UserIcon } from "lucide-react";
 import { gsap } from "@/lib/gsap";
+import { useAuth } from "@/hooks/useAuth";
+import { getDisplayName, getInitials } from "@/lib/user-display";
+
+const PILL_STYLE: CSSProperties = {
+  position: "fixed",
+  left: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  width: 56,
+  height: "auto",
+  background: "rgba(255,255,255,0.06)",
+  backdropFilter: "blur(24px) saturate(180%)",
+  WebkitBackdropFilter: "blur(24px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 20,
+  boxShadow: "0 8px 40px rgba(0,0,0,0.50)",
+  zIndex: 50,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "16px 8px",
+  gap: 4,
+  overflow: "visible",
+};
 
 const NAV = [
-  { href: "/", icon: Home, label: "Home" },
-  { href: "/music", icon: Music, label: "Music" },
-  { href: "/events", icon: Calendar, label: "Events" },
-  { href: "/merch", icon: ShoppingBag, label: "Merch" },
-  { href: "/booking", icon: DoorOpen, label: "Booking" },
-  { href: "/pricing", icon: Tag, label: "Pricing" },
-  { href: "/sign-in", icon: Layers, label: "Portal" },
+  { href: "/", label: "Home", Icon: Home },
+  { href: "/music", label: "Music", Icon: Music },
+  { href: "/events", label: "Events", Icon: Calendar },
+  { href: "/merch", label: "Merch", Icon: ShoppingBag },
+  { href: "/pricing", label: "Pricing", Icon: Tag },
+  { href: "/booking", label: "Book", Icon: Mic },
 ] as const;
+
+function isPublicNavActive(href: string, pathname: string): boolean {
+  if (href === "/") return pathname === "/";
+  if (href === "/booking") return pathname === "/booking" || pathname.startsWith("/booking/");
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function PublicSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const suppressActive = pathname === "/about" || pathname.startsWith("/about/");
   const sidebarRef = useRef<HTMLElement>(null);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -34,47 +66,84 @@ export default function PublicSidebar() {
     return () => ctx.revert();
   }, []);
 
+  const portalActive = user != null && pathname.startsWith("/client");
+  const signInActive = !suppressActive && pathname === "/sign-in";
+
   return (
     <aside
       ref={sidebarRef}
-      className="hidden sm:block fixed left-4 top-1/2 z-50 w-[72px] -translate-y-1/2 rounded-[20px] border border-white/[0.12] py-5 shadow-[0_8px_40px_rgba(0,0,0,0.5)]"
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        backdropFilter: "blur(24px) saturate(180%)",
-        WebkitBackdropFilter: "blur(24px) saturate(180%)",
-      }}
+      className="hidden sm:flex"
+      style={PILL_STYLE}
       aria-label="Public navigation"
     >
-      <nav className="flex flex-col items-center gap-5">
-        {NAV.map(({ href, icon: Icon, label }) => {
-          const active = suppressActive
-            ? false
-            : href === "/sign-in"
-              ? pathname === "/sign-in"
-              : pathname === href || (href !== "/" && pathname.startsWith(href));
+      <nav className="flex flex-col items-center" style={{ gap: 4 }} aria-label="Primary">
+        {NAV.map(({ href, label, Icon }) => {
+          const active = !suppressActive && isPublicNavActive(href, pathname);
           return (
             <Link
               key={href}
               href={href}
               title={label}
+              aria-label={label}
               className={[
-                "group flex items-center justify-center rounded-lg p-2.5 sm:p-1.5 transition-all duration-200 ease-out",
+                "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-all duration-150 ease-in-out",
                 active
-                  ? "bg-[rgba(0,191,255,0.12)] shadow-[0_0_18px_rgba(0,191,255,0.35)] ring-1 ring-[#00BFFF]/35"
-                  : "",
+                  ? "bg-[rgba(0,191,255,0.12)] text-[#00BFFF]"
+                  : "bg-transparent text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.80)]",
               ].join(" ")}
             >
-              <Icon
-                className={[
-                  "size-5 transition-all duration-200 ease-out group-hover:scale-[1.15]",
-                  active ? "text-[#00BFFF] drop-shadow-[0_0_8px_rgba(0,191,255,0.65)]" : "text-white/55 group-hover:text-white",
-                ].join(" ")}
-                strokeWidth={active ? 2.25 : 1.75}
-              />
+              <Icon size={18} className="shrink-0" strokeWidth={active ? 2.25 : 2} aria-hidden />
             </Link>
           );
         })}
       </nav>
+
+      <div
+        className="shrink-0"
+        style={{
+          width: 32,
+          height: 1,
+          background: "rgba(255,255,255,0.08)",
+          margin: "4px 0",
+        }}
+        aria-hidden
+      />
+
+      {loading ? (
+        <div
+          className="size-8 shrink-0 rounded-full bg-white/[0.06]"
+          aria-hidden
+        />
+      ) : user ? (
+        <Link
+          href="/client/dashboard"
+          aria-label="Client dashboard"
+          title={getDisplayName(user)}
+          className={[
+            "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full font-headline text-[11px] font-bold uppercase text-white transition-all duration-150 ease-in-out",
+            "bg-[#00BFFF] ring-2 ring-[#00BFFF] ring-offset-2 ring-offset-[#08080F]",
+            portalActive ? "opacity-100" : "opacity-90 hover:opacity-100",
+          ].join(" ")}
+        >
+          {getInitials(user)}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          aria-label="Sign in"
+          title="Sign In"
+          onClick={() => router.push("/sign-in")}
+          className={[
+            "flex size-9 shrink-0 cursor-pointer items-center justify-center gap-0.5 rounded-[10px] transition-all duration-150 ease-in-out",
+            signInActive
+              ? "bg-[rgba(0,191,255,0.12)] text-[#00BFFF]"
+              : "bg-transparent text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.80)]",
+          ].join(" ")}
+        >
+          <UserIcon className="size-[15px] shrink-0" strokeWidth={signInActive ? 2.25 : 2} aria-hidden />
+          <ArrowRight className="size-[15px] shrink-0" strokeWidth={signInActive ? 2.25 : 2} aria-hidden />
+        </button>
+      )}
     </aside>
   );
 }

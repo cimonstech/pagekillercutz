@@ -1,26 +1,31 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   output: "standalone",
   images: {
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "assets.pagekillercutz.com",
+      },
       {
         protocol: "https",
         hostname: "*.supabase.co",
       },
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com",
+        hostname: "e-cdns-images.dzcdn.net",
       },
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "cdns-images.dzcdn.net",
       },
     ],
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "200mb",
     },
   },
 };

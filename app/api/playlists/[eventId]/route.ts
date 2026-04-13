@@ -31,9 +31,20 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const body = (await request.json()) as PlaylistUpdate;
     const lockChangedToTrue = body.locked === true;
 
+    const payload: PlaylistUpdate = {
+      updated_at: new Date().toISOString(),
+    };
+    if (body.genres !== undefined) payload.genres = body.genres;
+    if (body.vibe !== undefined) payload.vibe = body.vibe;
+    if (body.must_play !== undefined) payload.must_play = body.must_play;
+    if (body.do_not_play !== undefined) payload.do_not_play = body.do_not_play;
+    if (body.timeline !== undefined) payload.timeline = body.timeline;
+    if (body.extra_notes !== undefined) payload.extra_notes = body.extra_notes;
+    if (typeof body.locked === "boolean") payload.locked = body.locked;
+
     const { data, error } = await supabase
       .from("playlists")
-      .update({ ...body, updated_at: new Date().toISOString() })
+      .update(payload)
       .eq("event_id", eventId)
       .select("*")
       .single();

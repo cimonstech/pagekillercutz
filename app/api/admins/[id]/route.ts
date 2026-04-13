@@ -30,6 +30,7 @@ export async function DELETE(_: Request, { params }: RouteContext) {
   try {
     const { id } = await params;
     const supabase = getSupabaseAdmin();
+
     const { error } = await supabase.from("admins").delete().eq("id", id);
     if (error) throw error;
     return Response.json({ success: true });

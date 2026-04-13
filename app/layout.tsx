@@ -4,6 +4,7 @@ import {
   Space_Grotesk,
   Inter,
   Space_Mono,
+  Syne,
 } from 'next/font/google'
 import './globals.css'
 import GlobalPlayerMount from '@/components/layout/GlobalPlayerMount'
@@ -33,6 +34,13 @@ const spaceMono = Space_Mono({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-label',
+  display: 'swap',
+})
+
+const syne = Syne({
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  variable: '--font-syne',
   display: 'swap',
 })
 
@@ -74,6 +82,7 @@ export default function RootLayout({
         spaceGrotesk.variable,
         inter.variable,
         spaceMono.variable,
+        syne.variable,
         'dark',
       ].join(' ')}
     >

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
 import AnimateIn from "@/components/ui/AnimateIn";
-import AnimateCounter from "@/components/ui/AnimateCounter";
+import { DJ_INFO, DJ_STATS } from "@/lib/constants";
 
 function IconInstagram({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
@@ -95,30 +95,21 @@ export default function AboutPage() {
           <AnimateIn from={36} duration={0.9} className="lg:col-span-7 space-y-7">
             <span className="font-label text-xs tracking-[0.2em] uppercase text-primary">About the DJ</span>
             <h1 className="font-display text-4xl sm:text-6xl md:text-8xl uppercase tracking-tighter leading-[0.9]">
-              Page KillerCutz
+              {DJ_INFO.name}
             </h1>
             <div className="space-y-5 text-on-surface-variant leading-[1.8] text-sm max-w-2xl">
-              <p>
-                Based in the vibrant heart of Accra, Page KillerCutz is not just a performer; he is a sonic architect
-                who has spent over a decade redefining the West African club scene. Known for seamless transitions
-                between Afrobeats, Highlife, and global electronic textures, his sets are cinematic journeys that bridge
-                cultural heritage with futuristic sound design.
-              </p>
-              <p>
-                With residency at the continent&apos;s most exclusive venues and a track record of international
-                festival appearances, Page has become the go-to curator for brands seeking a sophisticated,
-                high-energy atmosphere that remains grounded in authentic rhythm.
-              </p>
+              <p>{DJ_INFO.bio}</p>
+              <p>{DJ_INFO.bioSecondary}</p>
             </div>
 
             {/* Stats */}
             <AnimateIn stagger={0.12} className="flex flex-wrap items-center gap-10 py-5 border-y border-white/5">
               <div>
-                <AnimateCounter value={100} suffix="+" className="font-label text-2xl font-bold text-primary" />
+                <span className="font-label text-2xl font-bold text-primary">{DJ_STATS.eventsPlayed}</span>
                 <span className="block font-label text-[10px] uppercase tracking-widest text-outline mt-0.5">Events</span>
               </div>
               <div>
-                <AnimateCounter value={12} suffix="+" className="font-label text-2xl font-bold text-primary" />
+                <span className="font-label text-2xl font-bold text-primary">{DJ_STATS.yearsActive}</span>
                 <span className="block font-label text-[10px] uppercase tracking-widest text-outline mt-0.5">Years</span>
               </div>
               <div>

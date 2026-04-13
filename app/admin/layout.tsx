@@ -20,7 +20,9 @@ export default function AdminLayout({
           style={{
             flex: 1,
             marginLeft: "200px",
+            minHeight: "100vh",
             overflowY: "auto",
+            padding: "32px",
           }}
         >
           {children}

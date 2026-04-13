@@ -1,26 +1,83 @@
 "use client";
 
-import Image from "next/image";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useThemeStore } from "@/lib/store/themeStore";
+import {
+  Calendar,
+  Home,
+  LayoutGrid,
+  ListMusic,
+  LogOut,
+  Music,
+  Package,
+  ShoppingBag,
+  ShoppingCart,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useCartStore } from "@/lib/store/cartStore";
 
-const NAV_ITEMS = [
-  { href: "/", icon: "home", label: "Home" },
-  { href: "/music", icon: "music_note", label: "Music" },
-  { href: "/events", icon: "event", label: "Events" },
-  { href: "/merch", icon: "shopping_bag", label: "Merch" },
-  { href: "/booking", icon: "door_open", label: "Booking" },
-  { href: "/client/dashboard", icon: "grid_view", label: "Portal" },
-  { href: "/admin", icon: "admin_panel_settings", label: "Admin" },
-];
+const PILL_STYLE: CSSProperties = {
+  position: "fixed",
+  left: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  width: 56,
+  height: "auto",
+  background: "rgba(255,255,255,0.06)",
+  backdropFilter: "blur(24px) saturate(180%)",
+  WebkitBackdropFilter: "blur(24px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 20,
+  boxShadow: "0 8px 40px rgba(0,0,0,0.50)",
+  zIndex: 50,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  padding: "16px 8px",
+  gap: 4,
+  overflow: "visible",
+};
+
+function isNavActive(href: string, pathname: string): boolean {
+  if (href === "/") return pathname === "/";
+  if (href === "/client/dashboard") return pathname.startsWith("/client/dashboard");
+  if (href === "/client/playlist") return pathname.startsWith("/client/playlist");
+  if (href === "/client/orders") return pathname === "/client/orders";
+  if (href === "/client/profile") return pathname === "/client/profile";
+  return pathname.startsWith(href);
+}
 
 export default function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isDark, toggle } = useThemeStore();
   const supabase = createClient();
+  const itemCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.qty, 0));
+  const setCartOpen = useCartStore((s) => s.setIsOpen);
+  const [undeliveredOrders, setUndeliveredOrders] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.email || cancelled) return;
+      const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}&limit=200`);
+      if (!res.ok || cancelled) return;
+      const json = (await res.json()) as {
+        orders?: { fulfillment_status: string }[];
+      };
+      const orders = json.orders ?? [];
+      const n = orders.filter((o) => o.fulfillment_status !== "delivered").length;
+      setUndeliveredOrders(n);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase.auth]);
 
   const onLogout = async () => {
     await supabase.auth.signOut();
@@ -28,82 +85,90 @@ export default function AppSidebar() {
     router.push("/sign-in");
   };
 
-  return (
-    <aside
-      className="fixed left-4 top-1/2 z-50 flex w-[72px] -translate-y-1/2 flex-col items-center gap-5 rounded-[20px] border border-white/[0.12] py-5 shadow-[0_8px_40px_rgba(0,0,0,0.5)]"
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        backdropFilter: "blur(24px) saturate(180%)",
-        WebkitBackdropFilter: "blur(24px) saturate(180%)",
-      }}
-      aria-label="App navigation"
-    >
-      <Link
-        href="/"
-        className="relative size-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-white/10 transition-all hover:ring-[#00BFFF]/50"
-        aria-label="Home"
-      >
-        <Image src="/pageicon-white.png" alt="Page KillerCutz" width={40} height={40} className="object-contain" priority />
-      </Link>
+  const topLinks = [
+    { href: "/", label: "Home", Icon: Home },
+    { href: "/music", label: "Music", Icon: Music },
+    { href: "/events", label: "Events", Icon: Calendar },
+    { href: "/merch", label: "Merch", Icon: ShoppingBag },
+    { href: "/client/orders", label: "My Orders", Icon: Package },
+    { href: "/client/dashboard", label: "Dashboard", Icon: LayoutGrid },
+    { href: "/client/playlist", label: "Playlist", Icon: ListMusic },
+    { href: "/client/profile", label: "My Profile", Icon: User },
+  ] as const;
 
-      <nav className="flex flex-1 flex-col items-center gap-5" aria-label="Primary">
-        {NAV_ITEMS.map(({ href, icon, label }) => {
-          const portalActive = href === "/client/dashboard" && pathname.startsWith("/client");
-          const active =
-            portalActive ||
-            (href !== "/client/dashboard" &&
-              (pathname === href || (href !== "/" && pathname.startsWith(href))));
+  return (
+    <aside style={PILL_STYLE} aria-label="App navigation">
+      <nav className="flex flex-col items-center" style={{ gap: 4 }} aria-label="Primary">
+        {topLinks.map(({ href, label, Icon }) => {
+          const active = isNavActive(href, pathname);
+          const showOrdersBadge = href === "/client/orders" && undeliveredOrders > 0;
           return (
-            <Link
-              key={href}
-              href={href}
-              aria-label={label}
-              className={[
-                "relative flex items-center justify-center p-3 transition-all duration-300 active:scale-90",
-                active
-                  ? "rounded-sm bg-white/[0.08] text-[#00BFFF] shadow-[0_0_20px_rgba(0,191,255,0.25)] before:absolute before:left-0 before:top-1/2 before:h-6 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-[#FFD700] before:content-['']"
-                  : "text-[#bcc8d1] opacity-70 hover:text-[#00BFFF] hover:opacity-100",
-              ].join(" ")}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+            <div key={href} className="relative flex justify-center">
+              <Link
+                href={href}
+                aria-label={label}
+                title={label}
+                className={[
+                  "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] transition-all duration-150 ease-in-out",
+                  active
+                    ? "bg-[rgba(0,191,255,0.12)] text-[#00BFFF]"
+                    : "bg-transparent text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.80)]",
+                ].join(" ")}
               >
-                {icon}
-              </span>
-            </Link>
+                <Icon size={18} className="shrink-0" strokeWidth={active ? 2.25 : 2} aria-hidden />
+              </Link>
+              {showOrdersBadge ? (
+                <span
+                  className="pointer-events-none absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F5A623] px-0.5 font-label text-[9px] font-bold leading-none text-black"
+                  aria-hidden
+                >
+                  {undeliveredOrders > 99 ? "99+" : undeliveredOrders}
+                </span>
+              ) : null}
+            </div>
           );
         })}
+        <div className="relative flex justify-center">
+          <button
+            type="button"
+            aria-label="Open cart"
+            title="Cart"
+            onClick={() => setCartOpen(true)}
+            className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] bg-transparent text-[rgba(255,255,255,0.35)] transition-all duration-150 ease-in-out hover:bg-[rgba(255,255,255,0.06)] hover:text-[rgba(255,255,255,0.80)]"
+          >
+            <ShoppingCart size={18} className="shrink-0" strokeWidth={2} aria-hidden />
+            {itemCount > 0 ? (
+              <span
+                className="pointer-events-none absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#00BFFF] px-0.5 font-label text-[9px] font-bold leading-none text-black"
+                aria-hidden
+              >
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            ) : null}
+          </button>
+        </div>
       </nav>
 
-      <div className="flex flex-col items-center gap-5 pb-1">
-        <button
-          aria-label="Toggle theme"
-          className="text-[#bcc8d1] opacity-70 transition-all hover:text-[#00BFFF] hover:opacity-100"
-          type="button"
-          onClick={toggle}
-        >
-          <span className="material-symbols-outlined">{isDark ? "dark_mode" : "light_mode"}</span>
-        </button>
-        <div className="size-8 overflow-hidden rounded-sm bg-surface-container">
-          <Image
-            alt=""
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3c943Wv-IWCIZUNh862-cYwYrCg15v2DeStz2vsRy0B9En4Wymlf9-IYP5AOH9QzOK_5d9Fq0TH2Cog_wi0U7dBt56F0wwOYLafYBLVaSmhnXC7y177K6oww0Qiw24X24Jsq_1B-WrP8JMtYdyKkTiT0WuF0nDo8fu1SoEHt73K2j0PWdK4ebrFp3tejQq5Cx3I-SSxqonabWZkbHWdO0tRiWGy6N7m0-vrMCVlP_tQqgJul0T7enpqFyualaV4B6f0caEVSOebrA"
-            width={32}
-            height={32}
-            className="size-full object-cover"
-            unoptimized
-          />
-        </div>
-        <button
-          aria-label="Sign out"
-          className="text-[#bcc8d1] opacity-70 transition-all hover:text-error hover:opacity-100"
-          type="button"
-          onClick={onLogout}
-        >
-          <span className="material-symbols-outlined">logout</span>
-        </button>
-      </div>
+      <div
+        className="shrink-0"
+        style={{
+          width: 32,
+          height: 1,
+          background: "rgba(255,255,255,0.08)",
+          margin: "4px 0",
+        }}
+        aria-hidden
+      />
+
+      <button
+        type="button"
+        aria-label="Sign out"
+        title="Sign out"
+        onClick={() => void onLogout()}
+        className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] bg-transparent text-[rgba(255,255,255,0.25)] transition-all duration-150 ease-in-out hover:text-[#FF4560]"
+      >
+        <LogOut className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+      </button>
     </aside>
   );
 }

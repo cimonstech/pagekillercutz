@@ -2,78 +2,106 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  type LucideIcon,
+  Calendar,
+  CalendarCheck,
+  ClipboardList,
+  LayoutDashboard,
+  ListMusic,
+  Lock,
+  LogOut,
+  Music,
+  Settings,
+  ShoppingBag,
+  ShoppingCart,
+  Tag,
+  Users,
+} from "lucide-react";
 import { useAdminStore } from "@/lib/store/adminStore";
-import { useThemeStore } from "@/lib/store/themeStore";
 import { createClient } from "@/lib/supabase/client";
 
 type NavItem = {
-  tab: "overview" | "bookings" | "playlists" | "orders" | "music" | "events" | "packages" | "accounts" | "audit-log";
-  icon: string;
+  href: string;
   label: string;
   superOnly?: boolean;
+  Icon: LucideIcon;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { tab: "overview", icon: "dashboard", label: "Overview" },
-  { tab: "bookings", icon: "calendar_today", label: "Bookings" },
-  { tab: "playlists", icon: "queue_music", label: "Playlists" },
-  { tab: "orders", icon: "shopping_cart", label: "Orders" },
-  { tab: "music", icon: "audiotrack", label: "Music" },
-  { tab: "events", icon: "confirmation_number", label: "Events" },
-  { tab: "packages", icon: "inventory_2", label: "Packages" },
-  { tab: "accounts", icon: "group", label: "Accounts", superOnly: true },
-  { tab: "audit-log", icon: "history_edu", label: "Audit Log", superOnly: true },
+  { href: "/admin/overview", label: "Overview", Icon: LayoutDashboard },
+  { href: "/admin/bookings", label: "Bookings", Icon: CalendarCheck },
+  { href: "/admin/playlists", label: "Playlists", Icon: ListMusic },
+  { href: "/admin/orders", label: "Orders", Icon: ShoppingCart },
+  { href: "/admin/packages", label: "Packages", Icon: Tag },
+  { href: "/admin/music", label: "Music", Icon: Music },
+  { href: "/admin/merch", label: "Merch", Icon: ShoppingBag },
+  { href: "/admin/events", label: "Events", Icon: Calendar },
+  { href: "/admin/accounts", label: "Accounts", superOnly: true, Icon: Users },
+  { href: "/admin/audit-log", label: "Audit Log", superOnly: true, Icon: ClipboardList },
 ];
 
 export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { activeTab, setActiveTab, role } = useAdminStore();
-  const { isDark, toggle } = useThemeStore();
+  const role = useAdminStore((s) => s.role);
   const supabase = createClient();
 
   const onLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem("adminRole");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("adminRole");
+      localStorage.removeItem("adminEmail");
+    }
     router.push("/admin/login");
   };
 
   return (
     <aside
-      className="fixed left-0 top-0 bottom-0 w-[200px] z-[60] flex flex-col h-full py-6"
-      style={{ background: "rgba(8,8,15,0.8)", backdropFilter: "blur(20px)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)" }}
+      className="flex flex-col py-6"
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        width: 200,
+        height: "100vh",
+        zIndex: 50,
+        background: "rgba(8,8,15,0.8)",
+        backdropFilter: "blur(20px)",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)",
+      }}
     >
       <div className="px-6 mb-10">
-        <h1 className="text-lg font-display font-extrabold uppercase tracking-widest text-[#00BFFF]">
-          KillerCutz
-        </h1>
-        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant/60 mt-1 font-mono">
-          Admin Console
-        </p>
+        <h1 className="text-lg font-display font-extrabold uppercase tracking-widest text-[#00BFFF]">KillerCutz</h1>
+        <p className="text-[10px] uppercase tracking-widest text-on-surface-variant/60 mt-1 font-mono">Admin Console</p>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 overflow-y-auto custom-scrollbar" aria-label="Admin navigation">
-        {NAV_ITEMS.map(({ tab, icon, label, superOnly }) => {
+      <nav className="flex-1 space-y-0.5 px-3 overflow-y-auto custom-scrollbar" aria-label="Admin navigation">
+        {NAV_ITEMS.map(({ href, label, superOnly, Icon }) => {
           if (superOnly && role !== "super_admin") return null;
-          const isActive = activeTab === tab && pathname.startsWith("/admin");
-          const superTint = superOnly ? "text-[#c084fc]" : "";
+          const isActive = pathname === href;
+          const isSuper = Boolean(superOnly);
+          const activeClass = isActive
+            ? isSuper
+              ? "bg-[rgba(167,139,250,0.12)] text-[#a78bfa] border-l-[3px] border-[#a78bfa]"
+              : "bg-[rgba(0,191,255,0.08)] text-[#00BFFF] border-l-[3px] border-[#00BFFF]"
+            : "border-l-[3px] border-transparent text-[#bcc8d1] opacity-80 hover:bg-white/5 hover:opacity-100";
+          const idleTint = !isActive && isSuper ? "text-[#a78bfa]/80" : "";
+
           return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
+            <Link
+              key={href}
+              href={href}
               className={[
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all active:translate-x-1 duration-150",
-                isActive
-                  ? superOnly
-                    ? "bg-white/10 text-[#c084fc] border-l-2 border-[#c084fc]"
-                    : "bg-white/10 text-[#00BFFF] border-l-2 border-[#FFD700]"
-                  : `text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 ${superTint}`,
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all duration-150",
+                activeClass,
+                idleTint,
               ].join(" ")}
             >
-              <span className="material-symbols-outlined text-xl">{icon}</span>
-              <span className="font-medium text-sm">{label}</span>
-              {superOnly && <span className="material-symbols-outlined text-sm ml-auto">lock</span>}
-            </button>
+              <Icon className="shrink-0" size={18} strokeWidth={isActive ? 2.25 : 2} aria-hidden />
+              <span className="font-medium text-sm flex-1 text-left">{label}</span>
+              {isSuper ? <Lock className="shrink-0 opacity-70" size={12} aria-hidden /> : null}
+            </Link>
           );
         })}
 
@@ -81,29 +109,26 @@ export default function AdminSidebar() {
           <Link
             href="/admin/settings"
             className={[
-              "flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all active:translate-x-1 duration-150",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm transition-all duration-150 mt-0.5",
               pathname === "/admin/settings"
-                ? "bg-white/10 text-[#c084fc] border-l-2 border-[#c084fc]"
-                : "text-[#c084fc] opacity-70 hover:bg-white/5 hover:opacity-100",
+                ? "bg-[rgba(167,139,250,0.12)] text-[#a78bfa] border-l-[3px] border-[#a78bfa]"
+                : "border-l-[3px] border-transparent text-[#a78bfa]/80 hover:bg-white/5",
             ].join(" ")}
           >
-            <span className="material-symbols-outlined text-xl">settings</span>
-            <span className="font-medium text-sm">Settings</span>
-            <span className="material-symbols-outlined text-sm ml-auto">lock</span>
+            <Settings className="shrink-0" size={18} strokeWidth={pathname === "/admin/settings" ? 2.25 : 2} aria-hidden />
+            <span className="font-medium text-sm flex-1 text-left">Settings</span>
+            <Lock className="shrink-0 opacity-70" size={12} aria-hidden />
           </Link>
         ) : null}
       </nav>
 
       <div className="mt-auto px-3 border-t border-white/5 pt-6">
         <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-[#bcc8d1] opacity-70 hover:bg-white/5 hover:opacity-100 transition-all duration-150"
-          onClick={toggle}
+          type="button"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-error opacity-70 hover:bg-error/10 hover:opacity-100 transition-all duration-150"
+          onClick={onLogout}
         >
-          <span className="material-symbols-outlined text-xl">{isDark ? "dark_mode" : "light_mode"}</span>
-          <span className="font-medium text-sm">{isDark ? "Dark Mode" : "Light Mode"}</span>
-        </button>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-error opacity-70 hover:bg-error/10 hover:opacity-100 transition-all duration-150" onClick={onLogout}>
-          <span className="material-symbols-outlined text-xl">logout</span>
+          <LogOut size={18} strokeWidth={2} aria-hidden />
           <span className="font-medium text-sm">Logout</span>
         </button>
       </div>

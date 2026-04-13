@@ -1,80 +1,222 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { mockAuditLog } from "@/lib/mockData";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Database } from "@/lib/database.types";
+import { timeAgo } from "@/lib/timeAgo";
+
+type AuditLogRow = Database["public"]["Tables"]["audit_logs"]["Row"];
+
+function badgeClass(actionType: string): string {
+  switch (actionType) {
+    case "booking":
+      return "border-cyan-400 text-cyan-400 bg-cyan-400/10";
+    case "payment":
+      return "border-[#F5A623] text-[#F5A623] bg-[#F5A623]/10";
+    case "cancellation":
+      return "border-red-400 text-red-400 bg-red-400/10";
+    case "playlist":
+      return "border-green-400 text-green-400 bg-green-400/10";
+    case "account":
+      return "border-purple-400 text-purple-400 bg-purple-400/10";
+    case "order":
+      return "border-blue-400 text-blue-400 bg-blue-400/10";
+    case "system":
+      return "border-slate-500 text-slate-400 bg-slate-500/10";
+    default:
+      return "border-slate-600 text-slate-400 bg-slate-600/10";
+  }
+}
 
 export default function AuditLogTab() {
   const [range, setRange] = useState("All Time");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [logs, setLogs] = useState(mockAuditLog);
+  const [logs, setLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch("/api/audit-logs");
-        const json = (await res.json()) as { logs?: typeof mockAuditLog };
-        if (json.logs) setLogs(json.logs);
-      } finally {
+  const loadLogs = useCallback(() => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    params.set("limit", "50");
+    if (filter !== "all") params.set("action_type", filter);
+
+    const now = new Date();
+    if (range === "7 Days") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 7);
+      params.set("date_from", d.toISOString());
+    } else if (range === "30 Days") {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 30);
+      params.set("date_from", d.toISOString());
+    }
+
+    fetch(`/api/audit-logs?${params.toString()}`)
+      .then((r) => r.json())
+      .then((d: { logs?: AuditLogRow[] }) => {
+        setLogs(d.logs || []);
         setLoading(false);
-      }
-    };
-    void load();
-  }, []);
+      })
+      .catch(() => setLoading(false));
+  }, [filter, range]);
+
+  useEffect(() => {
+    loadLogs();
+  }, [loadLogs]);
 
   const rows = useMemo(
     () =>
-      logs.filter(
-        (r) =>
-          (filter === "all" || r.action.toLowerCase().includes(filter)) &&
-          `${r.actor} ${r.description} ${r.targetId}`.toLowerCase().includes(search.toLowerCase()),
+      logs.filter((r) =>
+        `${r.actor} ${r.description} ${r.target_id ?? ""} ${r.action_type}`
+          .toLowerCase()
+          .includes(search.toLowerCase()),
       ),
-    [filter, logs, search],
+    [logs, search],
   );
+
+  const exportCSV = () => {
+    const headers = ["Date", "Time", "Actor", "Role", "Action", "Description", "Target ID", "IP"];
+    const dataRows = rows.map((log) => [
+      new Date(log.created_at).toLocaleDateString("en-GH"),
+      new Date(log.created_at).toLocaleTimeString("en-GH"),
+      log.actor,
+      log.actor_role,
+      log.action_type,
+      log.description,
+      log.target_id || "",
+      log.ip_address || "",
+    ]);
+    const csv = [headers, ...dataRows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit-log-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <section className="p-8 flex-1 flex flex-col gap-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div><h2 className="text-[28px] font-headline font-bold text-white tracking-tight leading-none">Activity Log</h2><p className="text-on-surface-variant text-sm mt-2 max-w-xl">Comprehensive system-wide audit of all administrative and automated actions.</p></div>
-        <div className="flex items-center gap-3">
+        <div>
+          <h2 className="text-[28px] font-headline font-bold text-white tracking-tight leading-none">Activity Log</h2>
+          <p className="text-on-surface-variant text-sm mt-2 max-w-xl">
+            Comprehensive system-wide audit of all administrative and automated actions.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center bg-surface-container-low rounded-sm p-1 gap-1">
             {["All Time", "7 Days", "30 Days"].map((r) => (
-              <button key={r} onClick={() => setRange(r)} className={`px-3 py-1.5 text-xs font-medium rounded-sm ${range === r ? "bg-purple-500 text-white" : "text-slate-400 hover:text-white transition-colors"}`}>{r}</button>
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-sm ${
+                  range === r ? "bg-purple-500 text-white" : "text-slate-400 hover:text-white transition-colors"
+                }`}
+              >
+                {r}
+              </button>
             ))}
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant/30 text-primary text-xs font-bold uppercase tracking-wider hover:bg-primary/5 transition-colors"><span className="material-symbols-outlined text-sm">download</span>Export Log</button>
+          <button
+            type="button"
+            onClick={exportCSV}
+            className="flex items-center gap-2 px-4 py-2 border border-outline-variant/30 text-primary text-xs font-bold uppercase tracking-wider hover:bg-primary/5 transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">download</span>
+            Export Log
+          </button>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-[10px] font-label text-slate-500 uppercase flex items-center mr-2">Quick Filters:</span>
-        {["all", "booking", "payment", "playlist", "cancellation", "account"].map((f) => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition-colors ${filter === f ? "border-purple-400 text-purple-400 bg-purple-400/5" : "border-primary-container text-primary-container hover:border-primary"}`}>{f.toUpperCase()}</button>
+        {["all", "booking", "payment", "playlist", "cancellation", "account", "order", "system"].map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition-colors ${
+              filter === f
+                ? "border-purple-400 text-purple-400 bg-purple-400/5"
+                : "border-primary-container text-primary-container hover:border-primary"
+            }`}
+          >
+            {f.toUpperCase()}
+          </button>
         ))}
       </div>
 
       <div className="relative max-w-md">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} className="bg-surface-container-low border-none focus:ring-1 focus:ring-purple-500 text-sm px-4 py-1.5 w-64 transition-all" placeholder="Search logs..." />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-surface-container-low border-none focus:ring-1 focus:ring-purple-500 text-sm px-4 py-1.5 w-64 transition-all"
+          placeholder="Search logs..."
+        />
       </div>
 
-      {filter !== "all" && <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs w-fit">Filter: {filter}<button onClick={() => setFilter("all")} className="text-purple-400">×</button></div>}
+      {filter !== "all" && (
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs w-fit">
+          Filter: {filter}
+          <button type="button" onClick={() => setFilter("all")} className="text-purple-400">
+            ×
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-[160px_240px_1fr_140px] px-6 py-3 text-[10px] font-label text-slate-500 uppercase tracking-widest border-b border-white/5">
-          <div>Timestamp</div><div>Actor</div><div>Action & Description</div><div className="text-right">IP Address</div>
+          <div>Timestamp</div>
+          <div>Actor</div>
+          <div>Action & Description</div>
+          <div className="text-right">IP Address</div>
         </div>
         {loading ? (
           <div className="glass-row rounded-sm p-10 text-center text-on-surface-variant">Loading audit entries...</div>
         ) : rows.length === 0 ? (
-          <div className="glass-row rounded-sm p-10 text-center text-on-surface-variant">No audit entries match the selected filters.</div>
+          <div className="glass-row rounded-sm p-10 text-center text-on-surface-variant">
+            No audit entries match the selected filters.
+          </div>
         ) : (
           rows.map((r) => (
             <div key={r.id} className="grid grid-cols-[160px_240px_1fr_140px] px-6 py-4 items-center glass-row rounded-sm">
-              <div className="flex flex-col"><span className="font-label text-xs text-on-surface">{r.timestamp.split(" ")[0]}</span><span className="font-label text-[10px] text-on-surface-variant">{r.timestamp.split(" ")[1]} UTC</span></div>
-              <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-white/5"><span className="material-symbols-outlined text-slate-400 text-sm">person</span></div><div className="flex flex-col"><span className="text-sm font-medium text-white">{r.actor}</span></div></div>
-              <div className="flex items-center gap-4"><span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 text-[10px] font-bold rounded-sm border border-purple-500/30 uppercase">{r.action}</span><p className="text-sm text-on-surface-variant">{r.description} <span className="text-primary-container">{r.targetId}</span></p></div>
-              <div className="font-label text-[11px] text-slate-500 text-right">{r.ip}</div>
+              <div className="flex flex-col">
+                <span className="font-label text-xs text-on-surface">
+                  {new Date(r.created_at).toLocaleDateString("en-GH", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+                <span className="font-label text-[10px] text-on-surface-variant">
+                  {new Date(r.created_at).toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+                <span className="text-[10px] text-slate-500 mt-1">{timeAgo(r.created_at)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-white/5">
+                  <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-white">{r.actor}</span>
+                  <span className="text-[10px] text-on-surface-variant uppercase">{r.actor_role}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 flex-wrap">
+                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-sm border uppercase ${badgeClass(r.action_type)}`}>
+                  {r.action_type}
+                </span>
+                <p className="text-sm text-on-surface-variant">
+                  {r.description}{" "}
+                  {r.target_id ? <span className="text-primary-container">{r.target_id}</span> : null}
+                </p>
+              </div>
+              <div className="font-label text-[11px] text-slate-500 text-right">{r.ip_address ?? "—"}</div>
             </div>
           ))
         )}

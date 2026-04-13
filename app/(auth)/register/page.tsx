@@ -40,7 +40,10 @@ export default function RegisterPage() {
       password,
       options: {
         emailRedirectTo,
-        data: { full_name: fullName, phone },
+        data: {
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+        },
       },
     });
     if (authError) {
@@ -52,18 +55,16 @@ export default function RegisterPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        client_name: fullName || "New User",
-        client_email: email,
-        client_phone: phone || "+233000000000",
-        event_type: "Account Registration",
-        event_date: new Date().toISOString().split("T")[0],
+        clientName: fullName || "New User",
+        clientEmail: email,
+        clientPhone: phone || "+233000000000",
+        eventType: "Account Registration",
+        eventDate: new Date().toISOString().split("T")[0],
         venue: "Online",
-        guest_count: null,
+        guestCount: null,
         notes: "Auto-created from register flow",
+        packageName: null,
         genres: [],
-        package_name: null,
-        status: "pending",
-        payment_status: "unpaid",
       }),
     });
     setLoading(false);

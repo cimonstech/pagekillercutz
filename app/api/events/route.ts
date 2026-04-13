@@ -11,9 +11,15 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
     const featured = searchParams.get("featured");
+    const sort = searchParams.get("sort") || "desc";
+    const all = searchParams.get("all") === "true";
     const limit = Number(searchParams.get("limit") ?? "50");
 
-    let query = supabase.from("events").select("*").order("event_date", { ascending: true }).limit(limit);
+    let query = supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: sort === "asc" })
+      .limit(all ? 2000 : limit);
     if (type) query = query.eq("event_type", type);
     if (featured === "true") query = query.eq("featured", true);
     if (featured === "false") query = query.eq("featured", false);

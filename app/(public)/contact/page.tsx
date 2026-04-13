@@ -4,6 +4,20 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import AnimateIn from "@/components/ui/AnimateIn";
 
+interface ContactForm {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+const INITIAL_FORM: ContactForm = {
+  name: "",
+  email: "",
+  subject: "General Inquiry",
+  message: "",
+};
+
 const CONTACT_ITEMS = [
   { icon: "mail", label: "Direct Line", value: "hello@pagekillercutz.com" },
   { icon: "phone", label: "Global Pulse", value: "+233 240-990123" },
@@ -19,10 +33,35 @@ const SOCIAL = [
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<ContactForm>(INITIAL_FORM);
 
-  const handleSubmit = (e: FormEvent) => {
+  const set = (field: keyof ContactForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const json = (await res.json()) as { success?: boolean; error?: string };
+      if (!res.ok) {
+        setError(json.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("Network error. Please check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -105,6 +144,8 @@ export default function ContactPage() {
                     <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline">Full Name</label>
                     <input
                       required
+                      value={form.name}
+                      onChange={set("name")}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors placeholder:text-outline/40"
                       placeholder="Kofi Mensah"
                       type="text"
@@ -116,6 +157,8 @@ export default function ContactPage() {
                     </label>
                     <input
                       required
+                      value={form.email}
+                      onChange={set("email")}
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors placeholder:text-outline/40"
                       placeholder="kofi@example.com"
                       type="email"
@@ -125,7 +168,11 @@ export default function ContactPage() {
 
                 <div className="space-y-2">
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline">Subject</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors text-on-surface appearance-none">
+                  <select
+                    value={form.subject}
+                    onChange={set("subject")}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors text-on-surface appearance-none"
+                  >
                     <option className="bg-surface">General Inquiry</option>
                     <option className="bg-surface">Booking &amp; Events</option>
                     <option className="bg-surface">Artist Partnership</option>
@@ -137,17 +184,27 @@ export default function ContactPage() {
                   <label className="font-label text-[10px] uppercase tracking-[0.15em] text-outline">Message</label>
                   <textarea
                     required
+                    value={form.message}
+                    onChange={set("message")}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors placeholder:text-outline/40 resize-none"
                     placeholder="Describe your vision or project..."
                     rows={4}
                   />
                 </div>
 
+                {error && (
+                  <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-primary text-on-primary-fixed flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs rounded-full hover:scale-[1.02] transition-transform glow-btn"
+                  disabled={submitting}
+                  className="w-full py-3.5 bg-primary text-on-primary-fixed flex items-center justify-center gap-2 font-bold uppercase tracking-widest text-xs rounded-full hover:scale-[1.02] transition-transform glow-btn disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  Send Message <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  {submitting ? "Sending…" : "Send Message"}
+                  {!submitting && <span className="material-symbols-outlined text-[16px]">arrow_forward</span>}
                 </button>
               </form>
             )}

@@ -22,6 +22,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       if (!user?.email) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("adminRole");
+          localStorage.removeItem("adminEmail");
         }
         setRole(null);
         router.replace("/admin/login");
@@ -31,7 +32,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       const { data: adminRecord } = await supabase
         .from("admins")
         .select("role, status")
-        .eq("email", user.email)
+        .ilike("email", user.email)
         .maybeSingle();
 
       const row = adminRecord as { role: string; status: string } | null;
@@ -40,6 +41,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut();
         if (typeof window !== "undefined") {
           localStorage.removeItem("adminRole");
+          localStorage.removeItem("adminEmail");
         }
         setRole(null);
         router.replace("/admin/login");
@@ -50,6 +52,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut();
         if (typeof window !== "undefined") {
           localStorage.removeItem("adminRole");
+          localStorage.removeItem("adminEmail");
         }
         setRole(null);
         router.replace("/admin/login");
@@ -60,6 +63,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         await supabase.auth.signOut();
         if (typeof window !== "undefined") {
           localStorage.removeItem("adminRole");
+          localStorage.removeItem("adminEmail");
         }
         setRole(null);
         router.replace("/admin/login");
@@ -71,6 +75,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       const typedRole = row.role as "admin" | "super_admin";
       if (typeof window !== "undefined") {
         localStorage.setItem("adminRole", typedRole);
+        localStorage.setItem("adminEmail", user.email ?? "");
       }
       setRole(typedRole);
       setReady(true);

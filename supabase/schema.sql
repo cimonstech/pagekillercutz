@@ -7,6 +7,7 @@ create table if not exists bookings (
   client_email text not null,
   client_phone text not null,
   event_type text not null,
+  event_name text,
   event_date date not null,
   venue text not null,
   guest_count int,
@@ -208,13 +209,54 @@ alter table admins enable row level security;
 create policy "admins_service_all"
   on admins for all
   using (auth.role() = 'service_role');
+-- Logged-in users can read their own row so the admin login page can verify role (anon key + user JWT).
+create policy "admins_self_read_by_email"
+  on admins for select
+  to authenticated
+  using (
+    lower(trim(email)) = lower(trim(coalesce(auth.jwt() ->> 'email', '')))
+  );
 
 alter table audit_logs enable row level security;
 create policy "audit_logs_service_all"
   on audit_logs for all
   using (auth.role() = 'service_role');
 
+create table if not exists platform_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz default now()
+);
+
+alter table platform_settings enable row level security;
+create policy "platform_settings_service_all"
+  on platform_settings for all
+  using (auth.role() = 'service_role');
+
 alter table password_resets enable row level security;
 create policy "password_resets_service_all"
   on password_resets for all
   using (auth.role() = 'service_role');
+
+create table if not exists play_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  music_id uuid references music(id) on delete cascade,
+  track_title text not null,
+  artist text not null default 'Page KillerCutz',
+  release_type text,
+  duration_played int default 0,
+  source text default 'music_page',
+  session_id text,
+  played_at timestamptz default now()
+);
+
+create index if not exists play_events_user_id_idx on play_events(user_id);
+create index if not exists play_events_music_id_idx on play_events(music_id);
+create index if not exists play_events_played_at_idx on play_events(played_at);
+
+alter table play_events enable row level security;
+create policy "users_own_plays"
+  on play_events for all
+  using (auth.uid() = user_id or auth.role() = 'service_role')
+  with check (auth.uid() = user_id or auth.role() = 'service_role');

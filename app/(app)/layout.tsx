@@ -1,4 +1,5 @@
 import AppSidebar from "@/components/layout/AppSidebar";
+import CartDrawer from "@/components/merch/CartDrawer";
 
 /**
  * Client portal shell: floating glass rail + main canvas.
@@ -12,6 +13,7 @@ export default function AppLayout({
   return (
     <div className="min-h-screen bg-[#08080F] font-body text-on-surface antialiased">
       <AppSidebar />
+      <CartDrawer />
       <main
         className="min-h-screen min-w-0 pb-[var(--player-offset,0px)]"
         style={{

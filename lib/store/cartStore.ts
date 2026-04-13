@@ -1,42 +1,74 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-export type CartItem = {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
+  size: string;
+  colour: string;
   qty: number;
-  image?: string;
-  size?: string;
-  color?: string;
-};
+  image_url: string | null;
+}
 
-type CartState = {
+interface CartStore {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
-  removeItem: (id: string) => void;
-  updateQty: (id: string, qty: number) => void;
+  isOpen: boolean;
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string, size: string, colour: string) => void;
+  updateQty: (id: string, size: string, colour: string, qty: number) => void;
   clearCart: () => void;
-};
+  setIsOpen: (open: boolean) => void;
+}
 
-export const useCartStore = create<CartState>((set) => ({
-  items: [],
-  addItem: (item) =>
-    set((state) => {
-      const existing = state.items.find((i) => i.id === item.id);
-      if (existing) {
-        return {
-          items: state.items.map((i) =>
-            i.id === item.id ? { ...i, qty: i.qty + (item.qty ?? 1) } : i,
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      isOpen: false,
+
+      addItem: (newItem) => {
+        const items = get().items;
+        const existing = items.find(
+          (i) =>
+            i.id === newItem.id && i.size === newItem.size && i.colour === newItem.colour,
+        );
+        if (existing) {
+          set({
+            items: items.map((i) =>
+              i.id === newItem.id && i.size === newItem.size && i.colour === newItem.colour
+                ? { ...i, qty: i.qty + newItem.qty }
+                : i,
+            ),
+          });
+        } else {
+          set({ items: [...items, newItem] });
+        }
+      },
+
+      removeItem: (id, size, colour) =>
+        set({
+          items: get().items.filter(
+            (i) => !(i.id === id && i.size === size && i.colour === colour),
           ),
-        };
-      }
-      return { items: [...state.items, { ...item, qty: item.qty ?? 1 }] };
+        }),
+
+      updateQty: (id, size, colour, qty) => {
+        if (qty <= 0) {
+          get().removeItem(id, size, colour);
+          return;
+        }
+        set({
+          items: get().items.map((i) =>
+            i.id === id && i.size === size && i.colour === colour ? { ...i, qty } : i,
+          ),
+        });
+      },
+
+      clearCart: () => set({ items: [] }),
+
+      setIsOpen: (open) => set({ isOpen: open }),
     }),
-  removeItem: (id) =>
-    set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-  updateQty: (id, qty) =>
-    set((state) => ({
-      items: state.items.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i)),
-    })),
-  clearCart: () => set({ items: [] }),
-}));
+    { name: "killercutz-cart" },
+  ),
+);

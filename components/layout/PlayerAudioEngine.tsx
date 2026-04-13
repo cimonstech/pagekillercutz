@@ -9,7 +9,6 @@ export default function PlayerAudioEngine() {
   const current = usePlayerStore((s) => s.current);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const volume = usePlayerStore((s) => s.volume);
-  const isSimulated = usePlayerStore((s) => s.isSimulated);
   const pause = usePlayerStore((s) => s.pause);
   const setCurrentTime = usePlayerStore((s) => s.setCurrentTime);
 
@@ -40,7 +39,7 @@ export default function PlayerAudioEngine() {
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !current?.audioUrl || isSimulated) return;
+    if (!audio || !current?.audioUrl) return;
 
     const onTime = () => setCurrentTime(audio.currentTime);
     const onEnded = () => {
@@ -53,28 +52,13 @@ export default function PlayerAudioEngine() {
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("ended", onEnded);
     };
-  }, [current?.audioUrl, isSimulated, pause, setCurrentTime]);
-
-  useEffect(() => {
-    if (!isSimulated || !isPlaying || !current) return;
-    const tick = () => {
-      const t = usePlayerStore.getState().currentTime + 0.2;
-      if (t >= current.durationSec) {
-        pause();
-        setCurrentTime(current.durationSec);
-        return;
-      }
-      setCurrentTime(t);
-    };
-    const id = window.setInterval(tick, 200);
-    return () => clearInterval(id);
-  }, [isSimulated, isPlaying, current, pause, setCurrentTime]);
+  }, [current?.audioUrl, pause, setCurrentTime]);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !current?.audioUrl || isSimulated) return;
+    if (!audio || !current?.audioUrl) return;
     audio.volume = volume;
-  }, [volume, current?.audioUrl, isSimulated]);
+  }, [volume, current?.audioUrl]);
 
   useEffect(() => {
     if (!current?.audioUrl) {

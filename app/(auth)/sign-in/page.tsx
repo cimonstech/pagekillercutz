@@ -2,13 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { SpinningVinyl } from "@/components/ui/SpinningVinyl";
 
 const DASHBOARD = "/client/dashboard";
+
+function safeRedirectPath(param: string | null): string {
+  if (param && param.startsWith("/") && !param.startsWith("//")) {
+    return param;
+  }
+  return DASHBOARD;
+}
 
 type AdminGateResult =
   | { kind: "client" }
@@ -34,8 +41,9 @@ async function resolveAdminGateForEmail(
   return { kind: "client" };
 }
 
-export default function SignInPage() {
+function SignInPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,6 +78,7 @@ export default function SignInPage() {
   useEffect(() => {
     let cancelled = false;
     const client = createClient();
+    const redirectTarget = safeRedirectPath(searchParams.get("redirect"));
     void (async () => {
       const {
         data: { user },
@@ -92,12 +101,12 @@ export default function SignInPage() {
         router.replace("/admin");
         return;
       }
-      router.push(DASHBOARD);
+      router.replace(redirectTarget);
     })();
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, searchParams]);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -112,7 +121,11 @@ export default function SignInPage() {
       setError(authError.message);
       return;
     }
-    const gate = await resolveAdminGateForEmail(supabase, authData.user?.email);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const signedInEmail = user?.email ?? authData.user?.email;
+    const gate = await resolveAdminGateForEmail(supabase, signedInEmail);
     if (gate.kind === "suspended") {
       await supabase.auth.signOut();
       localStorage.removeItem("adminRole");
@@ -127,13 +140,15 @@ export default function SignInPage() {
     }
     localStorage.removeItem("adminRole");
     router.refresh();
-    router.push(DASHBOARD);
+    const redirectTo = safeRedirectPath(searchParams.get("redirect"));
+    router.replace(redirectTo);
   };
 
   const signInWithGoogle = async () => {
     setError("");
     setOauthLoading(true);
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(DASHBOARD)}`;
+    const next = safeRedirectPath(searchParams.get("redirect"));
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
@@ -297,11 +312,7 @@ export default function SignInPage() {
               </button>
 
               <p className="mt-2.5 text-center font-body text-[12px] leading-snug text-[#A0A8C0]">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="font-medium text-[#00BFFF] hover:underline">
-                  Create one →
-                </Link>
-                {" · "}
+                No account yet?{" "}
                 <Link href="/booking" className="font-medium text-[#00BFFF] hover:underline">
                   Book the DJ first →
                 </Link>
@@ -324,5 +335,19 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[100vh] items-center justify-center bg-[#08080F]">
+          <span className="font-body text-sm text-white/50">Loading…</span>
+        </div>
+      }
+    >
+      <SignInPageInner />
+    </Suspense>
   );
 }

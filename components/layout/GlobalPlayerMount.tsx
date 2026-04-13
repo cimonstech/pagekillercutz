@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import BottomPlayerBar from "@/components/layout/BottomPlayerBar";
-import PlayerAudioEngine from "@/components/layout/PlayerAudioEngine";
+import PlayTrackingBridge from "@/components/layout/PlayTrackingBridge";
 import { usePlayerStore } from "@/lib/store/playerStore";
 
 const NO_PLAYER_PREFIXES = [
@@ -20,9 +20,8 @@ function isAuthShellPath(pathname: string) {
 
 export default function GlobalPlayerMount() {
   const pathname = usePathname();
-  const current = usePlayerStore((s) => s.current);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const barVisible = Boolean(current && isPlaying);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const barVisible = usePlayerStore((s) => s.isVisible);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--player-offset", barVisible ? "6.25rem" : "0px");
@@ -35,10 +34,14 @@ export default function GlobalPlayerMount() {
     return null;
   }
 
+  if (pathname === "/merch" || pathname.startsWith("/merch/")) {
+    return null;
+  }
+
   return (
     <>
-      {current ? <PlayerAudioEngine /> : null}
-      {barVisible ? <BottomPlayerBar /> : null}
+      <PlayTrackingBridge />
+      {barVisible && currentTrack ? <BottomPlayerBar /> : null}
     </>
   );
 }

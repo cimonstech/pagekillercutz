@@ -47,8 +47,13 @@ function toBookingData(b: Record<string, unknown>): BookingData {
     djPhone: process.env.DJ_PHONE!,
     djEmail: process.env.DJ_EMAIL!,
     portalUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/sign-in`,
+    packageName: (b.package_name as string | null) ?? null,
   };
 }
+
+// TODO: Add Wrapped email cron in November —
+// schedule for December 1st each year.
+// See lib/wrapped.ts for the generator.
 
 export function startCronJobs() {
   logger.infoRaw("cron", "[cron] Starting Page KillerCutz scheduler...");

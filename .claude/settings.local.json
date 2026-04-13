@@ -6,7 +6,8 @@
       "Bash(npx create-next-app@latest killercutz-temp --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
       "Bash(npx tsc:*)",
       "Bash(npx skills:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(wc:*)"
     ]
   }
 }

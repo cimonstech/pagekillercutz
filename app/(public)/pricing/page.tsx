@@ -13,60 +13,32 @@ interface Package {
   inclusions: string[];
 }
 
-const FALLBACK_PACKAGES: Package[] = [
-  {
-    id: "1",
-    name: "Essentials",
-    price: 1500,
-    inclusions: ["Up to 3 hours", "Standard DJ setup", "Playlist consultation", "Online booking"],
-  },
-  {
-    id: "2",
-    name: "Professional",
-    price: 2800,
-    inclusions: [
-      "Up to 5 hours",
-      "Pioneer CDJ-3000 rig",
-      "Custom playlist curation",
-      "MC service",
-      "Post-event photo set",
-    ],
-  },
-  {
-    id: "3",
-    name: "Elite",
-    price: 5000,
-    inclusions: [
-      "Unlimited hours",
-      "Full stage production",
-      "Live DVS mixing",
-      "Custom intro track",
-      "Dedicated crew",
-      "Priority booking",
-    ],
-  },
-];
-
 export default function PricingPage() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const res = await fetch("/api/packages");
-        const json = (await res.json()) as { packages?: Package[] };
-        setPackages(json.packages?.length ? json.packages : FALLBACK_PACKAGES);
-      } catch {
-        setPackages(FALLBACK_PACKAGES);
+        const json = (await res.json()) as { error?: string; packages?: Package[] };
+        if (!res.ok) throw new Error(json.error || "Failed to load packages");
+        if (!cancelled) setPackages(json.packages ?? []);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Something went wrong");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     void load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const displayed = loading ? FALLBACK_PACKAGES : packages;
 
   return (
     <div className="px-4 sm:px-8 lg:px-16 py-8 sm:py-12 max-w-6xl mx-auto">
@@ -88,63 +60,86 @@ export default function PricingPage() {
 
       {/* Package cards */}
       <AnimateIn stagger={0.12} className="mb-20 grid grid-cols-1 gap-7 md:grid-cols-3 md:items-end">
-        {displayed.map((pkg, i) => {
-          const isFeatured = i === 1;
-          return (
-            <div
-              key={pkg.id}
-              className={[
-                "group relative flex min-h-0 flex-col overflow-visible rounded-3xl",
-                isFeatured
-                  ? "glass-strong border-primary/30 shadow-[0_0_40px_rgba(0,191,255,0.12)] md:-mt-6"
-                  : "glass",
-              ].join(" ")}
-            >
-              <BorderDrawEdges />
-              <div className="relative z-10 flex min-h-0 flex-col p-8 pb-14">
-                {isFeatured && (
-                  <div className="mb-4 flex justify-center">
-                    <span className="rounded-full bg-primary px-4 py-1 font-label text-[10px] font-bold uppercase tracking-widest text-on-primary-fixed">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <h3 className="mb-5 font-headline text-lg font-bold uppercase tracking-wider">{pkg.name}</h3>
-
-                <div className="mb-8 flex items-baseline gap-1">
-                  <span className="font-display text-5xl font-bold text-white">{pkg.price.toLocaleString()}</span>
-                  <span className="font-label text-xs text-on-surface-variant">/SET</span>
-                </div>
-
-                <ul className="mb-10 flex flex-1 flex-col space-y-3.5">
-                  {pkg.inclusions.map((f) => (
-                    <li key={f} className="flex items-start gap-3">
-                      <span
-                        className="material-symbols-outlined mt-px shrink-0 text-[18px] text-primary"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        check_circle
-                      </span>
-                      <span className="text-sm text-on-surface-variant">{f}</span>
-                    </li>
+        {loading ? (
+          <>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass animate-pulse rounded-3xl p-8">
+                <div className="mb-5 h-6 w-1/2 rounded bg-white/10" />
+                <div className="mb-8 h-12 w-24 rounded bg-white/10" />
+                <div className="mb-10 space-y-3">
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j} className="h-4 rounded bg-white/10" />
                   ))}
-                </ul>
-
-                <Link
-                  href="/contact"
-                  className={[
-                    "mt-auto flex w-full shrink-0 items-center justify-center gap-2 rounded-full px-4 py-3.5 font-headline text-xs font-bold uppercase tracking-widest transition-all",
-                    isFeatured
-                      ? "glow-btn bg-primary text-on-primary-fixed hover:scale-105"
-                      : "border border-white/20 text-on-surface-variant hover:bg-white/5",
-                  ].join(" ")}
-                >
-                  Book This Package <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                </Link>
+                </div>
+                <div className="h-12 rounded-full bg-white/10" />
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </>
+        ) : error ? (
+          <p className="col-span-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </p>
+        ) : packages.length === 0 ? (
+          <p className="col-span-full text-sm text-on-surface-variant">No results</p>
+        ) : (
+          packages.map((pkg, i) => {
+            const isFeatured = i === 1;
+            return (
+              <div
+                key={pkg.id}
+                className={[
+                  "group relative flex min-h-0 flex-col overflow-visible rounded-3xl",
+                  isFeatured
+                    ? "glass-strong border-primary/30 shadow-[0_0_40px_rgba(0,191,255,0.12)] md:-mt-6"
+                    : "glass",
+                ].join(" ")}
+              >
+                <BorderDrawEdges />
+                <div className="relative z-10 flex min-h-0 flex-col p-8 pb-14">
+                  {isFeatured && (
+                    <div className="mb-4 flex justify-center">
+                      <span className="rounded-full bg-primary px-4 py-1 font-label text-[10px] font-bold uppercase tracking-widest text-on-primary-fixed">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+                  <h3 className="mb-5 font-headline text-lg font-bold uppercase tracking-wider">{pkg.name}</h3>
+
+                  <div className="mb-8 flex items-baseline gap-1">
+                    <span className="font-display text-5xl font-bold text-white">{pkg.price.toLocaleString()}</span>
+                    <span className="font-label text-xs text-on-surface-variant">/SET</span>
+                  </div>
+
+                  <ul className="mb-10 flex flex-1 flex-col space-y-3.5">
+                    {pkg.inclusions.map((f) => (
+                      <li key={f} className="flex items-start gap-3">
+                        <span
+                          className="material-symbols-outlined mt-px shrink-0 text-[18px] text-primary"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          check_circle
+                        </span>
+                        <span className="text-sm text-on-surface-variant">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/contact"
+                    className={[
+                      "mt-auto flex w-full shrink-0 items-center justify-center gap-2 rounded-full px-4 py-3.5 font-headline text-xs font-bold uppercase tracking-widest transition-all",
+                      isFeatured
+                        ? "glow-btn bg-primary text-on-primary-fixed hover:scale-105"
+                        : "border border-white/20 text-on-surface-variant hover:bg-white/5",
+                    ].join(" ")}
+                  >
+                    Book This Package <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        )}
       </AnimateIn>
 
       {/* Payment section */}

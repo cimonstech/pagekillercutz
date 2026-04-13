@@ -11,7 +11,9 @@ export async function GET(_: Request, { params }: RouteContext) {
     const { id } = await params;
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase.from("music").select("*").eq("id", id).single();
-    if (error) throw error;
+    if (error || !data) {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
     return Response.json({ music: data as MusicRow });
   } catch (error) {
     logger.errorRaw("api/music/[id]", "Error:", error);

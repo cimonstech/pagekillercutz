@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AnimateIn from "@/components/ui/AnimateIn";
 import { gsap } from "@/lib/gsap";
 import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
-import { parseDurationLabel } from "@/lib/player-utils";
+import { formatDuration } from "@/lib/player-utils";
 import type { PlayerTrack } from "@/lib/store/playerStore";
 import { usePlayerStore } from "@/lib/store/playerStore";
 
@@ -20,28 +21,31 @@ interface Release {
   src: string;
   audioUrl?: string | null;
   durationSec?: number;
+  releaseType?: string;
 }
 
 const ARTIST = "Page KillerCutz";
 
-const FEATURED_ALBUM_COVER =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDsbMyDOGr-pT4p9pEs6Mhc0DEx4bKES3dhUS54WTDMhn9njvaY2hkIeR67Uj05-PDah2tC6CoHnsjD1wwbGhYLbgMvSNceQd89NrVjiO1PgBEGqchMY7qDpgELymZ4YD_hYv08PeBXyRcjvc4smD_nSjJVtFDgc-HNEsn7uYubcv0uf-16qUopnuC1apIXwDcpD1tPd8u_qIF79wyZr_bJ_O55y3WXMamRTlyuZR4JKgxGcyuiDKAXydBMHA46E4LzlT4_x0WQdy03";
+const PLACEHOLDER_COVER = "/killercutz-logo.webp";
+const isAbsoluteUrl = (url: string | null | undefined) => Boolean(url && (url.startsWith("https://") || url.startsWith("http://")));
 
 function releaseToTrack(item: Release): PlayerTrack {
   return {
     id: item.id,
+    musicId: item.id,
     title: item.title,
     artist: ARTIST,
     coverUrl: item.src,
     audioUrl: item.audioUrl ?? null,
     durationSec: item.durationSec && item.durationSec > 0 ? item.durationSec : 210,
+    releaseType: item.releaseType,
   };
 }
 
-async function playReleaseFromApi(item: Release, playOrResume: (t: PlayerTrack) => void) {
+async function playReleaseFromApi(item: Release, setTrack: (t: PlayerTrack) => void) {
   const track = releaseToTrack(item);
   if (track.audioUrl) {
-    playOrResume(track);
+    setTrack(track);
     return;
   }
   try {
@@ -52,7 +56,7 @@ async function playReleaseFromApi(item: Release, playOrResume: (t: PlayerTrack) 
     };
     const m = json.music;
     if (m && (m.audio_url != null || (m.duration != null && m.duration > 0))) {
-      playOrResume({
+      setTrack({
         ...track,
         audioUrl: m.audio_url ?? null,
         durationSec:
@@ -63,54 +67,39 @@ async function playReleaseFromApi(item: Release, playOrResume: (t: PlayerTrack) 
   } catch {
     /* fall through to simulated */
   }
-  playOrResume({ ...track, audioUrl: null });
+  setTrack({ ...track, audioUrl: null });
 }
 
-const FALLBACK_RELEASES: Release[] = [
-  {
-    id: "accra-nights",
-    title: "Accra Nights Vol. 4",
-    meta: "ALBUM • 2024",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuA_J8F7-4RVVlbNfMJYSHK_wTOwViXFk2svzkgbdaYzVcKn7a-V2MmKfvGGczRI5HBPCZ1aCZEsPp_xyaJRiwZuED8FZNWb82YmI42TK_WRpoi7nTpp5yzxU4qNbon9T2h-A-oMX82TUM3TBmIOZ2-rqEhSVn6--NtPHaXX1Cu79bJJSRF9sYT8Iph9rTQ8E5Zk1a9tEiAZgCIj43yr0v2f3nfyXc8SIhqYy0whtdNShNGwzXIFjIN0tJuIudD2Qajj9tmaR5HBQ16E",
-  },
-  {
-    id: "electric-highlife",
-    title: "Electric Highlife",
-    meta: "EP • 2024",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAAA8N-43lShzE9loAwKatvzNqq99mT4lW7ygl0ubRVKphP8-54gJBxSQgzu2Nvoa0I50iZdxNPQeElcJrpcyCE999sBN6Jk3YwfaXRJ7Znr1-SyPJq2a_Mn4sPLU3HS4b-9D5qD7EsclNPg05p78OHFzl4MSc5PIf6TQ2L7RfYIF8NajhtvSYD08FEAAzP229hfOOdM-GcjMcR-IIgErHdx_UaawC8lyRSaJht2nY5vQmfsZb-40j6qGOKTnDqwfzz2kYO0h80m91P",
-  },
-  {
-    id: "sunsum-remixes",
-    title: "Sunsum Remixes",
-    meta: "SINGLE • 2023",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuCh9xQ8m8pUduhGDxcDbI806SedBbB4nE_e5h5avgkzmrC_CWc0tbUhlXHS44ZK_TrEj4ZQfjBQhWR8hFYtBopNgaN8WD6JJBFu1Lrt03gpUT3vXwGvjUHVPtpXtkWFI5q5VpjO7MWlkE_f-wKwa37q0sEeXXSI7OEi5Mj5cRfa8OPDX7RtE7sqFV2iqcc8ZzFZ23FklyS1FJtEalsseHQVMhpYoEcTM2V6UXscb1lDoNYHoD54w0q4gAlq92Fs0cpW1HOfwCRDzVZG",
-  },
-  {
-    id: "gold-coast-grooves",
-    title: "Gold Coast Grooves",
-    meta: "ALBUM • 2023",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuBofh7EfLBPXxk4q4cOKq4CL3j-ev4gA54uGRpYw4d05L-TFgl4N97KElS4lDmXgTY-6TqRyb4rLsKqpMwV3mUvmRVr6Nw42ba9NYAlFWP5bB34lWfj4VAxaKYKOB57jMR35mOaMUvfHe9_zS9UPG77HFKrgeBeXbwjh8iGjcqjbjFBPCAtcXgGLYCcg2z-i52twJHDmIV3u1ZtH5i5srA_omuRctzDusSmMHyjVAeOoA-L0pFvsj1giZFnPOLfax7_4nFA1nuIBeug",
-  },
-  {
-    id: "kpanlogo-rave",
-    title: "Kpanlogo Rave",
-    meta: "EP • 2023",
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuDICHzUL0Val8phgSd8QHb-HJNmHH8GXdgKrkhYpFy7F28mJwnWoosgF8RpSKdRfmCqJicCacMm-KnyJNKzSQx0EA2RIRzvMUtpWvkgAPabGWu75YP6n1lSd4pv02zuZywMX-7DgPWVdknc5jEGULVz33aL_2Qb52RSokrn6ZA2bdOzqF4Rkeb6nVy-_6jZ_JruW-eI87s5eO0mEOVqvmoGefDOxa8XQnLcsNNc4G4TACznyPEpMNcsgjXFPfRW1d6NA0WywhW9dAQr",
-  },
-];
-
-const FEATURED_TRACKS = [
-  { n: "01", title: "Ahenfie (The Palace)", duration: "4:32" },
-  { n: "02", title: "Cybernetic Dreams", duration: "5:18" },
-  { n: "03", title: "The Void Echoes", duration: "3:55" },
-  { n: "04", title: "Static Interference", duration: "4:12" },
-];
+function tabToApiUrl(tab: Tab): string | null {
+  if (tab === "Discography") return "/api/music?type=album";
+  if (tab === "Mixes") return "/api/music?type=mix";
+  if (tab === "Singles") return "/api/music?type=single";
+  if (tab === "Videos") return null;
+  return "/api/music";
+}
 
 export default function MusicPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Discography");
-  const [releases, setReleases] = useState<Release[]>(FALLBACK_RELEASES);
-  const playOrResume = usePlayerStore((s) => s.playOrResume);
+  const [releases, setReleases] = useState<Release[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [featuredRow, setFeaturedRow] = useState<{
+    id: string;
+    title: string;
+    cover: string;
+    description: string | null;
+    type: "album" | "single" | "mix";
+    tracks: { title: string; duration: number; audio_url?: string }[] | null;
+  } | null>(null);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+  const [featuredError, setFeaturedError] = useState<string | null>(null);
+  const setTrack = usePlayerStore((s) => s.setTrack);
+  const setQueue = usePlayerStore((s) => s.setQueue);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
   const bannerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Banner entrance
   useEffect(() => {
@@ -125,16 +114,41 @@ export default function MusicPage() {
 
   const playRelease = useCallback(
     (item: Release) => {
-      void playReleaseFromApi(item, playOrResume);
+      setQueue(releases.map((r) => releaseToTrack(r)));
+      if (currentTrack?.id === item.id) {
+        togglePlay();
+        return;
+      }
+      void playReleaseFromApi(item, setTrack);
     },
-    [playOrResume],
+    [currentTrack?.id, releases, setQueue, setTrack, togglePlay],
+  );
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent, music: Release) => {
+      const target = e.target as HTMLElement;
+      if (target.closest(".play-button")) return;
+      router.push(`/music/${music.id}`);
+    },
+    [router],
   );
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
+      const url = tabToApiUrl(activeTab);
+      if (url === null) {
+        setReleases([]);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+      setLoading(true);
+      setError(null);
       try {
-        const res = await fetch("/api/music");
+        const res = await fetch(url);
         const json = (await res.json()) as {
+          error?: string;
           music?: Array<{
             id: string;
             title: string;
@@ -145,21 +159,89 @@ export default function MusicPage() {
             duration: number | null;
           }>;
         };
+        if (!res.ok) throw new Error(json.error || "Failed to load music");
+        if (cancelled) return;
         const mapped = (json.music ?? []).map((m) => ({
           id: m.id,
           title: m.title,
           meta: `${m.type.toUpperCase()}${m.release_date ? ` • ${new Date(m.release_date).getFullYear()}` : ""}`,
-          src: m.cover_url ?? FALLBACK_RELEASES[0].src,
+          src: isAbsoluteUrl(m.cover_url) ? (m.cover_url as string) : PLACEHOLDER_COVER,
           audioUrl: m.audio_url,
-          durationSec:
-            typeof m.duration === "number" && m.duration > 0 ? m.duration : undefined,
+          durationSec: typeof m.duration === "number" && m.duration > 0 ? m.duration : undefined,
+          releaseType: m.type,
         }));
-        if (mapped.length) setReleases(mapped);
-      } catch {
-        // keep fallback
+        setReleases(mapped);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!releases.length) return;
+    setQueue(
+      releases.map((r) => ({
+        id: r.id,
+        musicId: r.id,
+        title: r.title,
+        artist: ARTIST,
+        coverUrl: r.src,
+        audioUrl: r.audioUrl ?? null,
+        type: r.releaseType,
+        releaseType: r.releaseType,
+        duration: r.durationSec ?? 0,
+        durationSec: r.durationSec ?? 0,
+      })),
+    );
+  }, [releases, setQueue]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setFeaturedLoading(true);
+      setFeaturedError(null);
+      try {
+        const res = await fetch("/api/music?featured=true&limit=1");
+        const json = (await res.json()) as {
+          error?: string;
+          music?: Array<{
+            id: string;
+            title: string;
+            type: "album" | "single" | "mix";
+            cover_url: string | null;
+            description: string | null;
+            tracks: { title: string; duration: number; audio_url?: string }[] | null;
+          }>;
+        };
+        if (!res.ok) throw new Error(json.error || "Failed to load featured release");
+        const m = json.music?.[0];
+        if (cancelled) return;
+        if (m) {
+          const relType = m.type === "album" || m.type === "single" || m.type === "mix" ? m.type : "album";
+          setFeaturedRow({
+            id: m.id,
+            title: m.title,
+            cover: isAbsoluteUrl(m.cover_url) ? (m.cover_url as string) : PLACEHOLDER_COVER,
+            description: m.description,
+            type: relType,
+            tracks: m.tracks,
+          });
+        } else setFeaturedRow(null);
+      } catch (e) {
+        if (!cancelled) setFeaturedError(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        if (!cancelled) setFeaturedLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -209,7 +291,21 @@ export default function MusicPage() {
             <button
               type="button"
               className="pl-6 pr-5 py-2.5 bg-primary text-on-primary-fixed font-headline font-bold text-sm uppercase tracking-widest rounded-full active:scale-[0.96] transition-transform duration-150 ease-out glow-btn flex items-center gap-2"
-              onClick={() => playRelease(releases[0] ?? FALLBACK_RELEASES[0])}
+              onClick={() => {
+                const first = releases[0];
+                if (first) playRelease(first);
+                else if (featuredRow)
+                  void playReleaseFromApi(
+                    {
+                      id: featuredRow.id,
+                      title: featuredRow.title,
+                      meta: "",
+                      src: featuredRow.cover,
+                      releaseType: featuredRow.type,
+                    },
+                    setTrack,
+                  );
+              }}
             >
               <span
                 className="material-symbols-outlined text-[18px] ml-[2px]"
@@ -252,45 +348,82 @@ export default function MusicPage() {
           <h2 className="font-headline text-xs uppercase tracking-widest text-on-surface-variant mb-6">
             Recent Releases
           </h2>
-          <AnimateIn stagger={0.06} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-            {releases.map((item) => (
-              <div
-                key={item.id}
-                className="group relative overflow-hidden rounded-3xl bg-surface-container-low p-3 transition-[background-color] hover:bg-surface-container-high"
-              >
-                <BorderDrawEdges />
-                <div className="relative z-10">
-                  <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-surface-container">
-                    <Link href={`/music/${item.id}`} className="absolute inset-0 block">
+          <AnimateIn stagger={0.06} className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
+            {loading ? (
+              <>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="animate-pulse rounded-3xl bg-surface-container-low p-3">
+                    <div className="mb-3 aspect-square rounded-xl bg-white/10" />
+                    <div className="h-4 rounded bg-white/10" />
+                    <div className="mt-2 h-3 w-2/3 rounded bg-white/10" />
+                  </div>
+                ))}
+              </>
+            ) : error ? (
+              <p className="col-span-full rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {error}
+              </p>
+            ) : releases.length === 0 ? (
+              <p className="col-span-full text-sm text-on-surface-variant">No results</p>
+            ) : (
+              releases.map((item) => (
+                (() => {
+                  const isActive = currentTrack?.id === item.id;
+                  const showEq = isActive && isPlaying;
+                  return (
+                <div
+                  key={item.id}
+                  onClick={(e) => handleCardClick(e, item)}
+                  className={`group relative overflow-hidden rounded-3xl p-3 transition-[background-color,box-shadow] hover:bg-surface-container-high ${
+                    isActive
+                      ? "bg-surface-container-high shadow-[0_0_0_2px_rgba(0,191,255,0.75)]"
+                      : "bg-surface-container-low"
+                  } cursor-pointer`}
+                >
+                  <BorderDrawEdges />
+                  <div className="relative z-10">
+                    <div className="relative mb-3 aspect-square overflow-hidden rounded-xl bg-surface-container">
+                      {showEq ? (
+                        <div className="absolute left-2 top-2 z-20 flex h-5 items-end gap-0.5 rounded-md bg-black/40 px-1.5 py-1">
+                          <span className="h-1 w-[3px] rounded-[1px] bg-[#00BFFF] animate-[eq-bar-1_0.8s_ease-in-out_infinite]" />
+                          <span className="h-2 w-[3px] rounded-[1px] bg-[#00BFFF] animate-[eq-bar-2_0.8s_ease-in-out_infinite]" />
+                          <span className="h-1 w-[3px] rounded-[1px] bg-[#00BFFF] animate-[eq-bar-3_0.8s_ease-in-out_infinite]" />
+                        </div>
+                      ) : null}
                       <Image
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         alt={item.title}
                         src={item.src}
-                        fill
-                        unoptimized
+                        width={300}
+                        height={300}
                       />
-                    </Link>
-                    <button
-                      type="button"
-                      className="absolute bottom-2 right-2 z-20 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-primary opacity-0 shadow-[0_4px_16px_rgba(0,191,255,0.5)] transition-[transform,opacity] duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-[0.96]"
-                      aria-label={`Play ${item.title}`}
-                      onClick={() => playRelease(item)}
-                    >
-                      <span
-                        className="material-symbols-outlined text-[20px] text-on-primary-fixed ml-[2px]"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      <button
+                        type="button"
+                        className="play-button absolute bottom-2 right-2 z-20 flex h-10 w-10 translate-y-2 items-center justify-center rounded-full bg-primary opacity-0 shadow-[0_4px_16px_rgba(0,191,255,0.5)] transition-[transform,opacity] duration-300 group-hover:translate-y-0 group-hover:opacity-100 active:scale-[0.96]"
+                        aria-label={`Play ${item.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playRelease(item);
+                        }}
                       >
-                        play_arrow
-                      </span>
-                    </button>
+                        <span
+                          className="material-symbols-outlined ml-[2px] text-[20px] text-on-primary-fixed"
+                          style={{ fontVariationSettings: "'FILL' 1" }}
+                        >
+                          {!item.audioUrl ? "music_note" : currentTrack?.id === item.id && isPlaying ? "pause" : "play_arrow"}
+                        </span>
+                      </button>
+                    </div>
+                    <div>
+                      <h3 className="truncate font-headline text-sm font-bold">{item.title}</h3>
+                      <p className="mt-0.5 font-label text-[10px] text-on-surface-variant">{item.meta}</p>
+                    </div>
                   </div>
-                  <Link href={`/music/${item.id}`} className="block">
-                    <h3 className="truncate font-headline text-sm font-bold">{item.title}</h3>
-                    <p className="mt-0.5 font-label text-[10px] text-on-surface-variant">{item.meta}</p>
-                  </Link>
                 </div>
-              </div>
-            ))}
+                  );
+                })()
+              ))
+            )}
           </AnimateIn>
         </section>
 
@@ -300,72 +433,112 @@ export default function MusicPage() {
           <h2 className="font-headline text-xs uppercase tracking-widest text-on-surface-variant mb-6">
             Featured Album
           </h2>
-          <div className="glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row gap-8">
-            <div className="w-full md:w-56 h-48 md:h-56 shrink-0 overflow-hidden rounded-xl shadow-2xl relative">
-              <Image
-                className="w-full h-full object-cover"
-                alt="Electric Pulse"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsbMyDOGr-pT4p9pEs6Mhc0DEx4bKES3dhUS54WTDMhn9njvaY2hkIeR67Uj05-PDah2tC6CoHnsjD1wwbGhYLbgMvSNceQd89NrVjiO1PgBEGqchMY7qDpgELymZ4YD_hYv08PeBXyRcjvc4smD_nSjJVtFDgc-HNEsn7uYubcv0uf-16qUopnuC1apIXwDcpD1tPd8u_qIF79wyZr_bJ_O55y3WXMamRTlyuZR4JKgxGcyuiDKAXydBMHA46E4LzlT4_x0WQdy03"
-                fill
-                unoptimized
-              />
-            </div>
-            <div className="flex-1">
-              <span className="font-label text-[10px] text-primary uppercase tracking-widest">Now Featured</span>
-              <h2 className="font-display text-5xl text-white uppercase tracking-tighter mt-1 mb-6">
-                Electric Pulse (Deluxe)
-              </h2>
-              <div className="space-y-1">
-                {FEATURED_TRACKS.map(({ n, title, duration }, i) => (
-                  <button
-                    key={n}
-                    type="button"
-                    className={[
-                      "flex w-full items-center gap-5 px-3 py-2.5 rounded-lg transition-[background-color] active:scale-[0.96] transition-transform duration-150 group text-left",
-                      i === 1 ? "bg-primary/8 shadow-[0_0_0_1px_rgba(0,191,255,0.15)]" : "hover:bg-white/5",
-                    ].join(" ")}
-                    onClick={() =>
-                      playOrResume({
-                        id: `featured-${n}`,
-                        title,
-                        artist: ARTIST,
-                        coverUrl: FEATURED_ALBUM_COVER,
-                        audioUrl: null,
-                        durationSec: parseDurationLabel(duration),
-                      })
-                    }
-                  >
-                    <span className={`font-label text-xs w-5 ${i === 1 ? "text-primary" : "text-on-surface-variant"}`}>
-                      {n}
-                    </span>
-                    <div className="flex-1 flex items-center gap-2">
-                      <span
-                        className={`font-headline text-sm font-medium ${i === 1 ? "text-primary" : "text-on-surface"}`}
-                      >
-                        {title}
-                      </span>
-                      {i === 1 && (
-                        <span
-                          className="material-symbols-outlined text-primary text-[14px]"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          equalizer
-                        </span>
-                      )}
-                    </div>
-                    <span className={`font-label text-xs ${i === 1 ? "text-primary" : "text-on-surface-variant"}`}>
-                      {duration}
-                    </span>
-                    <span
-                      className={`material-symbols-outlined text-[18px] ${i === 1 ? "text-primary" : "text-on-surface-variant group-hover:text-primary transition-colors"}`}
-                    >
-                      {i === 1 ? "favorite" : "more_horiz"}
-                    </span>
-                  </button>
-                ))}
+          {featuredLoading ? (
+            <div className="glass animate-pulse rounded-3xl p-6 lg:p-8">
+              <div className="flex flex-col gap-8 md:flex-row">
+                <div className="relative h-48 w-full shrink-0 rounded-xl bg-white/10 md:h-56 md:w-56" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 w-24 rounded bg-white/10" />
+                  <div className="h-10 w-3/4 rounded bg-white/10" />
+                  <div className="h-12 rounded bg-white/10" />
+                </div>
               </div>
             </div>
-          </div>
+          ) : featuredError ? (
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {featuredError}
+            </p>
+          ) : !featuredRow ? (
+            <p className="text-sm text-on-surface-variant">No results</p>
+          ) : (
+            <div className="glass rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row gap-8">
+              <div className="relative h-48 w-full md:h-56 md:w-56 shrink-0 overflow-hidden rounded-xl shadow-2xl">
+                <Image
+                  className="h-full w-full object-cover"
+                  alt={featuredRow.title}
+                  src={featuredRow.cover}
+                  width={300}
+                  height={300}
+                />
+              </div>
+              <div className="flex-1">
+                <span className="font-label text-[10px] text-primary uppercase tracking-widest">Now Featured</span>
+                <h2 className="font-display mt-1 mb-4 text-3xl uppercase tracking-tighter text-white sm:text-5xl">
+                  {featuredRow.title}
+                </h2>
+                {featuredRow.description ? (
+                  <p className="mb-6 line-clamp-4 text-sm text-on-surface-variant">{featuredRow.description}</p>
+                ) : null}
+                {featuredRow.tracks && featuredRow.tracks.length > 0 ? (
+                  <div className="space-y-1">
+                    {featuredRow.tracks.map((tr, i) => {
+                      const n = String(i + 1).padStart(2, "0");
+                      const duration = formatDuration(tr.duration);
+                      const active = i === 0;
+                      return (
+                        <button
+                          key={`${tr.title}-${i}`}
+                          type="button"
+                          className={[
+                            "group flex w-full items-center gap-5 rounded-lg px-3 py-2.5 text-left transition-[background-color] active:scale-[0.96] active:transition-transform active:duration-150",
+                            active ? "bg-primary/8 shadow-[0_0_0_1px_rgba(0,191,255,0.15)]" : "hover:bg-white/5",
+                          ].join(" ")}
+                          onClick={() =>
+                            setTrack({
+                              id: `featured-${featuredRow.id}-${i}`,
+                              musicId: featuredRow.id,
+                              title: tr.title,
+                              artist: ARTIST,
+                              coverUrl: featuredRow.cover,
+                              audioUrl: tr.audio_url ?? null,
+                              durationSec: tr.duration > 0 ? tr.duration : 0,
+                              releaseType: featuredRow.type,
+                              type: featuredRow.type,
+                              duration: tr.duration > 0 ? tr.duration : 0,
+                            })
+                          }
+                        >
+                          <span
+                            className={`w-5 font-label text-xs ${active ? "text-primary" : "text-on-surface-variant"}`}
+                          >
+                            {n}
+                          </span>
+                          <div className="flex flex-1 items-center gap-2">
+                            <span
+                              className={`font-headline text-sm font-medium ${active ? "text-primary" : "text-on-surface"}`}
+                            >
+                              {tr.title}
+                            </span>
+                            {active && (
+                              <span
+                                className="material-symbols-outlined text-[14px] text-primary"
+                                style={{ fontVariationSettings: "'FILL' 1" }}
+                              >
+                                equalizer
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`font-label text-xs ${active ? "text-primary" : "text-on-surface-variant"}`}
+                          >
+                            {duration}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Link
+                    href={`/music/${featuredRow.id}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-2 text-sm font-bold text-primary hover:bg-primary/10"
+                  >
+                    Open release
+                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </section>
         </AnimateIn>
 
@@ -398,9 +571,7 @@ export default function MusicPage() {
                   </div>
                   <div className="p-3">
                     <p className="font-headline text-xs font-medium">Mix Session {i + 1}</p>
-                    <p className="mt-0.5 font-label text-[10px] text-on-surface-variant">
-                      {["18:24", "22:41", "15:08", "31:55"][i]}
-                    </p>
+                    <p className="mt-0.5 font-label text-[10px] text-on-surface-variant">Video clip</p>
                   </div>
                 </div>
               </Link>
@@ -408,24 +579,6 @@ export default function MusicPage() {
           </AnimateIn>
         </section>
 
-        {/* ── Sign-in prompt ── */}
-        <section className="glass rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6 border-l-[3px] border-primary">
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary text-2xl">headphones</span>
-            <div>
-              <p className="font-headline font-bold">Listen to the full catalog</p>
-              <p className="text-on-surface-variant text-sm">
-                Sign in to stream every track, mix, and exclusive release.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/sign-in"
-            className="shrink-0 px-6 py-2.5 bg-primary text-on-primary-fixed font-bold rounded-full text-sm uppercase tracking-widest active:scale-[0.96] transition-transform duration-150 ease-out glow-btn"
-          >
-            Sign In
-          </Link>
-        </section>
       </div>
     </div>
   );

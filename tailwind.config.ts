@@ -80,6 +80,7 @@ const config: Config = {
         'body':     ['var(--font-body)', 'sans-serif'],
         'label':    ['var(--font-label)', 'monospace'],
         'mono':     ['var(--font-mono)', 'monospace'],
+        'syne':     ['var(--font-syne)', 'sans-serif'],
       },
 
       borderRadius: {

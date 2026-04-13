@@ -10,8 +10,6 @@ interface TopNavbarProps {
   showNotifications?: boolean
   /** Show avatar */
   showAvatar?: boolean
-  /** Show dark mode toggle */
-  showThemeToggle?: boolean
   /** Custom right-side content */
   rightSlot?: React.ReactNode
   /** Page title shown on admin bar */
@@ -23,7 +21,6 @@ export default function TopNavbar({
   searchPlaceholder = 'Search...',
   showNotifications = true,
   showAvatar = true,
-  showThemeToggle = false,
   rightSlot,
   title,
 }: TopNavbarProps) {
@@ -48,12 +45,6 @@ export default function TopNavbar({
             className="bg-transparent border-none outline-none focus:ring-0 text-sm placeholder:text-on-surface-variant/50 w-48 text-on-surface"
           />
         </div>
-
-        {showThemeToggle && (
-          <button aria-label="Toggle theme" className="hover:text-white transition-colors cursor-pointer">
-            <span className="material-symbols-outlined">dark_mode</span>
-          </button>
-        )}
 
         {showNotifications && (
           <button aria-label="Notifications" className="hover:text-white transition-colors cursor-pointer relative">
@@ -82,7 +73,6 @@ export function AppTopNavbar() {
       searchPlaceholder="Search tracks..."
       showNotifications
       showAvatar
-      showThemeToggle={false}
     />
   )
 }
@@ -95,7 +85,6 @@ export function AdminTopNavbar({ title = 'KillerCutz Admin' }: { title?: string 
       searchPlaceholder="Search..."
       showNotifications
       showAvatar
-      showThemeToggle={false}
       title={title}
     />
   )

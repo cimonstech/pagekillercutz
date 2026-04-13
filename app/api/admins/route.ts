@@ -1,9 +1,11 @@
+import { randomBytes } from "crypto";
 import { logger } from "@/lib/logger";
+import { sendEmail } from "@/lib/notify/email";
+import * as ET from "@/lib/notify/emailTemplates";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
 type AdminRow = Database["public"]["Tables"]["admins"]["Row"];
-type AdminInsert = Database["public"]["Tables"]["admins"]["Insert"];
 
 export async function GET() {
   try {
@@ -17,20 +19,77 @@ export async function GET() {
   }
 }
 
+type CreateAdminBody = {
+  email?: string;
+  role?: "admin" | "super_admin";
+  status?: "active" | "suspended";
+  temporaryPassword?: string;
+};
+
 export async function POST(request: Request) {
   try {
-    const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as AdminInsert;
-    const insertPayload = body as unknown as never;
-    if (!body.email || !body.role) {
+    const body = (await request.json()) as CreateAdminBody;
+    const email = body.email?.trim().toLowerCase();
+    const role = body.role;
+    if (!email || !role) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
-    const { data, error } = await supabase.from("admins").insert(insertPayload).select("*").single();
-    if (error) throw error;
-    return Response.json({ admin: data as AdminRow }, { status: 201 });
+
+    const supabase = getSupabaseAdmin();
+    const temporaryPassword =
+      body.temporaryPassword?.trim() ||
+      randomBytes(12).toString("base64url").replace(/[^a-zA-Z0-9]/g, "").slice(0, 14) ||
+      `PKC-${randomBytes(6).toString("hex")}`;
+
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password: temporaryPassword,
+      email_confirm: true,
+    });
+
+    if (authError || !authUser?.user) {
+      logger.errorRaw("route", "[api/admins] createUser:", authError);
+      return Response.json({ error: authError?.message || "Auth user creation failed" }, { status: 400 });
+    }
+
+    const { data: row, error: insertError } = await supabase
+      .from("admins")
+      .insert({
+        email,
+        role,
+        status: body.status ?? "active",
+        last_login: null,
+      })
+      .select("*")
+      .single();
+
+    if (insertError) {
+      await supabase.auth.admin.deleteUser(authUser.user.id);
+      logger.errorRaw("route", "[api/admins] insert:", insertError);
+      return Response.json({ error: insertError.message || "Failed to create admin row" }, { status: 400 });
+    }
+
+    const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
+    const loginUrl = `${BASE_URL}/admin/login`;
+
+    await sendEmail({
+      to: email,
+      subject: "You've been added as an admin — Page KillerCutz",
+      html: ET.adminWelcomeEmail({
+        email,
+        role,
+        loginUrl,
+        temporaryPassword,
+      }),
+    }).catch((e) => logger.errorRaw("route", "[api/admins] welcome email:", e));
+
+    return Response.json({
+      admin: row as AdminRow,
+      temporaryPassword,
+      authUserId: authUser.user.id,
+    }, { status: 201 });
   } catch (error) {
-    logger.errorRaw("route", "[api/admins] Error:", error);
+    logger.errorRaw("route", "[api/admins] POST Error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

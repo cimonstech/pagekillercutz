@@ -1,15 +1,35 @@
 "use client";
 
+import type { Database } from "@/lib/database.types";
+import { Calendar } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { mockClientDashboard } from "@/lib/mockData";
+import { useCallback, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-/** Glass panel base (padding 24px applied per card). */
+type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
+type PlaylistRow = Database["public"]["Tables"]["playlists"]["Row"];
+type PackageRow = Database["public"]["Tables"]["packages"]["Row"];
+type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
+
+type DashboardData = {
+  booking: BookingRow;
+  playlist: PlaylistRow | null;
+  package: PackageRow | null;
+  daysUntilEvent: number;
+  eventData: {
+    media_urls: string[];
+    title: string;
+    event_type: string;
+  } | null;
+  recentOrders: OrderRow[];
+};
+
 const glass =
   "rounded-[20px] border border-white/[0.08] bg-white/[0.05] p-6 backdrop-blur-[20px]";
 
-const d = mockClientDashboard;
+const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
 
 const notifications = [
   {
@@ -32,196 +52,514 @@ const notifications = [
   },
 ];
 
+function jsonArrLen(v: unknown): number {
+  return Array.isArray(v) ? v.length : 0;
+}
+
+function formatEventDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function heroTitle(booking: BookingRow): string {
+  const name = booking.event_name?.trim();
+  if (name) return name;
+  return `${booking.event_type} Event`;
+}
+
+function DashboardSkeleton() {
+  const sk = "rounded-[20px] border border-white/[0.06] bg-[rgba(255,255,255,0.04)] overflow-hidden";
+  return (
+    <div className="mx-auto grid max-w-7xl grid-cols-12 gap-6">
+      <div className={`col-span-12 min-h-[320px] lg:col-span-8 ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[320px] w-full" />
+      </div>
+      <div className={`col-span-12 min-h-[280px] lg:col-span-4 ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[280px] w-full" />
+      </div>
+      <div className={`col-span-12 min-h-[220px] md:col-span-4 lg:col-span-3 ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[220px] w-full" />
+      </div>
+      <div className={`col-span-12 min-h-[220px] md:col-span-4 lg:col-span-3 ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[220px] w-full" />
+      </div>
+      <div className={`col-span-12 min-h-[200px] md:col-span-12 lg:col-span-6 ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[200px] w-full" />
+      </div>
+      <div className={`col-span-12 min-h-[160px] ${sk}`}>
+        <div className="kc-shimmer h-full min-h-[160px] w-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function ClientDashboardPage() {
   const router = useRouter();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (!user?.email) {
+        router.replace("/sign-in");
+        return;
+      }
+
+      const { data: adminRecord } = await supabase
+        .from("admins")
+        .select("role")
+        .eq("email", user.email)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (adminRecord) {
+        const row = adminRecord as { role: "admin" | "super_admin" };
+        if (typeof window !== "undefined") {
+          localStorage.setItem("adminRole", row.role);
+        }
+        router.replace("/admin");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/client/dashboard");
+        const json = (await res.json()) as { error?: string } & Partial<DashboardData>;
+        if (cancelled) return;
+        if (res.status === 401) {
+          router.push("/sign-in");
+          return;
+        }
+        if (!res.ok) {
+          setError(json.error ?? "Failed to load dashboard");
+          setLoading(false);
+          return;
+        }
+        setData({
+          ...(json as DashboardData),
+          recentOrders: (json as Partial<DashboardData>).recentOrders ?? [],
+        });
+      } catch {
+        if (!cancelled) setError("Failed to load dashboard");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  const copyEventId = useCallback(async (id: string) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">
+        <DashboardSkeleton />
+      </main>
+    );
+  }
+
+  if (error === "No booking found") {
+    return (
+      <main className="relative z-[1] flex min-h-[60vh] w-full min-w-0 items-center justify-center pb-8 text-on-surface">
+        <div
+          className={`mx-auto max-w-md text-center ${glass} px-8 py-12`}
+        >
+          <Calendar className="mx-auto size-12 text-primary/50" strokeWidth={1.25} aria-hidden />
+          <h2 className="mt-6 font-headline text-xl font-semibold text-white">No booking found.</h2>
+          <p className="mt-2 font-body text-sm text-on-surface-variant">
+            You don&apos;t have an active booking yet.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/booking")}
+            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-[#00BFFF] px-8 py-3 font-headline text-sm font-semibold text-black transition-all hover:brightness-110"
+          >
+            Book the DJ <span className="material-symbols-outlined text-lg">arrow_forward</span>
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">
+        <p className="text-center font-body text-sm text-error">{error ?? "Something went wrong."}</p>
+      </main>
+    );
+  }
+
+  const { booking, playlist, package: pkg, daysUntilEvent, eventData, recentOrders } = data;
+  const bgUrl = eventData?.media_urls?.[0] ?? null;
+  const paid = booking.payment_status === "paid";
+  const mustPlay = jsonArrLen(playlist?.must_play);
+  const doNotPlay = jsonArrLen(playlist?.do_not_play);
+  const timeline = jsonArrLen(playlist?.timeline);
+  const hasPlaylist = playlist !== null;
+  const isLocked = playlist?.locked === true;
+  const amount =
+    pkg?.price != null
+      ? `GHS ${Number(pkg.price).toLocaleString()}`
+      : booking.package_name
+        ? "—"
+        : "—";
 
   return (
     <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">
-        <div className="mx-auto grid max-w-7xl grid-cols-12 gap-6">
-          {/* ROW 1 */}
-          <div
-            className={`group relative col-span-12 flex min-h-[320px] flex-col justify-end overflow-hidden lg:col-span-8 ${glass} border-0 p-8`}
-          >
-            <div className="absolute inset-0 z-0">
-              <Image
-                src={d.heroImageUrl}
-                alt=""
-                fill
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-cover opacity-30 transition-transform duration-700 group-hover:scale-105"
-                unoptimized
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#13131a] via-[#13131a]/60 to-transparent" />
+      <div className="mx-auto grid max-w-7xl grid-cols-12 gap-6">
+        {/* ROW 1 — Hero + Payment */}
+        <div
+          className={`group relative col-span-12 flex min-h-[320px] flex-col justify-end overflow-hidden lg:col-span-8 ${glass} border-0 p-8`}
+        >
+          <div className="absolute inset-0 z-0">
+            {bgUrl ? (
+              <>
+                <Image
+                  src={bgUrl}
+                  alt=""
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 66vw"
+                  className="object-cover opacity-30 transition-transform duration-700 group-hover:scale-105"
+                  unoptimized
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#13131a] via-[#13131a]/60 to-transparent" />
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-[#13131a] via-[#0a1620] to-[#13131a]" />
+            )}
+          </div>
+          <div className="relative z-10 space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-on-surface-variant">Your Event</span>
+              <span className="rounded bg-primary-container px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-primary-container">
+                {booking.event_type}
+              </span>
             </div>
-            <div className="relative z-10 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-mono text-xs uppercase tracking-[0.2em] text-on-surface-variant">Your Event</span>
-                <span className="rounded bg-primary-container px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-on-primary-container">
-                  {d.eventType}
+            <h1 className="font-headline text-[22px] font-semibold leading-tight tracking-tight text-white">
+              {heroTitle(booking)}
+            </h1>
+            <div className="flex flex-wrap gap-6 text-sm font-medium text-on-surface-variant">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg text-primary">calendar_today</span>
+                <span className="font-body">{formatEventDate(booking.event_date)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg text-primary">location_on</span>
+                <span className="font-body">{booking.venue}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => void copyEventId(booking.event_id)}
+                className="group/id flex items-center gap-2 font-mono text-[#00BFFF] transition-opacity hover:opacity-90"
+              >
+                <span className="material-symbols-outlined text-lg">fingerprint</span>
+                <span>{booking.event_id}</span>
+                <span className="material-symbols-outlined text-sm text-on-surface-variant opacity-70 group-hover/id:opacity-100">
+                  content_copy
                 </span>
-              </div>
-              <h1 className="font-headline text-[22px] font-semibold leading-tight tracking-tight text-white">{d.eventName}</h1>
-              <div className="flex flex-wrap gap-6 text-sm font-medium text-on-surface-variant">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg text-primary">calendar_today</span>
-                  <span className="font-body">{d.eventDate}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg text-primary">location_on</span>
-                  <span className="font-body">{d.venue}</span>
-                </div>
-                <div className="flex items-center gap-2 font-mono text-[#00BFFF]">
-                  <span className="material-symbols-outlined text-lg">fingerprint</span>
-                  <span>{d.eventId}</span>
-                </div>
-              </div>
-              <div className="pt-2">
+              </button>
+            </div>
+            {copied ? (
+              <p className="font-body text-[11px] text-primary">Copied!</p>
+            ) : null}
+            <div className="pt-2">
+              {!hasPlaylist && (
                 <button
                   type="button"
                   onClick={() => router.push("/client/playlist")}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#00BFFF] py-3 font-headline text-sm font-semibold text-black transition-all hover:brightness-110 active:scale-[0.98]"
+                  style={{
+                    width: "100%",
+                    height: "52px",
+                    background: "#00BFFF",
+                    color: "#000000",
+                    borderRadius: "999px",
+                    border: "none",
+                    fontFamily: "var(--font-headline), 'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "15px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
                 >
-                  Curate Your Playlist <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                  Curate Your Playlist →
                 </button>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`col-span-12 flex flex-col justify-between border-l-[3px] border-[#F5A623] lg:col-span-4 ${glass}`}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-widest text-on-surface-variant">Payment Status</span>
-                {d.paymentStatus === "pending" ? (
-                  <span className="rounded-full border border-[#F5A623]/30 bg-[#F5A623]/20 px-2 py-0.5 text-[10px] font-bold uppercase text-[#F5A623]">
-                    Pending
-                  </span>
-                ) : (
-                  <span className="rounded-full border border-primary/30 bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">
-                    Confirmed
-                  </span>
-                )}
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-on-surface-variant">Amount Due</p>
-                <p className="font-headline text-4xl font-bold text-[#F5A623]">{d.amountDue}</p>
-              </div>
-              <div className="rounded-sm border border-outline-variant/10 bg-surface-container-highest/40 p-4">
-                <p className="mb-3 font-body text-[12px] leading-snug text-on-surface-variant">
-                  Send via Mobile Money using your Event ID as reference.
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[12px] font-medium text-on-surface-variant">DJ MoMo</span>
-                    <span className="font-mono text-lg text-[#00BFFF]">{d.djMoMo}</span>
-                  </div>
-                  <span className="material-symbols-outlined text-on-surface-variant">content_copy</span>
-                </div>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="mt-6 w-full border border-[#F5A623] py-3 text-sm font-bold uppercase tracking-widest text-[#F5A623] transition-colors hover:bg-[#F5A623]/10"
-            >
-              Confirm Payment
-            </button>
-          </div>
-
-          {/* ROW 2 */}
-          <div className={`col-span-12 flex flex-col md:col-span-4 lg:col-span-3 ${glass}`}>
-            <h3 className="mb-6 font-headline text-lg font-semibold text-on-surface">Your Playlist</h3>
-            <div className="flex flex-1 flex-col space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_#8fd6ff]" />
-                <span className="text-sm font-medium text-on-surface">{d.mustPlayCount} Must-play songs</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]" />
-                <span className="text-sm font-medium text-on-surface">{d.doNotPlayCount} Do-not-play</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_8px_#ffb955]" />
-                <span className="text-sm font-medium text-on-surface">{d.timelineMoments} Timeline moments</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.push("/client/playlist")}
-              className="mt-8 flex items-center gap-2 text-sm font-bold text-primary transition-transform hover:translate-x-1"
-            >
-              Edit Playlist <span className="material-symbols-outlined text-lg">arrow_forward</span>
-            </button>
-          </div>
-
-          <div
-            className={`relative col-span-12 flex flex-col items-center justify-center md:col-span-4 lg:col-span-3 ${glass}`}
-            style={{
-              boxShadow:
-                "0 0 0 1px rgba(0,191,255,0.20), 0 8px 32px rgba(0,191,255,0.08)",
-            }}
-          >
-            <div className="pointer-events-none absolute inset-0 rounded-[20px] bg-primary/5 blur-3xl" />
-            <div className="relative text-center">
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.25em] text-on-surface-variant">
-                Days Until Your Event
-              </p>
-              <p className="font-headline text-[64px] font-bold leading-none text-[#00BFFF] drop-shadow-[0_0_15px_rgba(143,214,255,0.4)]">
-                {d.daysUntilEvent}
-              </p>
-              <p className="mt-2 font-body text-xs uppercase tracking-[0.3em] text-on-surface-variant">days to go</p>
-            </div>
-            <div className="absolute bottom-4 flex gap-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-              <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            </div>
-          </div>
-
-          <div className={`col-span-12 md:col-span-12 lg:col-span-6 ${glass}`}>
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="font-headline text-lg font-semibold text-on-surface">Recent Updates</h3>
-              <span className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-primary">View All</span>
-            </div>
-            <div className="space-y-4">
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="group flex items-center gap-4 rounded p-3 transition-colors hover:bg-surface-container-highest/30"
+              )}
+              {hasPlaylist && !isLocked && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/client/playlist")}
+                  style={{
+                    width: "100%",
+                    height: "52px",
+                    background: "transparent",
+                    color: "#00BFFF",
+                    borderRadius: "999px",
+                    border: "1px solid #00BFFF",
+                    fontFamily: "var(--font-headline), 'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "15px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
                 >
-                  <span
-                    className={[
-                      "material-symbols-outlined rounded p-2",
-                      n.tone === "primary" ? "bg-primary/10 text-primary-container" : "bg-secondary/10 text-secondary",
-                    ].join(" ")}
-                  >
-                    {n.icon}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-[13px] font-medium text-on-surface">{n.message}</p>
-                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">
-                      {n.time}
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100">
-                    chevron_right
-                  </span>
-                </div>
-              ))}
+                  ✎ Edit My Playlist →
+                </button>
+              )}
+              {hasPlaylist && isLocked && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/client/playlist")}
+                  style={{
+                    width: "100%",
+                    height: "52px",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#A0A8C0",
+                    borderRadius: "999px",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    fontFamily: "var(--font-headline), 'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                    fontSize: "15px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
+                >
+                  🔒 View My Playlist
+                </button>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* ROW 3 */}
-          <div className={`col-span-12 overflow-hidden border-l-[3px] border-[#F5A623] ${glass}`}>
-            <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#F5A623]">Package</span>
-                  <h2 className="font-headline text-[18px] font-semibold text-white">{d.packageName}</h2>
+        <div
+          className={`col-span-12 flex min-w-0 flex-col justify-between overflow-hidden border-l-[3px] border-[#F5A623] lg:col-span-4 ${glass}`}
+        >
+          <div className="min-w-0 space-y-4">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+              <span className="min-w-0 shrink text-xs uppercase tracking-widest text-on-surface-variant">
+                Payment Status
+              </span>
+              {paid ? (
+                <span className="shrink-0 rounded-full border border-primary/30 bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">
+                  Confirmed
+                </span>
+              ) : (
+                <span className="shrink-0 rounded-full border border-[#F5A623]/30 bg-[#F5A623]/20 px-2 py-0.5 text-[10px] font-bold uppercase text-[#F5A623]">
+                  Pending
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-sm text-on-surface-variant">Amount Due</p>
+              <p className="min-w-0 break-words font-headline text-[28px] font-bold leading-tight text-[#F5A623]">
+                {amount}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className="font-headline text-[13px] font-semibold text-white">Payment Instructions</p>
+              <p
+                className="mt-2 font-body text-[12px] leading-snug text-on-surface-variant"
+                style={{ overflowWrap: "break-word", wordBreak: "break-word" }}
+              >
+                Send your service fee via Mobile Money or bank transfer. Use your Event ID as the payment reference or
+                narration. Your booking is confirmed once payment is received and verified.
+              </p>
+              <div className="mt-4 rounded-sm border border-outline-variant/10 bg-surface-container-highest/40 p-4">
+                <div className="flex flex-col">
+                  <span className="text-[12px] font-medium text-on-surface-variant">DJ MoMo</span>
+                  <span className="font-mono text-lg text-[#00BFFF]">{DJ_MOMO}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 2 */}
+        <div className={`col-span-12 flex min-w-0 flex-col md:col-span-4 lg:col-span-3 ${glass}`}>
+          <h3 className="mb-6 font-headline text-lg font-semibold text-on-surface">Your Playlist</h3>
+          <div className="flex flex-1 flex-col space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_#8fd6ff]" />
+              <span className="text-sm font-medium text-on-surface">{mustPlay} Must-play songs</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="h-2 w-2 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]" />
+              <span className="text-sm font-medium text-on-surface">{doNotPlay} Do-not-play</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_8px_#ffb955]" />
+              <span className="text-sm font-medium text-on-surface">{timeline} Timeline moments</span>
+            </div>
+          </div>
+          <div className="mt-8 min-w-0">
+            {!hasPlaylist && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push("/client/playlist")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/client/playlist");
+                  }
+                }}
+                style={{ color: "#00BFFF", cursor: "pointer", fontSize: "13px" }}
+                className="font-body inline-block"
+              >
+                Start building your playlist →
+              </span>
+            )}
+            {hasPlaylist && !isLocked && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push("/client/playlist")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/client/playlist");
+                  }
+                }}
+                style={{ color: "#00BFFF", cursor: "pointer", fontSize: "13px" }}
+                className="font-body inline-block"
+              >
+                Edit Playlist →
+              </span>
+            )}
+            {hasPlaylist && isLocked && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push("/client/playlist")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push("/client/playlist");
+                  }
+                }}
+                style={{ color: "#A0A8C0", cursor: "pointer", fontSize: "13px" }}
+                className="font-body inline-block"
+              >
+                View Playlist (Locked)
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div
+          className={`relative col-span-12 flex flex-col items-center justify-center md:col-span-4 lg:col-span-3 ${glass}`}
+          style={{
+            boxShadow:
+              "0 0 0 1px rgba(0,191,255,0.20), 0 8px 32px rgba(0,191,255,0.08)",
+          }}
+        >
+          <div className="pointer-events-none absolute inset-0 rounded-[20px] bg-primary/5 blur-3xl" />
+          <div className="relative text-center">
+            <p className="mb-2 font-mono text-xs uppercase tracking-[0.25em] text-on-surface-variant">
+              Days Until Your Event
+            </p>
+            {daysUntilEvent < 0 ? (
+              <p className="font-headline text-2xl font-semibold text-on-surface-variant">Event passed</p>
+            ) : daysUntilEvent === 0 ? (
+              <p className="font-headline text-[64px] font-bold leading-none text-[#00BFFF] drop-shadow-[0_0_15px_rgba(143,214,255,0.4)]">
+                TODAY!
+              </p>
+            ) : (
+              <>
+                <p className="font-headline text-[64px] font-bold leading-none text-[#00BFFF] drop-shadow-[0_0_15px_rgba(143,214,255,0.4)]">
+                  {daysUntilEvent}
+                </p>
+                <p className="mt-2 font-body text-xs uppercase tracking-[0.3em] text-on-surface-variant">days to go</p>
+              </>
+            )}
+          </div>
+          <div className="absolute bottom-4 flex gap-1">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
+          </div>
+        </div>
+
+        <div className={`col-span-12 md:col-span-12 lg:col-span-6 ${glass}`}>
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="font-headline text-lg font-semibold text-on-surface">Recent Updates</h3>
+            <span className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-primary">View All</span>
+          </div>
+          <div className="space-y-4">
+            {notifications.map((n, i) => (
+              <div
+                key={i}
+                className="group flex items-center gap-4 rounded p-3 transition-colors hover:bg-surface-container-highest/30"
+              >
+                <span
+                  className={[
+                    "material-symbols-outlined rounded p-2",
+                    n.tone === "primary" ? "bg-primary/10 text-primary-container" : "bg-secondary/10 text-secondary",
+                  ].join(" ")}
+                >
+                  {n.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-[13px] font-medium text-on-surface">{n.message}</p>
+                  <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">
+                    {n.time}
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100">
+                  chevron_right
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ROW 3 — Package */}
+        <div className={`col-span-12 overflow-hidden border-l-[3px] border-[#F5A623] ${glass}`}>
+          <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#F5A623]">Package</span>
+                <h2 className="font-headline text-[18px] font-semibold text-white">
+                  {pkg?.name ?? booking.package_name ?? "—"}
+                </h2>
+              </div>
+              {pkg?.inclusions?.length ? (
                 <div className="flex flex-wrap gap-x-8 gap-y-3">
-                  {d.packageInclusions.map((line) => (
+                  {pkg.inclusions.map((line) => (
                     <div key={line} className="flex items-center gap-2">
                       <span
                         className="material-symbols-outlined text-sm text-primary-container"
@@ -233,22 +571,80 @@ export default function ClientDashboardPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-on-surface-variant">
-                  Included in your booking
-                </span>
-                <span className="font-headline text-[28px] font-bold text-[#F5A623]">{d.packagePrice}</span>
-                <Link
-                  href="/booking"
-                  className="mt-1 border-b border-primary/30 pb-0.5 text-[12px] font-bold uppercase text-primary transition-all hover:border-primary"
-                >
-                  Details &amp; Contract
-                </Link>
-              </div>
+              ) : (
+                <p className="font-body text-sm text-on-surface-variant">
+                  Package details will appear here when available.
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <span className="text-xs font-medium uppercase tracking-widest text-on-surface-variant">
+                Included in your booking
+              </span>
+              <span className="font-headline text-[28px] font-bold text-[#F5A623]">
+                {pkg?.price != null ? `GHS ${Number(pkg.price).toLocaleString()}` : "—"}
+              </span>
+              <Link
+                href="/booking"
+                className="mt-1 border-b border-primary/30 pb-0.5 text-[12px] font-bold uppercase text-primary transition-all hover:border-primary"
+              >
+                Details &amp; Contract
+              </Link>
             </div>
           </div>
         </div>
-      </main>
+
+        {recentOrders.length > 0 ? (
+          <div className="col-span-12">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="font-headline text-[18px] font-semibold text-white">Recent Orders</h2>
+              <button
+                type="button"
+                onClick={() => router.push("/client/orders")}
+                className="font-headline text-[13px] font-medium text-[#00BFFF] transition-opacity hover:opacity-90"
+              >
+                View all →
+              </button>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+              {recentOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="min-w-[280px] shrink-0 rounded-2xl border border-white/[0.08] bg-white/[0.05] p-4 backdrop-blur-[20px]"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-mono text-[12px] text-[#00BFFF]">{order.order_number}</span>
+                    <span className="font-body text-[11px] text-[#A0A8C0]">
+                      {new Date(order.created_at).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <p className="mt-3 line-clamp-2 font-body text-[11px] text-on-surface-variant">
+                    {order.items.map((it) => `${it.name} · ${it.size}`).join(" · ")}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="font-syne text-[15px] font-bold text-white">
+                      GH₵{Number(order.total).toLocaleString()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        router.push(`/track-order?id=${encodeURIComponent(order.order_number)}`)
+                      }
+                      className="shrink-0 font-headline text-[11px] font-medium text-[#00BFFF]"
+                    >
+                      Track →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </main>
   );
 }

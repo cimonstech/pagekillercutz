@@ -1,29 +1,53 @@
+/** Standalone row type avoids self-referential `Database[...]` in Insert/Update, which can break Supabase `.update()` inference. */
+export type BookingsRow = {
+  id: string;
+  event_id: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string;
+  event_type: string;
+  event_name: string | null;
+  event_date: string;
+  venue: string;
+  guest_count: number | null;
+  notes: string | null;
+  genres: string[];
+  package_name: string | null;
+  status: "pending" | "confirmed" | "cancelled";
+  payment_status: "unpaid" | "paid";
+  created_at: string;
+};
+
+export type ContactMessagesRow = {
+  id: string;
+  created_at: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+};
+
+export type PlayEventsRow = {
+  id: string;
+  user_id: string | null;
+  music_id: string | null;
+  track_title: string;
+  artist: string;
+  release_type: string | null;
+  duration_played: number | null;
+  source: string | null;
+  session_id: string | null;
+  played_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
       bookings: {
-        Row: {
-          id: string;
-          event_id: string;
-          client_name: string;
-          client_email: string;
-          client_phone: string;
-          event_type: string;
-          event_date: string;
-          venue: string;
-          guest_count: number | null;
-          notes: string | null;
-          genres: string[];
-          package_name: string | null;
-          status: "pending" | "confirmed" | "cancelled";
-          payment_status: "unpaid" | "paid";
-          created_at: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["bookings"]["Row"],
-          "id" | "created_at" | "event_id"
-        >;
-        Update: Partial<Database["public"]["Tables"]["bookings"]["Row"]>;
+        Row: BookingsRow;
+        Insert: Omit<BookingsRow, "id" | "created_at" | "event_id">;
+        Update: Partial<BookingsRow>;
+        Relationships: [];
       };
       playlists: {
         Row: {
@@ -43,6 +67,7 @@ export type Database = {
           "id" | "updated_at"
         >;
         Update: Partial<Database["public"]["Tables"]["playlists"]["Row"]>;
+        Relationships: [];
       };
       packages: {
         Row: {
@@ -60,6 +85,7 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["packages"]["Row"]>;
+        Relationships: [];
       };
       products: {
         Row: {
@@ -81,6 +107,7 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["products"]["Row"]>;
+        Relationships: [];
       };
       orders: {
         Row: {
@@ -99,9 +126,10 @@ export type Database = {
         };
         Insert: Omit<
           Database["public"]["Tables"]["orders"]["Row"],
-          "id" | "created_at" | "order_number"
+          "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["orders"]["Row"]>;
+        Relationships: [];
       };
       music: {
         Row: {
@@ -123,6 +151,7 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["music"]["Row"]>;
+        Relationships: [];
       };
       events: {
         Row: {
@@ -143,6 +172,7 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["events"]["Row"]>;
+        Relationships: [];
       };
       admins: {
         Row: {
@@ -158,6 +188,7 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["admins"]["Row"]>;
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -174,7 +205,8 @@ export type Database = {
           Database["public"]["Tables"]["audit_logs"]["Row"],
           "id" | "created_at"
         >;
-        Update: never;
+        Update: Partial<Database["public"]["Tables"]["audit_logs"]["Row"]>;
+        Relationships: [];
       };
       password_resets: {
         Row: {
@@ -190,8 +222,44 @@ export type Database = {
           "id" | "created_at"
         >;
         Update: Partial<Database["public"]["Tables"]["password_resets"]["Row"]>;
+        Relationships: [];
+      };
+      contact_messages: {
+        Row: ContactMessagesRow;
+        Insert: Omit<ContactMessagesRow, "id" | "created_at">;
+        Update: Partial<ContactMessagesRow>;
+        Relationships: [];
+      };
+      play_events: {
+        Row: PlayEventsRow;
+        Insert: Omit<PlayEventsRow, "id" | "played_at"> & {
+          id?: string;
+          played_at?: string;
+        };
+        Update: Partial<PlayEventsRow>;
+        Relationships: [];
+      };
+      platform_settings: {
+        Row: {
+          key: string;
+          value: unknown;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: unknown;
+          updated_at?: string;
+        };
+        Update: Partial<{
+          key: string;
+          value: unknown;
+          updated_at: string;
+        }>;
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 };
 
