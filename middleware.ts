@@ -31,7 +31,16 @@ export async function middleware(request: NextRequest) {
 
   // /client/* — require any authenticated session
   if (!user && request.nextUrl.pathname.startsWith("/client")) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    const signIn = new URL("/sign-in", request.url);
+    signIn.searchParams.set(
+      "redirect",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+    signIn.searchParams.set(
+      "notice",
+      "login_required",
+    );
+    return NextResponse.redirect(signIn);
   }
 
   // /admin/* (except login) — require a session; admin vs client is enforced

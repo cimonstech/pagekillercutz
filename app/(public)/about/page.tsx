@@ -124,7 +124,7 @@ export default function AboutPage() {
 
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/contact"
+                href="/booking"
                 className="flex items-center gap-2 px-8 py-4 bg-primary text-on-primary-fixed font-bold rounded-full hover:scale-105 transition-transform glow-btn"
               >
                 Book Page KillerCutz

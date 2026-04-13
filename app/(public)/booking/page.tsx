@@ -95,6 +95,8 @@ export default function BookingPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  /** Set from POST /api/bookings — drives confirmation copy for new vs existing accounts */
+  const [clientAuth, setClientAuth] = useState<"existing_user" | "invite_sent" | "failed" | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   /** True when full_name or name was present in Auth metadata at load (locks name field). */
   const [hadExistingName, setHadExistingName] = useState(false);
@@ -199,6 +201,7 @@ export default function BookingPage() {
         eventId?: string;
         error?: string;
         details?: string;
+        clientAuth?: "existing_user" | "invite_sent" | "failed";
       };
 
       if (!res.ok) {
@@ -211,6 +214,7 @@ export default function BookingPage() {
 
       const id = json.eventId ?? json.booking?.event_id ?? "";
       setEventId(id);
+      setClientAuth(json.clientAuth ?? "failed");
       setBookingData((d) => ({ ...d, packageName: selectedPackage }));
 
       if (isLoggedIn && !hadExistingName && bookingData.fullName.trim()) {
@@ -642,12 +646,31 @@ export default function BookingPage() {
                   className="font-headline text-[13px] font-semibold text-white"
                   style={{ fontFamily: "'Space Grotesk', var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif" }}
                 >
-                   Account created
+                  {clientAuth === "existing_user"
+                    ? "You already have an account"
+                    : clientAuth === "invite_sent"
+                      ? "Next: set your password"
+                      : "Playlist portal access"}
                 </p>
                 <p className="mt-2 font-body text-[13px] leading-relaxed text-[#A0A8C0]">
-                  We&apos;ve sent a password setup email to{" "}
-                  <span className="text-white/90">{bookingData.email}</span>. Set your password to access your Playlist
-                  Portal.
+                  {clientAuth === "existing_user" ? (
+                    <>
+                      This email already has a Page KillerCutz login. Use <span className="text-white/90">Sign in</span>{" "}
+                      below with your existing password to open your playlist and booking. We&apos;ve also emailed you a
+                      confirmation of this new event.
+                    </>
+                  ) : clientAuth === "invite_sent" ? (
+                    <>
+                      We&apos;ve emailed <span className="text-white/90">{bookingData.email}</span> with a secure link to
+                      choose your password. We also sent an SMS to your phone with a short reminder. After you set your
+                      password, sign in here to build your playlist.
+                    </>
+                  ) : (
+                    <>
+                      If you&apos;re new, look for an email to set your password (check spam). Once you can sign in, you
+                      can access your playlist. Need help? Contact us from the site footer.
+                    </>
+                  )}
                 </p>
               </div>
             ) : null}
@@ -666,10 +689,14 @@ export default function BookingPage() {
 
           <button
             type="button"
-            onClick={() => router.push("/sign-in")}
+            onClick={() =>
+              isLoggedIn
+                ? router.push("/client/dashboard")
+                : router.push("/sign-in?redirect=/client/dashboard&notice=after_booking")
+            }
             className="mt-6 flex h-12 w-full items-center justify-center rounded-pill bg-[#00BFFF] font-headline text-[14px] font-semibold text-[#004a65]"
           >
-            Set Up My Playlist
+            {isLoggedIn ? "Go to my dashboard" : "Sign in for playlist"}
             <span className="material-symbols-outlined ml-1 text-[18px]">arrow_forward</span>
           </button>
           <button

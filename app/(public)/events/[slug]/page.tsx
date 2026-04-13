@@ -157,7 +157,7 @@ export default function EventDetailPage() {
             {/* Actions */}
             <div className="flex flex-col gap-3 pt-2">
               <Link
-                href="/contact"
+                href="/booking"
                 className="h-13 py-3.5 flex items-center justify-center gap-2 bg-primary text-on-primary-fixed font-bold uppercase tracking-widest text-sm rounded-full hover:scale-105 transition-transform glow-btn"
               >
                 Book Now <span className="material-symbols-outlined text-[18px]">arrow_forward</span>

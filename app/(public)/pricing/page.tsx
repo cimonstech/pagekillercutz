@@ -125,7 +125,7 @@ export default function PricingPage() {
                   </ul>
 
                   <Link
-                    href="/contact"
+                    href="/booking"
                     className={[
                       "mt-auto flex w-full shrink-0 items-center justify-center gap-2 rounded-full px-4 py-3.5 font-headline text-xs font-bold uppercase tracking-widest transition-all",
                       isFeatured

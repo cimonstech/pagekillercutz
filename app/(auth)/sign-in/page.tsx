@@ -59,16 +59,6 @@ function SignInPageInner() {
   const [spinTick, setSpinTick] = useState(0);
 
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    if (q.get("notice") === "password_updated") {
-      setBanner("Password updated. Sign in with your new password.");
-    }
-    if (q.get("error") === "auth_callback") {
-      setBanner("Sign-in link expired or is invalid. Try again or request a new email.");
-    }
-  }, []);
-
-  useEffect(() => {
     const id = window.setInterval(() => setSpinTick((t) => t + 1), 280);
     return () => window.clearInterval(id);
   }, []);
@@ -77,10 +67,61 @@ function SignInPageInner() {
   const spinDurationSec = submitHover ? 1.5 : recentlyTyping ? 8 : 4;
 
   useEffect(() => {
+    if (searchParams.get("notice") === "after_booking") {
+      setBanner(
+        "Booked successfully. Sign in with the password you set from your email. New here? Open the email we sent you (subject: set up your account) to choose a password first — we also texted your phone.",
+      );
+      return;
+    }
+    if (searchParams.get("notice") === "login_required") {
+      setBanner(
+        "Sign in to manage your booking and playlist. If you just booked, check your email (and SMS) to set your password first.",
+      );
+      return;
+    }
+    if (searchParams.get("notice") === "password_updated") {
+      setBanner("Password updated. Sign in with your new password.");
+      return;
+    }
+    if (searchParams.get("error") === "auth_callback") {
+      setBanner(
+        "That sign-in link could not be completed (expired or already used). If you clicked “set password” from email, try “Forgot your password?” below, or open the latest email from us.",
+      );
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     let cancelled = false;
     const client = createClient();
     const redirectTarget = safeRedirectPath(searchParams.get("redirect"));
+
     void (async () => {
+      if (typeof window !== "undefined" && window.location.hash && window.location.hash.length > 1) {
+        const hp = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const access_token = hp.get("access_token");
+        const refresh_token = hp.get("refresh_token");
+        const type = hp.get("type");
+        if (access_token && refresh_token) {
+          const { error: hashErr } = await client.auth.setSession({ access_token, refresh_token });
+          if (cancelled) return;
+          if (!hashErr) {
+            const url = new URL(window.location.href);
+            url.hash = "";
+            url.searchParams.delete("error");
+            window.history.replaceState(null, "", `${url.pathname}${url.search}`);
+            if (type === "recovery") {
+              router.replace("/reset-password?step=3");
+              return;
+            }
+            router.replace(redirectTarget);
+            return;
+          }
+          setBanner(
+            "This link could not be used. It may have expired — use Forgot password or request a new email from booking.",
+          );
+        }
+      }
+
       const {
         data: { user },
       } = await client.auth.getUser();
@@ -104,6 +145,7 @@ function SignInPageInner() {
       }
       router.replace(redirectTarget);
     })();
+
     return () => {
       cancelled = true;
     };

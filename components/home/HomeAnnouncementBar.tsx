@@ -21,7 +21,7 @@ export default function HomeAnnouncementBar({ className }: HomeAnnouncementBarPr
           Available for bookings in Ghana and beyond.
         </p>
         <Link
-          href="/contact"
+          href="/booking"
           className="inline-flex shrink-0 items-center justify-center rounded-full border border-[#00BFFF]/40 bg-[#00BFFF]/10 px-3 py-1.5 font-body text-[11px] font-medium text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/20 sm:px-4 sm:py-2 sm:text-[13px]"
         >
           Check availability →

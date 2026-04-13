@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock, Info, Loader2, Pencil, Search, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import type { Database } from "@/lib/database.types";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffAdmin } from "@/hooks/useStaffAdmin";
@@ -347,8 +347,9 @@ function useDeezerSearch(genreBias?: string[]) {
   };
 }
 
-export default function ClientPlaylistPage() {
+function ClientPlaylistContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const staffAdmin = useStaffAdmin(user);
 
@@ -389,7 +390,10 @@ export default function ClientPlaylistPage() {
       setLoading(false);
       return;
     }
-    const lastEventId = sessionStorage.getItem("lastEventId");
+    const eventIdParam = searchParams.get("eventId")?.trim() ?? "";
+    const stored =
+      typeof window !== "undefined" ? sessionStorage.getItem("lastEventId") : null;
+    const lastEventId = eventIdParam || stored;
     const url = lastEventId
       ? `/api/client/dashboard?eventId=${encodeURIComponent(lastEventId)}`
       : "/api/client/dashboard";
@@ -407,7 +411,12 @@ export default function ClientPlaylistPage() {
         }>;
       })
       .then((data) => {
-        if (data.booking) setBooking(data.booking);
+        if (data.booking) {
+          setBooking(data.booking);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("lastEventId", data.booking.event_id);
+          }
+        }
         if (data.playlist) {
           const p = data.playlist;
           setGenres((p.genres || []).filter((g) => PREDEFINED_GENRE_SET.has(g)));
@@ -424,7 +433,19 @@ export default function ClientPlaylistPage() {
         setFetchError(e instanceof Error ? e.message : "Failed to load");
         setLoading(false);
       });
-  }, [staffAdmin]);
+  }, [staffAdmin, searchParams]);
+
+  useEffect(() => {
+    if (staffAdmin) return;
+    const id = searchParams.get("eventId")?.trim();
+    if (!id) return;
+    fetch(`/api/client/booking?eventId=${encodeURIComponent(id)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { booking?: BookingsRow } | null) => {
+        if (body?.booking) setBooking(body.booking);
+      })
+      .catch(() => {});
+  }, [staffAdmin, searchParams]);
 
   const handleSave = useCallback(async () => {
     if (!booking) return;
@@ -1240,5 +1261,21 @@ export default function ClientPlaylistPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ClientPlaylistPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">
+          <div className="mx-auto max-w-7xl px-4 py-8">
+            <PlaylistSkeleton />
+          </div>
+        </main>
+      }
+    >
+      <ClientPlaylistContent />
+    </Suspense>
   );
 }

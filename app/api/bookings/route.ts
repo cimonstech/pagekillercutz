@@ -3,23 +3,26 @@ import { logger } from "@/lib/logger";
 import { sendEmail } from "@/lib/notify/email";
 import { accountSetupEmail, bookingRequestReceivedEmail } from "@/lib/notify/emailTemplates";
 import { sendNewBookingRequestToDj } from "@/lib/notify/newBookingRequest";
+import { sendSMS } from "@/lib/notify/sms";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 
+export type ClientAuthProvisionResult = "existing_user" | "invite_sent" | "failed";
+
 async function provisionClientAuthAfterBooking(
   admin: ReturnType<typeof getSupabaseAdmin>,
   row: BookingRow,
   clientName: string,
-): Promise<void> {
+): Promise<ClientAuthProvisionResult> {
   const emailNorm = row.client_email.trim().toLowerCase();
   const portalUrl = `${getPublicSiteUrl()}/sign-in`;
 
   const { data: existingUsers, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (listErr) {
     logger.errorRaw("route", "[api/bookings] listUsers:", listErr);
-    return;
+    return "failed";
   }
 
   const alreadyExists =
@@ -38,7 +41,7 @@ async function provisionClientAuthAfterBooking(
     if (!emailResult.success) {
       logger.errorRaw("route", "[api/bookings] existing-user notify email:", emailResult.error);
     }
-    return;
+    return "existing_user";
   }
 
   const tempPassword =
@@ -58,7 +61,7 @@ async function provisionClientAuthAfterBooking(
 
   if (authError) {
     logger.errorRaw("route", "[api/bookings] Auth account creation failed:", authError.message);
-    return;
+    return "failed";
   }
 
   logger.infoRaw("route", "[api/bookings] Auth account created for:", row.client_email.trim());
@@ -72,13 +75,13 @@ async function provisionClientAuthAfterBooking(
 
   if (linkErr) {
     logger.errorRaw("route", "[api/bookings] generateLink:", linkErr);
-    return;
+    return "failed";
   }
 
   const setupUrl = resetLink?.properties?.action_link;
   if (!setupUrl) {
     logger.errorRaw("route", "[api/bookings] generateLink missing action_link");
-    return;
+    return "failed";
   }
 
   const emailResult = await sendEmail({
@@ -94,6 +97,13 @@ async function provisionClientAuthAfterBooking(
   if (!emailResult.success) {
     logger.errorRaw("route", "[api/bookings] account setup email:", emailResult.error);
   }
+
+  const smsBody = `Page KillerCutz: Check email at ${row.client_email.trim()} to set your password and open your playlist portal. Event ID: ${row.event_id}.`;
+  void sendSMS(row.client_phone, smsBody).then((r) => {
+    if (!r.success) logger.errorRaw("route", "[api/bookings] client SMS:", r.error ?? "unknown");
+  });
+
+  return "invite_sent";
 }
 
 function normalizeGhanaPhone(raw: string): string {
@@ -232,8 +242,9 @@ export async function POST(request: Request) {
           : null,
     }).catch((err) => console.error("[bookings] DJ notify failed:", err));
 
+    let clientAuth: ClientAuthProvisionResult = "failed";
     try {
-      await provisionClientAuthAfterBooking(supabase, row, insertRow.client_name);
+      clientAuth = await provisionClientAuthAfterBooking(supabase, row, insertRow.client_name);
     } catch (authFlowErr) {
       logger.errorRaw("route", "[api/bookings] provisionClientAuthAfterBooking:", authFlowErr);
     }
@@ -243,6 +254,7 @@ export async function POST(request: Request) {
         success: true,
         booking: row,
         eventId: row.event_id,
+        clientAuth,
       },
       { status: 201 },
     );

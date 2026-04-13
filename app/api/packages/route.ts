@@ -10,6 +10,15 @@ export async function GET(request: Request) {
     const supabase = getSupabaseAdmin();
     const { searchParams } = new URL(request.url);
     const all = searchParams.get("all") === "true";
+    const name = searchParams.get("name")?.trim();
+
+    if (name) {
+      let q = supabase.from("packages").select("*").eq("name", name);
+      if (!all) q = q.eq("active", true);
+      const { data, error } = await q.maybeSingle();
+      if (error) throw error;
+      return Response.json({ packages: data ? ([data] as PackageRow[]) : [] });
+    }
 
     let query = supabase.from("packages").select("*").order("display_order", { ascending: true });
     if (!all) query = query.eq("active", true);

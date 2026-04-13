@@ -111,7 +111,7 @@ export default function ContactPage() {
           </div>
 
           <Link
-            href="/contact"
+            href="/booking"
             className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-on-primary-fixed font-bold rounded-full hover:scale-105 transition-transform glow-btn text-sm"
           >
             Book the DJ

@@ -179,7 +179,7 @@ export default function EventsPage() {
               </p>
             </div>
             <Link
-              href="/contact"
+              href="/booking"
               className="shrink-0 flex items-center gap-2 px-8 py-3 bg-primary text-on-primary-fixed font-bold rounded-full hover:scale-105 transition-transform glow-btn"
             >
               Book Now

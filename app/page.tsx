@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Calendar, Info, Mail, Music, Pause, Play, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Database } from "@/lib/database.types";
@@ -19,6 +20,8 @@ import AnimateIn from "@/components/ui/AnimateIn";
 import { buildAlbumPlayerQueue } from "@/lib/album-playback";
 import { formatDuration } from "@/lib/player-utils";
 import { usePlayerStore } from "@/lib/store/playerStore";
+import { useAuth } from "@/hooks/useAuth";
+import { useStaffAdmin } from "@/hooks/useStaffAdmin";
 import { gsap } from "@/lib/gsap";
 
 type MusicRow = Database["public"]["Tables"]["music"]["Row"];
@@ -60,11 +63,16 @@ const isAbsoluteUrl = (url: string | null | undefined) => Boolean(url && (url.st
 
 export default function Home() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const staffAdmin = useStaffAdmin(user);
   const setTrack = usePlayerStore((s) => s.setTrack);
   const setQueue = usePlayerStore((s) => s.setQueue);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+  const [hasUpcomingBooking, setHasUpcomingBooking] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const [popularTracks, setPopularTracks] = useState<MusicRow[]>([]);
   const [popularLoading, setPopularLoading] = useState(true);
@@ -108,6 +116,38 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!user || staffAdmin) {
+      setHasUpcomingBooking(false);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch("/api/client/dashboard");
+        if (!res.ok) return;
+        const d = (await res.json()) as { upcomingBookings?: unknown[] };
+        if (cancelled) return;
+        setHasUpcomingBooking((d.upcomingBookings?.length ?? 0) > 0);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, staffAdmin]);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       setPopularLoading(true);
@@ -143,6 +183,42 @@ export default function Home() {
     },
     [currentTrack?.musicId, setQueue, setTrack, togglePlay],
   );
+
+  const handleHeroPlay = useCallback(() => {
+    if (!heroMusic.length) return;
+    const featured = heroMusic[0]!;
+    if (currentTrack?.id === featured.id) {
+      togglePlay();
+      return;
+    }
+    setQueue(
+      heroMusic.map((t) => ({
+        id: t.id,
+        title: t.title,
+        artist: ARTIST,
+        coverUrl: t.cover_url,
+        audioUrl: t.audio_url,
+        type: t.type,
+        duration: t.duration ?? undefined,
+        musicId: t.id,
+      })),
+    );
+    void setTrack({
+      id: featured.id,
+      title: featured.title,
+      artist: ARTIST,
+      coverUrl: featured.cover_url,
+      audioUrl: featured.audio_url,
+      type: featured.type,
+      duration: featured.duration ?? undefined,
+      musicId: featured.id,
+    });
+  }, [heroMusic, currentTrack?.id, setQueue, setTrack, togglePlay]);
+
+  const featuredIsPlaying =
+    heroMusic.length > 0 &&
+    currentTrack?.id === heroMusic[0]?.id &&
+    isPlaying;
 
   useEffect(() => {
     let cancelled = false;
@@ -260,34 +336,98 @@ export default function Home() {
                 Master of the decks. Afrobeat &amp; Highlife fusion from Accra to the world.
               </p>
               <div className="kc-hero-ctas inline-grid w-max max-w-full grid-flow-col auto-cols-max items-center gap-3">
-                <Link
-                  href="/sign-in"
-                  className="flex h-12 min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-6 font-bold leading-none text-on-primary-fixed glow-btn active:scale-[0.96] transition-transform duration-150 ease-out sm:px-7"
+                <button
+                  type="button"
+                  onClick={() => void handleHeroPlay()}
+                  disabled={heroMusic.length === 0}
+                  className="flex h-12 min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-6 font-bold leading-none text-on-primary-fixed glow-btn active:scale-[0.96] transition-transform duration-150 ease-out enabled:hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 sm:px-7"
                 >
-                  <span
-                    className="material-symbols-outlined flex size-5 shrink-0 items-center justify-center overflow-hidden text-[18px] leading-none"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  {featuredIsPlaying ? (
+                    <Pause className="size-4 shrink-0 text-black" fill="black" aria-hidden />
+                  ) : (
+                    <Play className="size-4 shrink-0 text-black" fill="black" aria-hidden />
+                  )}
+                  <span className="shrink-0 leading-none">{featuredIsPlaying ? "Pause" : "Play"}</span>
+                </button>
+                {authLoading ? (
+                  <div
+                    className="h-12 min-h-12 min-w-[148px] animate-pulse rounded-full bg-white/10 sm:min-w-[160px]"
                     aria-hidden
+                  />
+                ) : !user ? (
+                  <Link
+                    href="/booking"
+                    className="flex h-12 min-h-12 items-center justify-center rounded-full bg-white/10 px-6 font-bold leading-none text-white shadow-border hover:bg-white/20 sm:px-7 transition-[background-color,box-shadow]"
                   >
-                    play_arrow
-                  </span>
-                  <span className="shrink-0 leading-none">Play</span>
-                </Link>
-                <Link
-                  href="/contact"
-                  className="flex h-12 min-h-12 items-center justify-center rounded-full bg-white/10 px-6 font-bold leading-none text-white shadow-border hover:bg-white/20 sm:px-7 transition-[background-color,box-shadow]"
-                >
-                  Book the DJ
-                </Link>
-                <Link
-                  href="/about"
-                  className="flex h-12 w-12 min-h-12 min-w-12 shrink-0 items-center justify-center rounded-full border border-white/20 text-on-surface-variant hover:text-on-surface hover:border-white/40 transition-colors"
-                  aria-label="More about the artist"
-                >
-                  <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden>
-                    more_horiz
-                  </span>
-                </Link>
+                    Book the DJ
+                  </Link>
+                ) : staffAdmin ? (
+                  <Link
+                    href="/admin"
+                    className="flex h-12 min-h-12 items-center justify-center rounded-full bg-white/10 px-6 font-bold leading-none text-white shadow-border hover:bg-white/20 sm:px-7 transition-[background-color,box-shadow]"
+                  >
+                    Admin →
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => router.push("/client/dashboard")}
+                    className="flex h-12 min-h-12 items-center justify-center rounded-full bg-white/10 px-6 font-bold leading-none text-white shadow-border hover:bg-white/20 sm:px-7 transition-[background-color,box-shadow]"
+                  >
+                    {hasUpcomingBooking ? "My Event →" : "My Dashboard →"}
+                  </button>
+                )}
+                <div ref={moreRef} className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowMoreMenu((v) => !v)}
+                    className="flex h-12 w-12 min-h-12 min-w-12 items-center justify-center rounded-full border border-white/20 text-on-surface-variant hover:text-on-surface hover:border-white/40 transition-colors"
+                    aria-expanded={showMoreMenu}
+                    aria-haspopup="menu"
+                    aria-label="More actions"
+                  >
+                    <span className="material-symbols-outlined text-[18px] leading-none" aria-hidden>
+                      more_horiz
+                    </span>
+                  </button>
+                  {showMoreMenu ? (
+                    <div
+                      className="absolute left-0 z-[100] overflow-hidden rounded-[14px] border border-white/[0.10] p-1.5 shadow-[0_16px_48px_rgba(0,0,0,0.60)]"
+                      style={{
+                        bottom: "calc(100% + 8px)",
+                        width: 200,
+                        background: "rgba(12,12,22,0.97)",
+                        backdropFilter: "blur(20px)",
+                        WebkitBackdropFilter: "blur(20px)",
+                      }}
+                      role="menu"
+                    >
+                      {(
+                        [
+                          { icon: Music, label: "Browse Music", href: "/music" },
+                          { icon: Calendar, label: "View Events", href: "/events" },
+                          { icon: Tag, label: "DJ Packages", href: "/pricing" },
+                          { icon: Mail, label: "Contact", href: "/contact" },
+                          { icon: Info, label: "About", href: "/about" },
+                        ] as const
+                      ).map(({ icon: Icon, label, href }) => (
+                        <button
+                          key={href}
+                          type="button"
+                          role="menuitem"
+                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-[9px] text-left transition-colors hover:bg-white/[0.06]"
+                          onClick={() => {
+                            setShowMoreMenu(false);
+                            router.push(href);
+                          }}
+                        >
+                          <Icon className="size-[15px] shrink-0 text-white/40" aria-hidden />
+                          <span className="font-body text-[13px] text-white">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div
                 className="kc-hero-stats mt-8 flex w-full max-w-full flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6 sm:gap-y-4 xl:mt-10"
