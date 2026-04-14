@@ -68,8 +68,8 @@ export default function ClientProfilePage() {
 
     try {
       const [oRes, pRes] = await Promise.all([
-        fetch(`/api/orders?email=${encodeURIComponent(u.email)}&limit=200`),
-        fetch("/api/plays/stats"),
+        fetch("/api/orders?limit=200", { credentials: "include" }),
+        fetch("/api/plays/stats", { credentials: "include" }),
       ]);
       if (oRes.ok) {
         const j = (await oRes.json()) as { orders?: OrderRow[] };

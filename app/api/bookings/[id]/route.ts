@@ -1,14 +1,30 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import type { Database } from "@/lib/database.types";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
-type BookingUpdate = Database["public"]["Tables"]["bookings"]["Update"];
-
 type RouteContext = { params: Promise<{ id: string }> };
+
+const ALLOWED_BOOKING_PATCH_FIELDS = new Set([
+  "status",
+  "payment_status",
+  "event_date",
+  "venue",
+  "event_type",
+  "event_name",
+  "guest_count",
+  "notes",
+  "package_name",
+  "genres",
+  "admin_notes",
+]);
 
 export async function GET(_: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase.from("bookings").select("*").eq("id", id).single();
@@ -22,13 +38,27 @@ export async function GET(_: Request, { params }: RouteContext) {
 
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as BookingUpdate;
+    const raw = (await request.json()) as Record<string, unknown>;
+
+    const safeUpdate: Record<string, unknown> = {};
+    for (const key of Object.keys(raw)) {
+      if (ALLOWED_BOOKING_PATCH_FIELDS.has(key)) {
+        safeUpdate[key] = raw[key];
+      }
+    }
+
+    if (Object.keys(safeUpdate).length === 0) {
+      return Response.json({ error: "No valid fields to update" }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from("bookings")
-      .update({ ...body })
+      .update(safeUpdate)
       .eq("id", id)
       .select("*")
       .single();
@@ -43,6 +73,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
 export async function DELETE(_: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase

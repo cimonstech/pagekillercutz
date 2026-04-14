@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { Plus, ShoppingCart } from "lucide-react";
 import type { Database } from "@/lib/database.types";
 import { useCartStore } from "@/lib/store/cartStore";
 
@@ -30,6 +30,7 @@ export default function MerchPage() {
   const [filter, setFilter] = useState<Cat>("all");
   const itemCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.qty, 0));
   const setCartOpen = useCartStore((s) => s.setIsOpen);
+  const autoOpenOnAdd = useCartStore((s) => s.autoOpenOnAdd);
   const addItem = useCartStore((s) => s.addItem);
 
   const [products, setProducts] = useState<ProductRow[]>([]);
@@ -75,7 +76,9 @@ export default function MerchPage() {
       qty: 1,
       image_url: p.image_url,
     });
-    setTimeout(() => setCartOpen(true), 400);
+    if (autoOpenOnAdd) {
+      setTimeout(() => setCartOpen(true), 400);
+    }
   };
 
   return (
@@ -169,7 +172,7 @@ export default function MerchPage() {
                   </button>
                   <div className="flex flex-1 flex-col p-4">
                     <Link href={`/merch/${p.id}`}>
-                      <h2 className="font-headline text-sm font-semibold text-white hover:text-[#00BFFF]">{p.name}</h2>
+                      <h2 className="font-headline text-[11px] sm:text-sm font-semibold text-white hover:text-[#00BFFF]">{p.name}</h2>
                     </Link>
                     <p className="mt-1 font-label text-[11px] text-[#A0A8C0]">{p.category}</p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -192,9 +195,12 @@ export default function MerchPage() {
                           quickAdd(p);
                         }}
                         aria-label={`Add ${p.name} to cart`}
-                        className="shrink-0 rounded-full border border-[#00BFFF]/40 bg-[#00BFFF]/10 px-4 py-2 font-headline text-[13px] font-semibold leading-none text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/20 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="shrink-0 rounded-full border border-[#00BFFF]/40 bg-[#00BFFF]/10 p-2 text-[#00BFFF] transition-colors hover:bg-[#00BFFF]/20 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 sm:py-2 sm:font-headline sm:text-[13px] sm:font-semibold sm:leading-none"
                       >
-                        Add to Cart
+                        <span className="sm:hidden">
+                          <Plus className="size-4" strokeWidth={2.4} />
+                        </span>
+                        <span className="hidden sm:inline">Add to Cart</span>
                       </button>
                     </div>
                   </div>

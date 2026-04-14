@@ -15,7 +15,7 @@ export default function PublicFooter() {
             className="h-5 w-auto object-contain"
             unoptimized
           />
-          <span className="font-display text-base uppercase tracking-tighter">Page KillerCutz</span>
+          <span className="font-display text-base uppercase tracking-display-title">Page KillerCutz</span>
         </div>
         <nav className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm text-on-surface-variant">
           <Link className="hover:text-primary transition-colors" href="/privacy">Privacy</Link>
@@ -23,7 +23,9 @@ export default function PublicFooter() {
           <Link className="hover:text-primary transition-colors" href="/contact">Contact</Link>
           <Link className="hover:text-primary transition-colors" href="/about">About</Link>
         </nav>
-        <p className="font-label text-xs text-outline">© 2025 PAGE KILLERCUTZ. ALL RIGHTS RESERVED.</p>
+        <p className="font-label text-xs text-outline">
+          © {new Date().getFullYear()} PAGE KILLERCUTZ. ALL RIGHTS RESERVED.
+        </p>
       </div>
     </footer>
   );

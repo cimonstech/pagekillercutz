@@ -149,6 +149,7 @@ export default function CheckoutForm({ onClose }: Props) {
       colour: item.colour,
       qty: item.qty,
       price: item.price,
+      image_url: item.image_url ?? null,
     }));
 
     try {

@@ -9,7 +9,7 @@ import { useAdminStore } from "@/lib/store/adminStore";
 export default function AdminLoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const setStoreRole = useAdminStore((s) => s.setRole);
+  const setSession = useAdminStore((s) => s.setSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +20,9 @@ export default function AdminLoginPage() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
+      // Clear any stale admin-session cookie when landing on login.
+      await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -42,17 +45,17 @@ export default function AdminLoginPage() {
         row.status === "active" &&
         (row.role === "admin" || row.role === "super_admin")
       ) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("adminRole", row.role);
-        }
-        setStoreRole(row.role as "admin" | "super_admin");
-        router.replace("/admin");
+        setSession({
+          role: row.role as "admin" | "super_admin",
+          staffEmail: user.email ?? null,
+        });
+        router.replace("/admin/overview");
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [router, setStoreRole, supabase]);
+  }, [router, setSession, supabase]);
 
   const handleLogin = useCallback(async () => {
     setLoading(true);
@@ -60,17 +63,10 @@ export default function AdminLoginPage() {
     setErrorKind(null);
 
     try {
-      console.log("[admin-login] Attempting login:", email.trim());
-
       // Step 1: Sign in
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
-      });
-
-      console.log("[admin-login] Auth result:", {
-        user: authData?.user?.email,
-        error: authError?.message,
       });
 
       if (authError) {
@@ -91,26 +87,15 @@ export default function AdminLoginPage() {
 
       // Step 2: Check admins table (case-insensitive email match)
       const authEmail = authData.user.email ?? "";
-      console.log("[admin-login] Checking admins table for:", authEmail);
-
       const { data: adminRecord, error: adminError } = await supabase
         .from("admins")
         .select("id, role, status, email")
         .ilike("email", authEmail)
         .maybeSingle();
 
-      console.log("[admin-login] Admin record:", {
-        record: adminRecord,
-        error: adminError?.message,
-      });
-
       if (adminError) {
-        console.error("[admin-login] DB error:", adminError);
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-        }
-        setStoreRole(null);
+        setSession({ role: null, staffEmail: null });
         setErrorMessage("Database error. Please try again.");
         setErrorKind("auth");
         setLoading(false);
@@ -118,12 +103,8 @@ export default function AdminLoginPage() {
       }
 
       if (!adminRecord) {
-        console.error("[admin-login] No admin record found for:", authEmail);
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-        }
-        setStoreRole(null);
+        setSession({ role: null, staffEmail: null });
         setErrorMessage(
           "This email is not registered as an admin. If you are a client, use the main sign in page.",
         );
@@ -136,10 +117,7 @@ export default function AdminLoginPage() {
 
       if (row.status === "suspended") {
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-        }
-        setStoreRole(null);
+        setSession({ role: null, staffEmail: null });
         setErrorMessage("Your account has been suspended. Contact the platform administrator.");
         setErrorKind("suspended");
         setLoading(false);
@@ -148,10 +126,7 @@ export default function AdminLoginPage() {
 
       if (row.role !== "admin" && row.role !== "super_admin") {
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-        }
-        setStoreRole(null);
+        setSession({ role: null, staffEmail: null });
         setErrorMessage(
           "This email is not registered as an admin. If you are a client, use the main sign in page.",
         );
@@ -160,12 +135,19 @@ export default function AdminLoginPage() {
         return;
       }
 
-      console.log("[admin-login] Success! Role:", row.role);
+      setSession({
+        role: row.role as "admin" | "super_admin",
+        staffEmail: authData.user.email ?? null,
+      });
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem("adminRole", row.role);
-      }
-      setStoreRole(row.role as "admin" | "super_admin");
+      await fetch("/api/auth/admin-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: authData.user.email,
+          role: row.role,
+        }),
+      });
 
       void fetch(`/api/admins/${row.id}`, {
         method: "PATCH",
@@ -173,7 +155,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ last_login: new Date().toISOString() }),
       });
 
-      router.push("/admin");
+      router.push("/admin/overview");
     } catch (err) {
       console.error("[admin-login] Unexpected error:", err);
       setErrorMessage("An unexpected error occurred.");
@@ -181,7 +163,7 @@ export default function AdminLoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [email, password, router, setStoreRole, supabase]);
+  }, [email, password, router, setSession, supabase]);
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -325,7 +307,7 @@ export default function AdminLoginPage() {
             </div>
           </div>
           <div className="mt-12 flex items-center justify-center opacity-10">
-            <span className="font-display text-4xl font-black uppercase italic tracking-tighter text-white">
+            <span className="font-display text-4xl font-black uppercase italic tracking-display-title text-white">
               Page KillerCutz
             </span>
           </div>

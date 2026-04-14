@@ -1,5 +1,11 @@
 import { logger } from "@/lib/logger";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase";
+
+const contactLimiter = rateLimit({
+  interval: 60 * 60 * 1000,
+  limit: 5,
+});
 
 interface ContactPayload {
   name: string;
@@ -10,6 +16,15 @@ interface ContactPayload {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const { success } = contactLimiter.check(ip);
+    if (!success) {
+      return Response.json(
+        { error: "Too many messages. Please try again in an hour." },
+        { status: 429, headers: { "Retry-After": "3600" } },
+      );
+    }
+
     const body = (await request.json()) as ContactPayload;
 
     if (!body.name || !body.email || !body.message) {

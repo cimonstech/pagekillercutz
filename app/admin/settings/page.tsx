@@ -72,12 +72,26 @@ export default function SuperAdminSettingsPage() {
   showToastRef.current = showToast;
 
   useEffect(() => {
-    const stored = localStorage.getItem("adminRole");
-    if (stored !== "super_admin") {
-      router.replace("/admin/overview");
-      return;
-    }
-    setAccessOk(true);
+    let cancelled = false;
+    void fetch("/api/auth/admin-session")
+      .then((r) => {
+        if (!r.ok) throw new Error("unauthorized");
+        return r.json() as Promise<{ role?: string }>;
+      })
+      .then((data) => {
+        if (cancelled) return;
+        if (data.role !== "super_admin") {
+          router.replace("/admin/overview");
+          return;
+        }
+        setAccessOk(true);
+      })
+      .catch(() => {
+        if (!cancelled) router.replace("/admin/overview");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   useEffect(() => {
@@ -133,8 +147,6 @@ export default function SuperAdminSettingsPage() {
     await patchSetting("maintenance_mode", true);
   };
 
-  const adminSecret = process.env.NEXT_PUBLIC_ADMIN_SECRET ?? "";
-
   const testSms = async () => {
     setTestingSMS(true);
     try {
@@ -142,7 +154,6 @@ export default function SuperAdminSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": adminSecret,
         },
         body: JSON.stringify({
           phone: djPhone,
@@ -169,7 +180,6 @@ export default function SuperAdminSettingsPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": adminSecret,
         },
         body: JSON.stringify({
           email: djEmail,
@@ -192,7 +202,7 @@ export default function SuperAdminSettingsPage() {
   const clearAuditLogs = async () => {
     setClearBusy(true);
     try {
-      const res = await fetch("/api/audit-logs/clear", { method: "DELETE" });
+      const res = await fetch("/api/audit-logs/clear", { method: "POST" });
       if (!res.ok) {
         const j = (await res.json()) as { error?: string };
         throw new Error(j.error ?? "Request failed");
@@ -310,10 +320,8 @@ export default function SuperAdminSettingsPage() {
             <div className="bg-secondary/10 border-l-2 border-secondary p-4 flex gap-4 items-start">
               <span className="material-symbols-outlined text-secondary">warning</span>
               <p className="text-xs text-secondary-fixed leading-relaxed">
-                <span className="font-bold">Note:</span> API keys live in server environment. Test actions use your
-                session; optionally set{" "}
-                <code className="font-mono text-[10px]">NEXT_PUBLIC_ADMIN_SECRET</code> to match{" "}
-                <code className="font-mono text-[10px]">ADMIN_SECRET</code> for the test headers.
+                <span className="font-bold">Note:</span> API keys live in the server environment. SMS and email tests
+                use your signed-in admin session only.
               </p>
             </div>
           </div>

@@ -1,5 +1,9 @@
+import { logger } from "@/lib/logger";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createServerClient } from "@/lib/supabase/server";
+
+const playsLimiter = rateLimit({ interval: 60 * 60 * 1000, limit: 100 });
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -11,6 +15,15 @@ function parseUuid(s: unknown): string | null {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return Response.json({ success: true });
+    }
+
     const body = (await request.json()) as {
       musicId?: string;
       trackTitle?: string;
@@ -25,15 +38,17 @@ export async function POST(request: Request) {
       return Response.json({ error: "trackTitle required" }, { status: 400 });
     }
 
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const ip = getClientIp(request);
+    const { success: underLimit } = playsLimiter.check(ip);
+    if (!underLimit) {
+      logger.warn("plays", `Rate limit exceeded for IP: ${ip}`);
+      return Response.json({ error: "Too many requests" }, { status: 429 });
+    }
 
     const admin = getSupabaseAdmin();
 
     const { error } = await admin.from("play_events").insert({
-      user_id: user?.id ?? null,
+      user_id: user.id,
       music_id: parseUuid(body.musicId),
       track_title: body.trackTitle,
       artist: body.artist ?? "Page KillerCutz",
@@ -47,7 +62,7 @@ export async function POST(request: Request) {
 
     return Response.json({ success: true });
   } catch (err) {
-    console.error("[api/plays]", err);
+    logger.error("plays", "Failed to track play", err);
     return Response.json({ error: "Failed to track play" }, { status: 500 });
   }
 }

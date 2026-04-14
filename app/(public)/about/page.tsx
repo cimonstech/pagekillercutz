@@ -106,7 +106,7 @@ export default function AboutPage() {
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start mb-12 sm:mb-24">
           <AnimateIn from={36} duration={0.9} className="lg:col-span-7 space-y-7">
             <span className="font-label text-xs tracking-[0.2em] uppercase text-primary">About the DJ</span>
-            <h1 className="font-display text-4xl sm:text-6xl md:text-8xl uppercase tracking-tighter leading-[0.9]">
+            <h1 className="font-display text-4xl sm:text-6xl md:text-8xl uppercase tracking-display-title leading-[0.9]">
               {DJ_INFO.name}
             </h1>
             <div className="space-y-5 text-on-surface-variant leading-[1.8] text-sm max-w-2xl">

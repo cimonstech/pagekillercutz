@@ -77,7 +77,7 @@ export default function ContactPage() {
             <span className="inline-block px-3 py-1 bg-primary/10 border border-primary/20 text-primary font-label text-[10px] tracking-[0.2em] uppercase mb-5 rounded-full">
               Get in Touch
             </span>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl leading-[0.9] uppercase tracking-tighter">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl leading-[0.9] uppercase tracking-display-title">
               Let&apos;s Talk.
             </h1>
           </div>

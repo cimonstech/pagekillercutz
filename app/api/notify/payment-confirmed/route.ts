@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { bookingRowToData } from "@/lib/notify/bookingAdapter";
 import * as ET from "@/lib/notify/emailTemplates";
 import { sendEmail } from "@/lib/notify/email";
@@ -14,6 +15,9 @@ const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.co
 /** Trigger 3 — payment marked paid: client only. */
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { bookingId } = (await request.json()) as { bookingId?: string };
     if (!bookingId) {
       return Response.json({ error: "bookingId required" }, { status: 400 });

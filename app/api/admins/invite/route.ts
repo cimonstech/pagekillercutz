@@ -2,27 +2,24 @@ import { findAuthUserByEmail } from "@/lib/authAdminUsers";
 import { logger } from "@/lib/logger";
 import { sendEmail } from "@/lib/notify/email";
 import { adminInviteEmail } from "@/lib/notify/emailTemplates";
+import { requireSuperAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createServerClient } from "@/lib/supabase/server";
-
-type InviteBody = {
-  email?: string;
-  role?: "admin" | "super_admin";
-};
+import { adminInviteSchema } from "@/lib/validation/schemas";
+import { validate } from "@/lib/validation/validate";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as InviteBody;
-    const email = body.email?.trim().toLowerCase();
-    const role = body.role;
+    const superAuth = await requireSuperAdmin();
+    if (!superAuth.authorized) return superAuth.errorResponse;
 
-    if (!email || !role) {
-      return Response.json({ error: "Email and role are required." }, { status: 400 });
+    const raw = await request.json();
+    const parsed = validate(adminInviteSchema, raw);
+    if (!parsed.success) {
+      return Response.json({ error: parsed.error, details: parsed.details }, { status: 400 });
     }
-
-    if (role !== "admin" && role !== "super_admin") {
-      return Response.json({ error: "Invalid role." }, { status: 400 });
-    }
+    const email = parsed.data.email.trim().toLowerCase();
+    const role = parsed.data.role;
 
     const supabase = await createServerClient();
     const {
@@ -35,21 +32,6 @@ export async function POST(request: Request) {
     }
 
     const admin = getSupabaseAdmin();
-
-    const { data: requesterRecord, error: requesterErr } = await admin
-      .from("admins")
-      .select("role, status")
-      .ilike("email", user.email)
-      .maybeSingle();
-
-    if (requesterErr) {
-      logger.errorRaw("api/admins/invite", "Requester lookup failed:", requesterErr);
-      return Response.json({ error: "Failed to validate access." }, { status: 500 });
-    }
-
-    if (!requesterRecord || requesterRecord.status !== "active" || requesterRecord.role !== "super_admin") {
-      return Response.json({ error: "Only super admins can invite admins." }, { status: 403 });
-    }
 
     const { data: existingAdmin, error: existingErr } = await admin
       .from("admins")
@@ -84,7 +66,7 @@ export async function POST(request: Request) {
 
       if (createErr || !created.user) {
         logger.errorRaw("api/admins/invite", "Create auth user failed:", createErr);
-        return Response.json({ error: `Failed to create account: ${createErr?.message || "unknown error"}` }, { status: 500 });
+        return Response.json({ error: "Failed to create auth account" }, { status: 500 });
       }
     }
 
@@ -97,7 +79,7 @@ export async function POST(request: Request) {
 
     if (insertErr) {
       logger.errorRaw("api/admins/invite", "Insert admin row failed:", insertErr);
-      return Response.json({ error: `Failed to create admin record: ${insertErr.message}` }, { status: 500 });
+      return Response.json({ error: "Failed to create admin record" }, { status: 500 });
     }
 
     const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");

@@ -371,6 +371,7 @@ export default function ClientOrdersPage() {
                             className="object-cover"
                             sizes="(max-width: 1024px) 100vw, 480px"
                             unoptimized={src.startsWith("http")}
+                            referrerPolicy="no-referrer"
                           />
                         ) : (
                           <div

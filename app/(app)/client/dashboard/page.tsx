@@ -177,10 +177,6 @@ export default function ClientDashboardPage() {
 
       if (cancelled) return;
       if (adminRecord) {
-        const row = adminRecord as { role: "admin" | "super_admin" };
-        if (typeof window !== "undefined") {
-          localStorage.setItem("adminRole", row.role);
-        }
         router.replace("/admin");
         return;
       }

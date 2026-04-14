@@ -4,8 +4,14 @@ import { sendEmail } from "@/lib/notify/email";
 import { accountSetupEmail, bookingRequestReceivedEmail } from "@/lib/notify/emailTemplates";
 import { sendNewBookingRequestToDj } from "@/lib/notify/newBookingRequest";
 import { sendSMS } from "@/lib/notify/sms";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
+import { bookingSchema } from "@/lib/validation/schemas";
+import { validate } from "@/lib/validation/validate";
+
+const bookingLimiter = rateLimit({ interval: 60 * 60 * 1000, limit: 5 });
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 
@@ -117,14 +123,58 @@ function normalizeGhanaPhone(raw: string): string {
 
 export async function GET(request: Request) {
   try {
-    const supabase = getSupabaseAdmin();
+    const userSupabase = await createServerClient();
+    const {
+      data: { user },
+    } = await userSupabase.auth.getUser();
+
+    const adminClient = getSupabaseAdmin();
+
+    let isAdmin = false;
+    if (user?.email) {
+      const { data: adminRecord } = await adminClient
+        .from("admins")
+        .select("role, status")
+        .ilike("email", user.email)
+        .maybeSingle();
+      isAdmin = !!(adminRecord && adminRecord.status === "active");
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const search = searchParams.get("search");
     const limit = Number(searchParams.get("limit") ?? "20");
     const offset = Number(searchParams.get("offset") ?? "0");
 
-    let query = supabase
+    if (!isAdmin) {
+      if (!user?.email) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const forcedEmail = user.email.trim();
+
+      let query = adminClient
+        .from("bookings")
+        .select("*", { count: "exact" })
+        .ilike("client_email", forcedEmail)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (status) {
+        query = query.eq("status", status as BookingRow["status"]);
+      }
+      if (search) {
+        const term = `%${search.replace(/[%_\\]/g, "\\$&")}%`;
+        query = query.or(
+          `client_name.ilike.${term},client_email.ilike.${term},event_id.ilike.${term}`,
+        );
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+      return Response.json({ bookings: (data ?? []) as BookingRow[], count: count ?? 0 });
+    }
+
+    let query = adminClient
       .from("bookings")
       .select("*", { count: "exact" })
       .order("created_at", { ascending: false })
@@ -133,7 +183,10 @@ export async function GET(request: Request) {
     if (status) {
       query = query.eq("status", status as BookingRow["status"]);
     }
-    if (search) query = query.or(`client_name.ilike.%${search}%,client_email.ilike.%${search}%,event_id.ilike.%${search}%`);
+    if (search) {
+      const term = `%${search.replace(/[%_\\]/g, "\\$&")}%`;
+      query = query.or(`client_name.ilike.${term},client_email.ilike.${term},event_id.ilike.${term}`);
+    }
 
     const { data, error, count } = await query;
     if (error) throw error;
@@ -147,100 +200,78 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Record<string, unknown>;
-    console.log("[api/bookings] Received body:", JSON.stringify(body, null, 2));
+    const ip = getClientIp(request);
+    const { success: underLimit } = bookingLimiter.check(ip);
+    if (!underLimit) {
+      logger.warn("bookings", `Rate limit exceeded for IP: ${ip}`);
+      return Response.json(
+        { error: "Too many booking attempts. Please try again in an hour." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": "3600",
+            "X-RateLimit-Remaining": "0",
+          },
+        },
+      );
+    }
+
+    const raw = await request.json();
+    const validation = validate(bookingSchema, raw);
+    if (!validation.success) {
+      return Response.json({ error: validation.error, details: validation.details }, { status: 400 });
+    }
+    const b = validation.data;
 
     const supabase = getSupabaseAdmin();
 
     const eventId = `EVT-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    console.log("[api/bookings] Generated Event ID:", eventId);
 
-    const required = [
-      "clientName",
-      "clientEmail",
-      "clientPhone",
-      "eventType",
-      "eventDate",
-      "venue",
-    ] as const;
-
-    for (const field of required) {
-      const v = body[field];
-      if (v === undefined || v === null || (typeof v === "string" && v.trim() === "")) {
-        console.error("[api/bookings] Missing field:", field);
-        return Response.json({ error: `Missing required field: ${field}` }, { status: 400 });
-      }
-    }
-
-    const clientPhone = normalizeGhanaPhone(String(body.clientPhone));
+    const clientPhone = normalizeGhanaPhone(b.clientPhone);
     if (!clientPhone || clientPhone.length < 10) {
-      console.error("[api/bookings] Invalid clientPhone after normalize:", body.clientPhone);
       return Response.json({ error: "Invalid phone number" }, { status: 400 });
     }
 
-    const guestRaw = body.guestCount;
-    let guest_count: number | null = null;
-    if (guestRaw !== undefined && guestRaw !== null && guestRaw !== "") {
-      const n = parseInt(String(guestRaw), 10);
-      guest_count = Number.isFinite(n) ? n : null;
-    }
-
-    const eventNameRaw = body.eventName;
-    const event_name =
-      typeof eventNameRaw === "string" && eventNameRaw.trim() ? eventNameRaw.trim() : null;
+    const guest_count = b.guestCount ?? null;
+    const event_name = b.eventName?.trim() ? b.eventName.trim() : null;
 
     const insertRow = {
       event_id: eventId,
-      client_name: String(body.clientName).trim(),
-      client_email: String(body.clientEmail).trim(),
+      client_name: b.clientName.trim(),
+      client_email: b.clientEmail.trim(),
       client_phone: clientPhone,
-      event_type: String(body.eventType).trim(),
+      event_type: b.eventType.trim(),
       event_name,
-      event_date: String(body.eventDate).trim(),
-      venue: String(body.venue).trim(),
+      event_date: b.eventDate.trim(),
+      venue: b.venue.trim(),
       guest_count,
-      notes: typeof body.notes === "string" && body.notes.trim() ? body.notes.trim() : null,
-      package_name:
-        typeof body.packageName === "string" && body.packageName.trim()
-          ? body.packageName.trim()
-          : null,
-      genres: Array.isArray(body.genres) ? (body.genres as string[]) : [],
+      notes: b.notes?.trim() ? b.notes.trim() : null,
+      package_name: b.packageName?.trim() ? b.packageName.trim() : null,
+      genres: b.genres ?? [],
       status: "pending" as const,
       payment_status: "unpaid" as const,
     };
 
-    console.log("[api/bookings] Inserting into Supabase...", insertRow);
-
     const { data, error } = await supabase.from("bookings").insert(insertRow).select("*").single();
 
     if (error) {
-      console.error("[api/bookings] Supabase insert error:", JSON.stringify(error, null, 2));
-      return Response.json(
-        {
-          error: "Database error",
-          details: error.message,
-          code: error.code,
-        },
-        { status: 500 },
-      );
+      logger.errorRaw("route", "[api/bookings] Supabase insert error:", error);
+      return Response.json({ error: "Failed to create booking. Please try again." }, { status: 500 });
     }
 
     const row = data as BookingRow;
-    console.log("[api/bookings] Success:", row.event_id);
+    logger.infoRaw("route", "[api/bookings] Success:", row.event_id);
 
     void sendNewBookingRequestToDj({
       eventId: row.event_id,
-      clientName: String(body.clientName).trim(),
-      clientEmail: String(body.clientEmail).trim(),
+      clientName: b.clientName.trim(),
+      clientEmail: b.clientEmail.trim(),
       clientPhone,
-      eventType: String(body.eventType).trim(),
-      eventDate: String(body.eventDate).trim(),
-      venue: String(body.venue).trim(),
-      packageName:
-        typeof body.packageName === "string" && body.packageName.trim()
-          ? body.packageName.trim()
-          : null,
-    }).catch((err) => console.error("[bookings] DJ notify failed:", err));
+      eventType: b.eventType.trim(),
+      eventDate: b.eventDate.trim(),
+      venue: b.venue.trim(),
+      packageName: b.packageName?.trim() ? b.packageName.trim() : null,
+    }).catch((err) => logger.errorRaw("route", "[bookings] DJ notify failed:", err));
 
     let clientAuth: ClientAuthProvisionResult = "failed";
     try {
@@ -260,7 +291,6 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[api/bookings] Unexpected error:", err);
     logger.errorRaw("route", "[api/bookings] Unexpected:", err);
     return Response.json(
       {

@@ -1,8 +1,10 @@
 import { uploadToR2 } from "@/lib/r2";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { validateAudioBytes } from "@/lib/validateFileBytes";
 import { parseBuffer } from "music-metadata";
 
-const MAX_BYTES = 200 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
 const formatDuration = (seconds: number) => {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60)
@@ -13,6 +15,9 @@ const formatDuration = (seconds: number) => {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -27,7 +32,13 @@ export async function POST(request: Request) {
     }
 
     if (file.size > MAX_BYTES) {
-      return Response.json({ error: "File too large. Max 200MB." }, { status: 400 });
+      return Response.json(
+        {
+          error:
+            "File too large. Max 100MB. For larger files contact support.",
+        },
+        { status: 400 },
+      );
     }
 
     const ext = file.name.split(".").pop()?.toLowerCase() || "mp3";
@@ -38,12 +49,20 @@ export async function POST(request: Request) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    if (!validateAudioBytes(buffer)) {
+      return Response.json(
+        { error: "Invalid file. Upload a real MP3, WAV, FLAC or M4A." },
+        { status: 400 },
+      );
+    }
+
     let durationSeconds: number | null = null;
     try {
       const metadata = await parseBuffer(buffer, { mimeType: file.type });
       durationSeconds = metadata.format.duration ? Math.round(metadata.format.duration) : null;
     } catch (err) {
-      console.warn("[upload/music-audio] Could not detect duration:", err);
+      logger.warn("upload/music-audio", "Could not detect duration", err);
     }
 
     const contentType = type
@@ -57,13 +76,12 @@ export async function POST(request: Request) {
             : "audio/flac";
     const url = await uploadToR2(buffer, key, contentType);
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
-      console.error("[upload/music-audio] Generated URL is not absolute:", url);
+      logger.error("upload/music-audio", "Generated URL is not absolute", url);
       return Response.json(
         { error: "Invalid URL generated. Check R2_PUBLIC_URL in .env.local" },
         { status: 500 },
       );
     }
-    console.log("[upload/music-audio] Success:", url);
     logger.infoRaw("upload/music-audio", "[upload/music-audio] Uploaded:", url);
 
     return Response.json({
@@ -74,8 +92,8 @@ export async function POST(request: Request) {
     });
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error("Upload failed");
-    console.error(
-      "[upload/music-audio]",
+    logger.errorRaw(
+      "upload/music-audio",
       JSON.stringify({
         name: error.name,
         message: error.message,

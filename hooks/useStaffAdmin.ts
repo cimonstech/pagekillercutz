@@ -6,11 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 
 /** True when the signed-in user is an admin or super_admin (staff — not a client playlist user). */
 export function useStaffAdmin(user: User | null): boolean {
-  const [staff, setStaff] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const r = localStorage.getItem("adminRole");
-    return r === "admin" || r === "super_admin";
-  });
+  // Never trust localStorage for access — verified below via admins table.
+  const [staff, setStaff] = useState(false);
 
   useEffect(() => {
     if (!user?.email) {

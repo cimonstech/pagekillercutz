@@ -14,11 +14,13 @@ export interface CartItem {
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  autoOpenOnAdd: boolean;
   addItem: (item: CartItem) => void;
   removeItem: (id: string, size: string, colour: string) => void;
   updateQty: (id: string, size: string, colour: string, qty: number) => void;
   clearCart: () => void;
   setIsOpen: (open: boolean) => void;
+  setAutoOpenOnAdd: (enabled: boolean) => void;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -26,6 +28,7 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      autoOpenOnAdd: true,
 
       addItem: (newItem) => {
         const items = get().items;
@@ -68,6 +71,7 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => set({ items: [] }),
 
       setIsOpen: (open) => set({ isOpen: open }),
+      setAutoOpenOnAdd: (enabled) => set({ autoOpenOnAdd: enabled }),
     }),
     { name: "killercutz-cart" },
   ),

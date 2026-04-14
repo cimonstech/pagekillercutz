@@ -1,10 +1,15 @@
 import { uploadToR2 } from "@/lib/r2";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { validateImageBytes, validateIsobmffVideoBytes } from "@/lib/validateFileBytes";
 
 const MAX_BYTES = 50 * 1024 * 1024;
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -37,15 +42,29 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    const isImageMime = file.type.startsWith("image/");
+    if (isImageMime) {
+      if (!validateImageBytes(buffer)) {
+        return Response.json(
+          { error: "Invalid file. Upload a real JPG, PNG or WebP image." },
+          { status: 400 },
+        );
+      }
+    } else if (!validateIsobmffVideoBytes(buffer)) {
+      return Response.json(
+        { error: "Invalid file. Upload a real MP4 or MOV video." },
+        { status: 400 },
+      );
+    }
+
     const url = await uploadToR2(buffer, key, file.type || "application/octet-stream");
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
-      console.error("[upload/event-media] Generated URL is not absolute:", url);
+      logger.error("upload/event-media", "Generated URL is not absolute", url);
       return Response.json(
         { error: "Invalid URL generated. Check R2_PUBLIC_URL in .env.local" },
         { status: 500 },
       );
     }
-    console.log("[upload/event-media] Success:", url);
     logger.infoRaw("upload/event-media", "[upload/event-media] Uploaded:", url);
 
     return Response.json({ success: true, url });

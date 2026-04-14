@@ -5,14 +5,22 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAdminStore } from "@/lib/store/adminStore";
 
+type MeResponse = {
+  user?: { email?: string | null };
+  admin?: { role: string; status: string } | null;
+};
+
 export default function AdminGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const setRole = useAdminStore((s) => s.setRole);
+  const setSession = useAdminStore((s) => s.setSession);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     const supabase = createClient();
+    const clearAdminSession = async () => {
+      await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
+    };
 
     void (async () => {
       const {
@@ -20,71 +28,50 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
       } = await supabase.auth.getUser();
 
       if (!user?.email) {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-          localStorage.removeItem("adminEmail");
-        }
-        setRole(null);
+        setSession({ role: null, staffEmail: null });
         router.replace("/admin/login");
         return;
       }
 
-      const { data: adminRecord } = await supabase
-        .from("admins")
-        .select("role, status")
-        .ilike("email", user.email)
-        .maybeSingle();
+      const res = await fetch("/api/auth/me");
+      if (cancelled) return;
 
-      const row = adminRecord as { role: string; status: string } | null;
-
-      if (!row) {
+      if (!res.ok) {
+        await clearAdminSession();
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-          localStorage.removeItem("adminEmail");
-        }
-        setRole(null);
+        setSession({ role: null, staffEmail: null });
         router.replace("/admin/login");
         return;
       }
 
-      if (row.status === "suspended") {
-        await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-          localStorage.removeItem("adminEmail");
-        }
-        setRole(null);
-        router.replace("/admin/login");
-        return;
-      }
+      const data = (await res.json()) as MeResponse;
+      const admin = data.admin;
 
-      if (row.role !== "admin" && row.role !== "super_admin") {
+      if (
+        !admin ||
+        admin.status === "suspended" ||
+        (admin.role !== "admin" && admin.role !== "super_admin")
+      ) {
+        await clearAdminSession();
         await supabase.auth.signOut();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("adminRole");
-          localStorage.removeItem("adminEmail");
-        }
-        setRole(null);
+        setSession({ role: null, staffEmail: null });
         router.replace("/admin/login");
         return;
       }
 
       if (cancelled) return;
 
-      const typedRole = row.role as "admin" | "super_admin";
-      if (typeof window !== "undefined") {
-        localStorage.setItem("adminRole", typedRole);
-        localStorage.setItem("adminEmail", user.email ?? "");
-      }
-      setRole(typedRole);
+      setSession({
+        role: admin.role as "admin" | "super_admin",
+        staffEmail: user.email ?? null,
+      });
       setReady(true);
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [router, setRole]);
+  }, [router, setSession]);
 
   if (!ready) {
     return (

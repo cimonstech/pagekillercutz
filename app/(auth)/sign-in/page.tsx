@@ -134,12 +134,10 @@ function SignInPageInner() {
       if (cancelled) return;
       if (gate.kind === "suspended") {
         await client.auth.signOut();
-        localStorage.removeItem("adminRole");
         setChecking(false);
         return;
       }
       if (gate.kind === "admin") {
-        localStorage.setItem("adminRole", gate.role);
         router.replace("/admin");
         return;
       }
@@ -171,17 +169,14 @@ function SignInPageInner() {
     const gate = await resolveAdminGateForEmail(supabase, signedInEmail);
     if (gate.kind === "suspended") {
       await supabase.auth.signOut();
-      localStorage.removeItem("adminRole");
       setError("Your account has been suspended. Contact the platform administrator.");
       return;
     }
     if (gate.kind === "admin") {
-      localStorage.setItem("adminRole", gate.role);
       router.refresh();
       router.replace("/admin");
       return;
     }
-    localStorage.removeItem("adminRole");
     router.refresh();
     const redirectTo = safeRedirectPath(searchParams.get("redirect"));
     router.replace(redirectTo);

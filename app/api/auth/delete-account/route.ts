@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -20,7 +21,7 @@ export async function DELETE() {
 
     return Response.json({ success: true });
   } catch (err) {
-    console.error("[api/auth/delete-account]", err);
+    logger.error("auth/delete-account", "Failed", err);
     return Response.json({ error: "Failed to delete account" }, { status: 500 });
   }
 }

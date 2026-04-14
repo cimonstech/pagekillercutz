@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { startTrackingPlay, stopTrackingPlay } from "@/lib/trackPlay";
+import { syncPlaybackTrack, tickPlaybackWhilePlaying } from "@/lib/trackPlay";
 import type { PlayerTrack } from "@/lib/store/playerStore";
 import { usePlayerStore } from "@/lib/store/playerStore";
 
@@ -24,38 +24,44 @@ function isAuthShellPath(pathname: string) {
 
 export default function PlayTrackingBridge() {
   const pathname = usePathname();
-  const current = usePlayerStore((s) => s.current);
+  const current = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
   useEffect(() => {
-    if (isAuthShellPath(pathname) || pathname === "/merch" || pathname.startsWith("/merch/")) {
-      stopTrackingPlay();
+    syncPlaybackTrack(current?.id ?? null);
+  }, [current?.id]);
+
+  useEffect(() => {
+    if (isAuthShellPath(pathname)) {
       return;
     }
 
     if (!current || !isPlaying) {
-      stopTrackingPlay();
       return;
     }
 
-    startTrackingPlay({
+    const payload = {
       musicId: resolveMusicId(current),
       trackTitle: current.title,
       artist: current.artist,
       releaseType: current.releaseType,
-      source: "player_bar",
-    });
+      source: "player_bar" as const,
+    };
+
+    const iv = window.setInterval(() => {
+      tickPlaybackWhilePlaying(payload);
+    }, 1000);
 
     return () => {
-      stopTrackingPlay();
+      window.clearInterval(iv);
     };
   }, [
     pathname,
     current?.id,
-    current?.musicId,
     current?.title,
     current?.artist,
     current?.releaseType,
+    current?.musicId,
     isPlaying,
   ]);
 

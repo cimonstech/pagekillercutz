@@ -2,46 +2,31 @@ import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { sendSMS } from "@/lib/notify/sms";
 import { sendEmail } from "@/lib/notify/email";
 import { logger } from "@/lib/logger";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { createServerClient } from "@/lib/supabase/server";
-import { getSupabaseAdmin } from "@/lib/supabase";
 
-async function isActiveAdminEmail(email: string): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  const { data } = await supabase
-    .from("admins")
-    .select("role, status")
-    .ilike("email", email)
-    .maybeSingle();
-  const row = data as { role: string; status: string } | null;
-  return !!(
-    row &&
-    row.status === "active" &&
-    (row.role === "admin" || row.role === "super_admin")
-  );
-}
+const notifyTestLimiter = rateLimit({ interval: 60 * 60 * 1000, limit: 3 });
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
+    const ip = getClientIp(request);
+    const { success: underLimit } = notifyTestLimiter.check(ip);
+    if (!underLimit) {
+      logger.warn("notify/test", `Rate limit exceeded for IP: ${ip}`);
+      return Response.json(
+        { error: "Too many test requests. Try again in an hour." },
+        { status: 429, headers: { "Retry-After": "3600" } },
+      );
+    }
+
     const supabase = await createServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
-    let authorized = false;
-    if (user?.email && (await isActiveAdminEmail(user.email))) {
-      authorized = true;
-    }
-
-    if (!authorized) {
-      const adminSecret = request.headers.get("x-admin-secret");
-      const secretOk =
-        adminSecret &&
-        (adminSecret === process.env.ADMIN_SECRET ||
-          adminSecret === process.env.NEXT_PUBLIC_ADMIN_SECRET);
-      if (!secretOk) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
 
     let body: {
       channel?: "sms" | "email";
@@ -69,6 +54,7 @@ export async function POST(request: Request) {
         to,
         subject: "Test email — Page KillerCutz",
         html: "<p>If you received this, outbound email is working.</p>",
+        type: "notify_test",
       });
       return Response.json({ email: result });
     }
@@ -88,6 +74,7 @@ export async function POST(request: Request) {
     const smsResult = await sendSMS(
       targets,
       "Test SMS from Page KillerCutz. If you received this, SMS is working!",
+      { type: "notify_test" },
     );
 
     logger.infoRaw("route", "[notify/test] SMS result:", smsResult);

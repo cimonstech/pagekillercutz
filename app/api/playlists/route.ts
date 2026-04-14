@@ -1,12 +1,20 @@
 import { logger } from "@/lib/logger";
+import { emailsMatch, isActiveStaffAdmin } from "@/lib/playlistAccess";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/database.types";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { playlistCreateSchema } from "@/lib/validation/schemas";
+import { validate } from "@/lib/validation/validate";
 
 type PlaylistRow = Database["public"]["Tables"]["playlists"]["Row"];
 type PlaylistInsert = Database["public"]["Tables"]["playlists"]["Insert"];
 
 export async function GET(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const supabase = getSupabaseAdmin();
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Number(searchParams.get("limit") ?? "500"), 2000);
@@ -24,25 +32,43 @@ export async function GET(request: Request) {
   }
 }
 
-type PlaylistSaveBody = {
-  event_id?: string;
-  genres?: string[];
-  vibe?: string | null;
-  must_play?: PlaylistRow["must_play"];
-  do_not_play?: PlaylistRow["do_not_play"];
-  timeline?: PlaylistRow["timeline"];
-  extra_notes?: string | null;
-};
-
 export async function POST(request: Request) {
   try {
-    const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as PlaylistSaveBody;
-    if (!body.event_id) {
-      return Response.json({ error: "Missing event_id" }, { status: 400 });
+    const supabaseUser = await createServerClient();
+    const {
+      data: { user },
+    } = await supabaseUser.auth.getUser();
+
+    if (!user?.email) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    const raw = await request.json();
+    const parsed = validate(playlistCreateSchema, raw);
+    if (!parsed.success) {
+      return Response.json({ error: parsed.error, details: parsed.details }, { status: 400 });
+    }
+    const body = parsed.data;
+
+    const adminClient = getSupabaseAdmin();
+    const { data: booking } = await adminClient
+      .from("bookings")
+      .select("client_email")
+      .eq("event_id", body.event_id)
+      .maybeSingle();
+
+    if (!booking) {
+      return Response.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    const isAdmin = await isActiveStaffAdmin(user.email);
+    const isOwner = emailsMatch(booking.client_email, user.email);
+
+    if (!isAdmin && !isOwner) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { data, error } = await adminClient
       .from("playlists")
       .insert({
         event_id: body.event_id,
@@ -64,4 +90,3 @@ export async function POST(request: Request) {
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

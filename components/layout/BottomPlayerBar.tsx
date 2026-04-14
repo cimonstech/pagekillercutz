@@ -9,8 +9,10 @@ import {
   Play,
   SkipBack,
   SkipForward,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { normalizeCoverUrl } from "@/lib/coverUrl";
 import { formatDuration } from "@/lib/player-utils";
 import { usePlayerStore } from "@/lib/store/playerStore";
 
@@ -78,6 +80,7 @@ export default function BottomPlayerBar() {
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   const prevTrack = usePlayerStore((s) => s.prevTrack);
   const nextTrack = usePlayerStore((s) => s.nextTrack);
+  const stop = usePlayerStore((s) => s.stop);
 
   const [isMobile, setIsMobile] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -171,7 +174,10 @@ export default function BottomPlayerBar() {
     setProgress(t);
   };
 
-  const currentCover = current.coverUrl && current.coverUrl.startsWith("http") ? current.coverUrl : null;
+  const currentCover =
+    current.coverUrl && current.coverUrl.startsWith("http")
+      ? normalizeCoverUrl(current.coverUrl) ?? current.coverUrl
+      : null;
 
   /** Clears the sidebar pill (~56px) + gap; on small screens the pill is hidden. */
   const miniLeftClass = "left-4 sm:left-[80px]";
@@ -235,6 +241,7 @@ export default function BottomPlayerBar() {
             fill
             style={{ objectFit: "cover" }}
             unoptimized
+            referrerPolicy="no-referrer"
             sizes="40px"
           />
         ) : (
@@ -332,6 +339,28 @@ export default function BottomPlayerBar() {
       </button>
 
       <ChevronUp size={16} color="rgba(255,255,255,0.25)" style={{ flexShrink: 0 }} aria-hidden />
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          stop();
+        }}
+        style={{
+          width: "24px",
+          height: "24px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#FF4560",
+          flexShrink: 0,
+        }}
+        aria-label="Close player"
+      >
+        <X size={14} color="#FF4560" />
+      </button>
     </div>
   );
 
@@ -409,6 +438,28 @@ export default function BottomPlayerBar() {
       >
         <ChevronDown size={16} />
       </button>
+      <button
+        type="button"
+        onClick={() => stop()}
+        style={{
+          position: "absolute",
+          top: "16px",
+          right: "60px",
+          background: "rgba(255, 69, 96, 0.12)",
+          border: "1px solid rgba(255, 69, 96, 0.35)",
+          borderRadius: "50%",
+          width: "32px",
+          height: "32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#FF4560",
+        }}
+        aria-label="Close player"
+      >
+        <X size={16} color="#FF4560" />
+      </button>
 
       <div
         style={{
@@ -430,6 +481,7 @@ export default function BottomPlayerBar() {
             fill
             style={{ objectFit: "cover" }}
             unoptimized
+            referrerPolicy="no-referrer"
             sizes="220px"
           />
         ) : (
@@ -700,6 +752,7 @@ export default function BottomPlayerBar() {
                   width={56}
                   height={56}
                   unoptimized
+                  referrerPolicy="no-referrer"
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -766,6 +819,7 @@ export default function BottomPlayerBar() {
                   width={48}
                   height={48}
                   unoptimized
+                  referrerPolicy="no-referrer"
                   style={{ borderRadius: "8px", objectFit: "cover" }}
                 />
               ) : (
@@ -841,6 +895,15 @@ export default function BottomPlayerBar() {
           </div>
 
           <div className="hidden shrink-0 items-center gap-1 sm:flex md:gap-2">
+            <button
+              type="button"
+              className="rounded-full p-1.5 text-[#FF4560] transition-colors hover:text-[#ff6b82]"
+              aria-label="Close player"
+              title="Close player"
+              onClick={() => stop()}
+            >
+              <span className="material-symbols-outlined text-[22px]">close</span>
+            </button>
             <button
               type="button"
               className="rounded-full p-1.5 text-white/70 transition-colors hover:text-white"

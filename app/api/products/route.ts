@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import type { Database } from "@/lib/database.types";
 
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
@@ -37,6 +38,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const supabase = getSupabaseAdmin();
     const body = (await request.json()) as ProductInsert;
     if (!body.name || body.price === undefined) {

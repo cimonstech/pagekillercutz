@@ -1,6 +1,16 @@
+import { normalizeCoverUrl } from "@/lib/coverUrl";
 import { logger } from "@/lib/logger";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
+
+const searchLimiter = rateLimit({ interval: 60 * 1000, limit: 30 });
 
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  const { success } = searchLimiter.check(ip);
+  if (!success) {
+    return Response.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": "60" } });
+  }
+
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q");
 
@@ -15,9 +25,7 @@ export async function GET(request: Request) {
     url.searchParams.set("output", "json");
 
     const res = await fetch(url.toString(), {
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
       next: { revalidate: 60 },
     });
 
@@ -51,7 +59,7 @@ export async function GET(request: Request) {
       title: track.title,
       artist: track.artist?.name ?? "Unknown",
       album: track.album?.title ?? "",
-      coverUrl: track.album?.cover_small ?? "",
+      coverUrl: normalizeCoverUrl(track.album?.cover_small ?? "") ?? "",
       duration: track.duration ?? 0,
       previewUrl: track.preview ?? "",
     }));

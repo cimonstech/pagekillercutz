@@ -17,6 +17,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import type { Database } from "@/lib/database.types";
+import { normalizeCoverUrl } from "@/lib/coverUrl";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffAdmin } from "@/hooks/useStaffAdmin";
 
@@ -636,7 +637,7 @@ function ClientPlaylistContent() {
           title: track.title,
           artist: track.artist,
           note: "",
-          coverUrl: track.coverUrl,
+          coverUrl: normalizeCoverUrl(track.coverUrl) ?? track.coverUrl,
         },
       ]);
       mustSearch.reset();
@@ -659,7 +660,7 @@ function ClientPlaylistContent() {
           title: track.title,
           artist: track.artist,
           note: "",
-          coverUrl: track.coverUrl,
+          coverUrl: normalizeCoverUrl(track.coverUrl) ?? track.coverUrl,
         },
       ]);
       dontSearch.reset();
@@ -910,11 +911,12 @@ function ClientPlaylistContent() {
                         <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md bg-white/[0.06]">
                           {song.coverUrl ? (
                             <Image
-                              src={song.coverUrl}
+                              src={normalizeCoverUrl(song.coverUrl) ?? song.coverUrl}
                               alt=""
                               width={32}
                               height={32}
                               unoptimized
+                              referrerPolicy="no-referrer"
                               className="object-cover"
                             />
                           ) : null}
@@ -1009,7 +1011,15 @@ function ClientPlaylistContent() {
                               >
                                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md bg-white/[0.06]">
                                   {r.coverUrl ? (
-                                    <Image src={r.coverUrl} alt="" width={36} height={36} unoptimized className="object-cover" />
+                                    <Image
+                                      src={normalizeCoverUrl(r.coverUrl) ?? r.coverUrl}
+                                      alt=""
+                                      width={36}
+                                      height={36}
+                                      unoptimized
+                                      referrerPolicy="no-referrer"
+                                      className="object-cover"
+                                    />
                                   ) : null}
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -1046,7 +1056,15 @@ function ClientPlaylistContent() {
                         <span className="w-6 shrink-0 text-center font-mono text-xs text-[#FF4560]">{String(i + 1).padStart(2, "0")}</span>
                         <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md bg-white/[0.06]">
                           {song.coverUrl ? (
-                            <Image src={song.coverUrl} alt="" width={32} height={32} unoptimized className="object-cover" />
+                            <Image
+                              src={normalizeCoverUrl(song.coverUrl) ?? song.coverUrl}
+                              alt=""
+                              width={32}
+                              height={32}
+                              unoptimized
+                              referrerPolicy="no-referrer"
+                              className="object-cover"
+                            />
                           ) : null}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1132,7 +1150,15 @@ function ClientPlaylistContent() {
                               >
                                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md bg-white/[0.06]">
                                   {r.coverUrl ? (
-                                    <Image src={r.coverUrl} alt="" width={36} height={36} unoptimized className="object-cover" />
+                                    <Image
+                                      src={normalizeCoverUrl(r.coverUrl) ?? r.coverUrl}
+                                      alt=""
+                                      width={36}
+                                      height={36}
+                                      unoptimized
+                                      referrerPolicy="no-referrer"
+                                      className="object-cover"
+                                    />
                                   ) : null}
                                 </div>
                                 <div className="min-w-0 flex-1">

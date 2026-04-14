@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { requireSuperAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 const DEFAULT_SETTINGS: Record<
@@ -25,6 +26,9 @@ function toBool(v: unknown, fallback: boolean): boolean {
 
 export async function GET() {
   try {
+    const auth = await requireSuperAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase.from("platform_settings").select("*");
 
@@ -60,6 +64,9 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const auth = await requireSuperAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const body = (await request.json()) as { key?: string; value?: unknown };
     const { key, value } = body;
 

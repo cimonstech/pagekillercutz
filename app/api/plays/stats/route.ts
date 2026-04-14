@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -38,7 +39,7 @@ export async function GET() {
       mostPlayedTrack: mostPlayed ? mostPlayed[0] : null,
     });
   } catch (err) {
-    console.error("[api/plays/stats]", err);
+    logger.error("plays/stats", "Error", err);
     return Response.json({ totalPlays: 0, mostPlayedTrack: null });
   }
 }

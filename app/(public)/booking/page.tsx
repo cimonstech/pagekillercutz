@@ -250,7 +250,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[800px] pb-10">
+    <div className="mx-auto max-w-[800px] px-4 pb-10 sm:px-6 lg:px-0">
       <header className="mb-8">
         <h1 className="font-headline text-[28px] font-semibold text-white">Book the DJ</h1>
         <p className="mt-1 font-body text-[14px] text-[#A0A8C0]">Fill in your details and choose your package.</p>

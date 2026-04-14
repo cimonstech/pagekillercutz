@@ -83,6 +83,11 @@ const config: Config = {
         'syne':     ['var(--font-syne)', 'sans-serif'],
       },
 
+      letterSpacing: {
+        /** Barlow Condensed display titles: ~1.5× `tracking-wide` (0.025em) for readable uppercase */
+        'display-title': '0.0375em',
+      },
+
       borderRadius: {
         DEFAULT: '0.125rem',
         'sm':    '0.125rem',

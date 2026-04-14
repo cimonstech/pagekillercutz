@@ -64,6 +64,6 @@ export async function DELETE() {
     return Response.json({ success: true });
   } catch (err) {
     logger.errorRaw("route", "[api/admins/remove-self]", err);
-    return Response.json({ error: err instanceof Error ? err.message : "Internal server error" }, { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

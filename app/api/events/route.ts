@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 
@@ -35,6 +36,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const supabase = getSupabaseAdmin();
     const body = (await request.json()) as EventInsert;
     if (!body.title || !body.event_type || !body.event_date) {

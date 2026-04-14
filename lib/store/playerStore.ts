@@ -40,10 +40,6 @@ type PlayerState = {
   nextTrack: () => void;
   prevTrack: () => void;
   setQueue: (tracks: PlayerTrack[]) => void;
-  // Back-compat methods
-  loadTrack: (track: PlayerTrack) => Promise<void>;
-  play: () => void;
-  pause: () => void;
   toggle: () => void;
   seek: (timeSec: number) => void;
   toggleShuffle: () => void;
@@ -127,12 +123,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     void get().setTrack(prev);
   },
 
-  loadTrack: async (track) => get().setTrack(track),
-  play: () => {
-    if (!get().currentTrack) return;
-    set({ isPlaying: true, isVisible: true });
-  },
-  pause: () => set({ isPlaying: false }),
   toggle: () => get().togglePlay(),
   seek: (timeSec) => {
     const max = get().duration || trackDuration(get().currentTrack as PlayerTrack);

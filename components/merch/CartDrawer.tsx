@@ -13,6 +13,7 @@ export default function CartDrawer() {
   const items = useCartStore((s) => s.items);
   const isOpen = useCartStore((s) => s.isOpen);
   const setIsOpen = useCartStore((s) => s.setIsOpen);
+  const setAutoOpenOnAdd = useCartStore((s) => s.setAutoOpenOnAdd);
   const updateQty = useCartStore((s) => s.updateQty);
   const removeItem = useCartStore((s) => s.removeItem);
 
@@ -151,7 +152,10 @@ export default function CartDrawer() {
           <Link
             href="/merch"
             className="mt-3 block text-center font-body text-[13px] text-[#00BFFF] hover:underline"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setAutoOpenOnAdd(false);
+              setIsOpen(false);
+            }}
           >
             Continue shopping
           </Link>

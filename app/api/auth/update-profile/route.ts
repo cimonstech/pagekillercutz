@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { createServerClient } from "@/lib/supabase/server";
 
 /** PATCH — merge `full_name` and `phone` into the current session user's Auth metadata. */
@@ -40,10 +41,7 @@ export async function PATCH(request: Request) {
 
     return Response.json({ success: true, user: updated.user });
   } catch (err) {
-    console.error("[api/auth/update-profile]", err);
-    return Response.json(
-      { error: err instanceof Error ? err.message : String(err) },
-      { status: 500 },
-    );
+    logger.error("auth/update-profile", "Failed", err);
+    return Response.json({ error: "Failed to update profile" }, { status: 500 });
   }
 }

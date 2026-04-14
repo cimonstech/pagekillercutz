@@ -14,6 +14,7 @@ import {
 import type { Database } from "@/lib/database.types";
 import { writeAuditLog } from "@/lib/writeAuditLog";
 import { useAdminToast } from "@/hooks/useAdminToast";
+import { useAdminStore } from "@/lib/store/adminStore";
 
 type AdminRow = Database["public"]["Tables"]["admins"]["Row"];
 type AdminRole = "admin" | "super_admin";
@@ -31,13 +32,12 @@ function formatJoined(iso: string): string {
 }
 
 export default function AccountsTab() {
+  const staffEmail = useAdminStore((s) => s.staffEmail);
   const { showToast, ToastComponent } = useAdminToast();
   const [admins, setAdmins] = useState<AdminRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [removeConfirmId, setRemoveConfirmId] = useState<string | null>(null);
-  const [currentAdminEmail, setCurrentAdminEmail] = useState("");
-
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<AdminRole>("admin");
   const [inviting, setInviting] = useState(false);
@@ -60,10 +60,9 @@ export default function AccountsTab() {
 
   useEffect(() => {
     void loadAdmins();
-    if (typeof window !== "undefined") {
-      setCurrentAdminEmail(localStorage.getItem("adminEmail")?.toLowerCase() || "");
-    }
   }, [loadAdmins]);
+
+  const currentAdminEmail = (staffEmail ?? "").toLowerCase();
 
   const closeInviteModal = () => {
     setModalOpen(false);

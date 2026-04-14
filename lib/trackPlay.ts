@@ -10,44 +10,54 @@ function getSessionId(): string {
   return sessionId;
 }
 
-let playTimer: ReturnType<typeof setTimeout> | null = null;
-let playStartTime: number | null = null;
+/** Seconds listened for the active track (resets when track id changes). */
+let listenedSec = 0;
+let activeTrackId: string | null = null;
+/** Prevents duplicate POSTs for the same track while it remains the current track. */
+let postedForActiveTrack = false;
 
-export function startTrackingPlay(track: {
+export function syncPlaybackTrack(trackId: string | null) {
+  if (trackId !== activeTrackId) {
+    activeTrackId = trackId;
+    listenedSec = 0;
+    postedForActiveTrack = false;
+  }
+}
+
+export function tickPlaybackWhilePlaying(track: {
   musicId?: string;
   trackTitle: string;
   artist?: string;
   releaseType?: string;
   source?: string;
 }) {
-  stopTrackingPlay();
-  playStartTime = Date.now();
+  if (!activeTrackId) return;
+  listenedSec += 1;
+  if (listenedSec < 12 || postedForActiveTrack) return;
+  postedForActiveTrack = true;
 
-  playTimer = setTimeout(() => {
-    const durationPlayed = Math.round(
-      (Date.now() - (playStartTime ?? Date.now())) / 1000,
-    );
-
-    void fetch("/api/plays", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        musicId: track.musicId,
-        trackTitle: track.trackTitle,
-        artist: track.artist ?? "Page KillerCutz",
-        releaseType: track.releaseType,
-        durationPlayed,
-        source: track.source ?? "music_page",
-        sessionId: getSessionId(),
-      }),
-    }).catch((err) => console.error("[trackPlay] Failed:", err));
-  }, 30000);
+  void fetch("/api/plays", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      musicId: track.musicId,
+      trackTitle: track.trackTitle,
+      artist: track.artist ?? "Page KillerCutz",
+      releaseType: track.releaseType,
+      durationPlayed: listenedSec,
+      source: track.source ?? "music_page",
+      sessionId: getSessionId(),
+    }),
+  }).catch((err) => console.error("[trackPlay] Failed:", err));
 }
 
+/** @deprecated — kept for any stray imports; no-op */
+export function startTrackingPlay() {
+  /* replaced by syncPlaybackTrack + tickPlaybackWhilePlaying */
+}
+
+/** @deprecated */
 export function stopTrackingPlay() {
-  if (playTimer) {
-    clearTimeout(playTimer);
-    playTimer = null;
-  }
-  playStartTime = null;
+  /* pause no longer cancels counting toward the 12s threshold */
 }

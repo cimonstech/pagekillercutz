@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import HomePage from "@/components/home/HomePage";
-import PublicLayout from "@/app/(public)/layout";
 import { OG_IMAGE_URL } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
@@ -22,9 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return (
-    <PublicLayout>
-      <HomePage />
-    </PublicLayout>
-  );
+  return <HomePage />;
 }

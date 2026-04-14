@@ -1,10 +1,13 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Database } from "@/lib/database.types";
+import { useAdminStore } from "@/lib/store/adminStore";
 import { timeAgo } from "@/lib/timeAgo";
 
 type AuditLogRow = Database["public"]["Tables"]["audit_logs"]["Row"];
+type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
 
 function badgeClass(actionType: string): string {
   switch (actionType) {
@@ -28,17 +31,44 @@ function badgeClass(actionType: string): string {
 }
 
 export default function AuditLogTab() {
+  const staffRole = useAdminStore((s) => s.role);
   const [range, setRange] = useState("All Time");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [includeArchived, setIncludeArchived] = useState(false);
   const [logs, setLogs] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failedNotifications, setFailedNotifications] = useState<NotificationRow[]>([]);
+  const [failedLoading, setFailedLoading] = useState(true);
+  const [notificationActionId, setNotificationActionId] = useState<string | null>(null);
+
+  const loadFailedNotifications = useCallback(() => {
+    setFailedLoading(true);
+    fetch("/api/notifications?status=failed&limit=10")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("fetch failed"))))
+      .then((d: { notifications?: NotificationRow[] }) => {
+        setFailedNotifications(d.notifications ?? []);
+      })
+      .catch(() => setFailedNotifications([]))
+      .finally(() => setFailedLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadFailedNotifications();
+  }, [loadFailedNotifications]);
+
+  useEffect(() => {
+    if (staffRole !== "super_admin" && includeArchived) setIncludeArchived(false);
+  }, [staffRole, includeArchived]);
 
   const loadLogs = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("limit", "50");
     if (filter !== "all") params.set("action_type", filter);
+    if (includeArchived && staffRole === "super_admin") {
+      params.set("include_archived", "true");
+    }
 
     const now = new Date();
     if (range === "7 Days") {
@@ -53,12 +83,12 @@ export default function AuditLogTab() {
 
     fetch(`/api/audit-logs?${params.toString()}`)
       .then((r) => r.json())
-      .then((d: { logs?: AuditLogRow[] }) => {
+      .then((d: { logs?: AuditLogRow[]; error?: string }) => {
         setLogs(d.logs || []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [filter, range]);
+  }, [filter, range, includeArchived, staffRole]);
 
   useEffect(() => {
     loadLogs();
@@ -100,6 +130,93 @@ export default function AuditLogTab() {
 
   return (
     <section className="p-8 flex-1 flex flex-col gap-8">
+      {!failedLoading && failedNotifications.length > 0 ? (
+        <div
+          className="rounded-xl border border-[#FF4560]/35 px-5 py-4"
+          style={{
+            background: "rgba(255, 69, 96, 0.08)",
+            backdropFilter: "blur(16px)",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 shrink-0" size={22} color="#FF4560" aria-hidden />
+            <div className="min-w-0 flex-1">
+              <p
+                className="font-headline text-[14px] font-semibold leading-snug text-white"
+                style={{ fontWeight: 600 }}
+              >
+                {failedNotifications.length} notification(s) failed to send.
+              </p>
+              <ul className="mt-4 space-y-3">
+                {failedNotifications.map((n) => {
+                  const recipient = n.recipient_email || n.recipient_phone || "—";
+                  const errShort = (n.error_message || "").length > 120
+                    ? `${(n.error_message || "").slice(0, 120)}…`
+                    : n.error_message || "—";
+                  const busy = notificationActionId === n.id;
+                  return (
+                    <li
+                      key={n.id}
+                      className="flex flex-col gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded border border-white/20 px-2 py-0.5 font-label text-[10px] font-bold uppercase tracking-wide text-white/90">
+                            {n.channel === "sms" ? "SMS" : "EMAIL"}
+                          </span>
+                          <span className="font-label text-[10px] uppercase tracking-wide text-white/50">
+                            {n.type}
+                          </span>
+                        </div>
+                        <p className="truncate font-mono text-xs text-white/80" title={recipient}>
+                          {recipient}
+                        </p>
+                        <p className="line-clamp-2 font-mono text-[11px] text-[#FF4560]/90">{errShort}</p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          disabled={busy}
+                          className="rounded border border-primary/40 px-3 py-1.5 font-label text-[11px] font-bold uppercase tracking-wide text-primary hover:bg-primary/10 disabled:opacity-50"
+                          onClick={() => {
+                            setNotificationActionId(n.id);
+                            void fetch(`/api/notifications/${n.id}/retry`, { method: "POST" })
+                              .then(() => {
+                                loadFailedNotifications();
+                                loadLogs();
+                              })
+                              .finally(() => setNotificationActionId(null));
+                          }}
+                        >
+                          Retry
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          className="rounded border border-white/20 px-3 py-1.5 font-label text-[11px] font-bold uppercase tracking-wide text-white/70 hover:bg-white/5 disabled:opacity-50"
+                          onClick={() => {
+                            setNotificationActionId(n.id);
+                            void fetch("/api/notifications", {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ id: n.id, status: "dismissed" }),
+                            })
+                              .then(() => loadFailedNotifications())
+                              .finally(() => setNotificationActionId(null));
+                          }}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-[28px] font-headline font-bold text-white tracking-tight leading-none">Activity Log</h2>
@@ -122,6 +239,17 @@ export default function AuditLogTab() {
               </button>
             ))}
           </div>
+          {staffRole === "super_admin" ? (
+            <label className="flex cursor-pointer items-center gap-2 rounded-sm border border-outline-variant/30 bg-surface-container-low px-3 py-2 text-[11px] text-slate-300">
+              <input
+                type="checkbox"
+                checked={includeArchived}
+                onChange={(e) => setIncludeArchived(e.target.checked)}
+                className="rounded border-slate-500 text-purple-500 focus:ring-purple-500"
+              />
+              <span className="font-label font-semibold uppercase tracking-wide">Include archived</span>
+            </label>
+          ) : null}
           <button
             type="button"
             onClick={exportCSV}
@@ -184,7 +312,12 @@ export default function AuditLogTab() {
           </div>
         ) : (
           rows.map((r) => (
-            <div key={r.id} className="grid grid-cols-[160px_240px_1fr_140px] px-6 py-4 items-center glass-row rounded-sm">
+            <div
+              key={r.id}
+              className={`grid grid-cols-[160px_240px_1fr_140px] px-6 py-4 items-center glass-row rounded-sm ${
+                r.archived ? "border-l-2 border-amber-500/40 opacity-90" : ""
+              }`}
+            >
               <div className="flex flex-col">
                 <span className="font-label text-xs text-on-surface">
                   {new Date(r.created_at).toLocaleDateString("en-GH", {
@@ -197,6 +330,11 @@ export default function AuditLogTab() {
                   {new Date(r.created_at).toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" })}
                 </span>
                 <span className="text-[10px] text-slate-500 mt-1">{timeAgo(r.created_at)}</span>
+                {r.archived ? (
+                  <span className="mt-1 inline-block rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-label text-[9px] font-bold uppercase tracking-wide text-amber-200/90">
+                    Archived
+                  </span>
+                ) : null}
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-white/5">

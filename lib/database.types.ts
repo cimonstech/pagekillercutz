@@ -200,11 +200,18 @@ export type Database = {
           target_id: string | null;
           ip_address: string | null;
           created_at: string;
+          archived: boolean;
+          archived_at: string | null;
+          archived_by: string | null;
         };
         Insert: Omit<
           Database["public"]["Tables"]["audit_logs"]["Row"],
-          "id" | "created_at"
-        >;
+          "id" | "created_at" | "archived" | "archived_at" | "archived_by"
+        > & {
+          archived?: boolean;
+          archived_at?: string | null;
+          archived_by?: string | null;
+        };
         Update: Partial<Database["public"]["Tables"]["audit_logs"]["Row"]>;
         Relationships: [];
       };
@@ -257,6 +264,42 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          type: string;
+          recipient_email: string | null;
+          recipient_phone: string | null;
+          channel: string;
+          status: string;
+          subject: string | null;
+          body: string | null;
+          error_message: string | null;
+          retry_count: number | null;
+          booking_id: string | null;
+          order_id: string | null;
+          created_at: string;
+          sent_at: string | null;
+          failed_at: string | null;
+        };
+        Insert: {
+          type: string;
+          channel: string;
+          status?: string;
+          recipient_email?: string | null;
+          recipient_phone?: string | null;
+          subject?: string | null;
+          body?: string | null;
+          error_message?: string | null;
+          retry_count?: number | null;
+          booking_id?: string | null;
+          order_id?: string | null;
+          sent_at?: string | null;
+          failed_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -282,6 +325,8 @@ export type OrderItem = {
   colour: string;
   qty: number;
   price: number;
+  /** Persisted from checkout for order history / UI (R2 or CDN URL). */
+  image_url?: string | null;
 };
 
 export type AlbumTrack = {

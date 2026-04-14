@@ -7,6 +7,7 @@ import type { Database } from "@/lib/database.types";
 import { writeAuditLog } from "@/lib/writeAuditLog";
 import { timeAgo } from "@/lib/timeAgo";
 import { useAdminToast } from "@/hooks/useAdminToast";
+import { useAdminStore } from "@/lib/store/adminStore";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
@@ -28,6 +29,7 @@ type OverviewData = {
 
 export default function OverviewTab() {
   const router = useRouter();
+  const staffRole = useAdminStore((s) => s.role);
   const { showToast, ToastComponent } = useAdminToast();
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -119,8 +121,8 @@ export default function OverviewTab() {
 
   const [roleBadge, setRoleBadge] = useState<"super" | "admin">("admin");
   useEffect(() => {
-    setRoleBadge(localStorage.getItem("adminRole") === "super_admin" ? "super" : "admin");
-  }, []);
+    setRoleBadge(staffRole === "super_admin" ? "super" : "admin");
+  }, [staffRole]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning." : hour < 17 ? "Good afternoon." : "Good evening.";

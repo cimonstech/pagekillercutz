@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { PAGE_ICON_URL } from "@/lib/constants";
+import { useCartStore } from "@/lib/store/cartStore";
 
 interface MobileTopBarProps {
   onAvatarTap: () => void;
@@ -11,6 +13,8 @@ interface MobileTopBarProps {
 
 export default function MobileTopBar({ onAvatarTap }: MobileTopBarProps) {
   const { user, loading } = useAuth();
+  const itemCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.qty, 0));
+  const setCartOpen = useCartStore((s) => s.setIsOpen);
 
   const getInitials = (): string => {
     if (!user) return "";
@@ -82,7 +86,49 @@ export default function MobileTopBar({ onAvatarTap }: MobileTopBarProps) {
         </span>
       </Link>
 
-      <div style={{ marginLeft: "12px", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+      <div style={{ marginLeft: "12px", display: "flex", justifyContent: "flex-end", flexShrink: 0, gap: "8px" }}>
+        <button
+          type="button"
+          onClick={() => setCartOpen(true)}
+          style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "50%",
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(255,255,255,0.05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "rgba(255,255,255,0.85)",
+            position: "relative",
+            cursor: "pointer",
+          }}
+          aria-label="Open cart"
+        >
+          <ShoppingCart size={16} />
+          {itemCount > 0 ? (
+            <span
+              style={{
+                position: "absolute",
+                top: "-4px",
+                right: "-4px",
+                minWidth: "16px",
+                height: "16px",
+                padding: "0 4px",
+                borderRadius: "999px",
+                background: "#00BFFF",
+                color: "#000",
+                fontFamily: "Inter, sans-serif",
+                fontSize: "10px",
+                fontWeight: 700,
+                lineHeight: "16px",
+                textAlign: "center",
+              }}
+            >
+              {itemCount > 99 ? "99+" : itemCount}
+            </span>
+          ) : null}
+        </button>
         {loading ? (
           <div
             style={{

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AnimateIn from "@/components/ui/AnimateIn";
 import type { Database } from "@/lib/database.types";
+import { resolveEventImageUrl } from "@/lib/eventImages";
 
 const FILTERS = ["All", "Festival", "Wedding", "Corporate", "Club Night"] as const;
 type Filter = (typeof FILTERS)[number];
@@ -71,7 +72,7 @@ export default function EventsPageClient() {
     <div className="px-4 py-10 pb-24 sm:px-8 lg:px-12">
       {/* Header */}
       <header className="mb-10">
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tighter text-white mb-2">Live Dates</h1>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-display-title text-white mb-2">Live Dates</h1>
         <p className="text-on-surface-variant text-sm max-w-xl">
           Experience the energy of Page KillerCutz live. From intimate club sets to massive festival stages.
         </p>
@@ -114,7 +115,7 @@ export default function EventsPageClient() {
       ) : (
         <AnimateIn stagger={0.08} className="grid grid-cols-1 gap-6 mb-14 md:grid-cols-2 lg:grid-cols-3">
           {events.map((ev) => {
-            const img = ev.media_urls?.[0];
+            const img = resolveEventImageUrl(ev.media_urls?.[0] ?? null);
             return (
               <Link
                 key={ev.id}
@@ -138,6 +139,8 @@ export default function EventsPageClient() {
                         fill
                         className="object-cover opacity-100"
                         sizes="(max-width: 768px) 100vw, 33vw"
+                        unoptimized
+                        referrerPolicy="no-referrer"
                       />
                     ) : (
                       <span className="text-6xl transition-transform duration-500 group-hover:scale-110">

@@ -284,7 +284,7 @@ export default function MusicPage() {
               </span>
               <span className="font-label text-[10px] text-primary uppercase tracking-widest">Verified Artist</span>
             </div>
-            <h1 className="kc-music-title font-display text-3xl sm:text-5xl lg:text-7xl uppercase tracking-tighter leading-none text-white">
+            <h1 className="kc-music-title font-display text-3xl sm:text-5xl lg:text-7xl uppercase tracking-display-title leading-none text-white">
               Page KillerCutz
             </h1>
             <div className="kc-music-meta flex gap-6">
@@ -303,7 +303,7 @@ export default function MusicPage() {
             </div>
           </div>
 
-          <div className="kc-music-actions flex gap-3">
+          <div className="kc-music-actions flex flex-nowrap gap-3">
             <button
               type="button"
               className="pl-6 pr-5 py-2.5 bg-primary text-on-primary-fixed font-headline font-bold text-sm uppercase tracking-widest rounded-full active:scale-[0.96] transition-transform duration-150 ease-out glow-btn flex items-center gap-2"
@@ -332,9 +332,12 @@ export default function MusicPage() {
               </span>
               Play All
             </button>
-            <button className="px-6 py-2.5 shadow-border text-on-surface font-headline font-bold text-sm uppercase tracking-widest rounded-full hover:bg-white/5 transition-[background-color,box-shadow]">
-              Follow
-            </button>
+            <Link
+              href="/about"
+              className="px-6 py-2.5 shadow-border text-on-surface font-headline font-bold text-sm uppercase tracking-widest rounded-full hover:bg-white/5 transition-[background-color,box-shadow] whitespace-nowrap"
+            >
+              About the DJ
+            </Link>
           </div>
         </div>
       </section>
@@ -486,7 +489,7 @@ export default function MusicPage() {
               </div>
               <div className="flex-1">
                 <span className="font-label text-[10px] text-primary uppercase tracking-widest">Now Featured</span>
-                <h2 className="font-display mt-1 mb-4 text-3xl uppercase tracking-tighter text-white sm:text-5xl">
+                <h2 className="font-display mt-1 mb-4 text-3xl uppercase tracking-display-title text-white sm:text-5xl">
                   {featuredRow.title}
                 </h2>
                 {featuredRow.description ? (

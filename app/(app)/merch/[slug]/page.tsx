@@ -35,6 +35,7 @@ export default function MerchProductPage() {
 
   const addItem = useCartStore((s) => s.addItem);
   const setCartOpen = useCartStore((s) => s.setIsOpen);
+  const autoOpenOnAdd = useCartStore((s) => s.autoOpenOnAdd);
 
   const [product, setProduct] = useState<ProductRow | null>(null);
   const [similarProducts, setSimilarProducts] = useState<ProductRow[]>([]);
@@ -125,7 +126,9 @@ export default function MerchProductPage() {
     });
     setAddSuccess(true);
     setTimeout(() => setAddSuccess(false), 1500);
-    setTimeout(() => setCartOpen(true), 800);
+    if (autoOpenOnAdd) {
+      setTimeout(() => setCartOpen(true), 800);
+    }
   };
 
   const quickAddSimilar = (p: ProductRow) => {
@@ -141,7 +144,9 @@ export default function MerchProductPage() {
       qty: 1,
       image_url: p.image_url,
     });
-    setTimeout(() => setCartOpen(true), 400);
+    if (autoOpenOnAdd) {
+      setTimeout(() => setCartOpen(true), 400);
+    }
   };
 
   if (loading) {

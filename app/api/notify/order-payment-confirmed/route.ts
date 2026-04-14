@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { sendEmail } from "@/lib/notify/email";
 import * as ET from "@/lib/notify/emailTemplates";
 import { sendSMS } from "@/lib/notify/sms";
@@ -11,6 +12,9 @@ const BASE = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { orderId } = (await request.json()) as { orderId?: string };
     if (!orderId) {
       return Response.json({ error: "orderId required" }, { status: 400 });

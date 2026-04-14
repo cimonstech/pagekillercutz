@@ -81,7 +81,6 @@ export default function AppSidebar() {
 
   const onLogout = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem("adminRole");
     router.push("/sign-in");
   };
 

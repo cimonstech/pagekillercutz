@@ -1,8 +1,13 @@
 import { uploadToR2 } from "@/lib/r2";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { validateImageBytes } from "@/lib/validateFileBytes";
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -28,22 +33,28 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    if (!validateImageBytes(buffer)) {
+      return Response.json(
+        { error: "Invalid file. Upload a real JPG, PNG or WebP image." },
+        { status: 400 },
+      );
+    }
+
     const url = await uploadToR2(buffer, key, file.type || `image/${safeExt === "jpg" ? "jpeg" : safeExt}`);
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
-      console.error("[upload/music-cover] Generated URL is not absolute:", url);
+      logger.error("upload/music-cover", "Generated URL is not absolute", url);
       return Response.json(
         { error: "Invalid URL generated. Check R2_PUBLIC_URL in .env.local" },
         { status: 500 },
       );
     }
-    console.log("[upload/music-cover] Success:", url);
     logger.infoRaw("upload/music-cover", "[upload/music-cover] Uploaded:", url);
 
     return Response.json({ success: true, url });
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error("Upload failed");
-    console.error(
-      "[upload/music-cover]",
+    logger.errorRaw(
+      "upload/music-cover",
       JSON.stringify({
         name: error.name,
         message: error.message,

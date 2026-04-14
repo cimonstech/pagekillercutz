@@ -2,12 +2,14 @@ import PublicSidebar from "@/components/layout/PublicSidebar";
 import PublicTopBar from "@/components/layout/PublicTopBar";
 import PublicFooter from "@/components/layout/PublicFooter";
 import MobileLayout from "@/components/layout/MobileLayout";
+import CartDrawer from "@/components/merch/CartDrawer";
 import ShaderBackground from "@/components/ui/ShaderBackground";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "#08080F" }}>
       <ShaderBackground />
+      <CartDrawer />
 
       <div className="desktop-only">
         <PublicSidebar />

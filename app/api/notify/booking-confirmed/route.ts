@@ -1,4 +1,5 @@
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { sendEmail } from "@/lib/notify/email";
 import { bookingRowToData } from "@/lib/notify/bookingAdapter";
 import * as ET from "@/lib/notify/emailTemplates";
@@ -16,6 +17,9 @@ const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
 /** Trigger 2 — admin confirmed booking: client + DJ. */
 export async function POST(request: Request) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { bookingId } = (await request.json()) as { bookingId?: string };
     if (!bookingId) {
       return Response.json({ error: "bookingId required" }, { status: 400 });

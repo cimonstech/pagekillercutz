@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import {
   type LucideIcon,
   Calendar,
@@ -53,19 +52,14 @@ export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const role = useAdminStore((s) => s.role);
+  const staffEmail = useAdminStore((s) => s.staffEmail);
+  const setSession = useAdminStore((s) => s.setSession);
   const supabase = createClient();
-  const [footerEmail, setFooterEmail] = useState("");
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setFooterEmail(localStorage.getItem("adminEmail") || "");
-  }, []);
 
   const onLogout = async () => {
+    await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
     await supabase.auth.signOut();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("adminRole");
-      localStorage.removeItem("adminEmail");
-    }
+    setSession({ role: null, staffEmail: null });
     router.push("/admin/login");
   };
 
@@ -159,11 +153,11 @@ export default function AdminSidebar() {
             }}
             aria-hidden
           >
-            {emailInitials(footerEmail || "admin")}
+            {emailInitials(staffEmail || "admin")}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-mono text-[10px] text-[#5A6080]" title={footerEmail || undefined}>
-              {footerEmail.length > 16 ? `${footerEmail.slice(0, 16)}…` : footerEmail || "—"}
+            <p className="truncate font-mono text-[10px] text-[#5A6080]" title={staffEmail || undefined}>
+              {(staffEmail ?? "").length > 16 ? `${(staffEmail ?? "").slice(0, 16)}…` : staffEmail || "—"}
             </p>
             <span
               className="mt-0.5 inline-block rounded-full px-1.5 py-0 font-mono text-[9px] font-bold uppercase tracking-wide"

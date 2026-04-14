@@ -55,6 +55,7 @@ const glassInput =
 export default function AdminProfilePage() {
   const router = useRouter();
   const role = useAdminStore((s) => s.role);
+  const setSession = useAdminStore((s) => s.setSession);
   const { showToast, ToastComponent } = useAdminToast();
 
   const [user, setUser] = useState<User | null>(null);
@@ -186,10 +187,7 @@ export default function AdminProfilePage() {
     try {
       await supabase.auth.signOut({ scope: "global" });
       await fetch("/api/auth/admin-session", { method: "DELETE" });
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("adminRole");
-        localStorage.removeItem("adminEmail");
-      }
+      setSession({ role: null, staffEmail: null });
       router.push("/admin/login");
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Sign out failed", "error");
@@ -214,10 +212,7 @@ export default function AdminProfilePage() {
       const supabase = createClient();
       await supabase.auth.signOut();
       await fetch("/api/auth/admin-session", { method: "DELETE" });
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("adminRole");
-        localStorage.removeItem("adminEmail");
-      }
+      setSession({ role: null, staffEmail: null });
       router.push("/");
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Failed", "error");

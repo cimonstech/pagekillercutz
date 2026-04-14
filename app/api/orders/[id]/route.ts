@@ -1,13 +1,23 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
+import { requireAdmin } from "@/lib/requireAdmin";
 import type { Database } from "@/lib/database.types";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
-type OrderUpdate = Database["public"]["Tables"]["orders"]["Update"];
 type RouteContext = { params: Promise<{ id: string }> };
+
+const ALLOWED_ORDER_PATCH_FIELDS = new Set([
+  "fulfillment_status",
+  "payment_status",
+  "tracking_number",
+  "admin_notes",
+]);
 
 export async function GET(_: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase.from("orders").select("*").eq("id", id).single();
@@ -21,18 +31,31 @@ export async function GET(_: Request, { params }: RouteContext) {
 
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as OrderUpdate;
+    const raw = (await request.json()) as Record<string, unknown>;
 
-    // TODO: trigger SMS/email notification (Phase 7)
-    if (body.fulfillment_status === "shipped" || body.fulfillment_status === "delivered") {
-      logger.infoRaw("api/orders/[id]", "Fulfillment changed:", body.fulfillment_status);
+    const safeUpdate: Record<string, unknown> = {};
+    for (const key of Object.keys(raw)) {
+      if (ALLOWED_ORDER_PATCH_FIELDS.has(key)) {
+        safeUpdate[key] = raw[key];
+      }
+    }
+
+    if (Object.keys(safeUpdate).length === 0) {
+      return Response.json({ error: "No valid fields to update" }, { status: 400 });
+    }
+
+    if (safeUpdate.fulfillment_status === "shipped" || safeUpdate.fulfillment_status === "delivered") {
+      logger.infoRaw("api/orders/[id]", "Fulfillment changed:", safeUpdate.fulfillment_status);
     }
 
     const { data, error } = await supabase
       .from("orders")
-      .update({ ...body })
+      .update(safeUpdate)
       .eq("id", id)
       .select("*")
       .single();

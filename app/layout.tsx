@@ -6,6 +6,7 @@ import {
   Space_Mono,
   Syne,
 } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import GlobalPlayerMount from "@/components/layout/GlobalPlayerMount";
 import StructuredData from "@/components/seo/StructuredData";
@@ -180,6 +181,18 @@ export default function RootLayout({
       ].join(" ")}
     >
       <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-PV36S9TT1C"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-PV36S9TT1C');
+          `}
+        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

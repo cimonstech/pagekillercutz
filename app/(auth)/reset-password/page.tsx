@@ -37,7 +37,6 @@ async function smartRedirect(router: { push: (href: string) => void }) {
   const { data } = await supabase.from("admins").select("role, status").ilike("email", user.email).maybeSingle();
   const row = data as { role: string; status: string } | null;
   if (row?.status === "active" && (row.role === "admin" || row.role === "super_admin")) {
-    if (typeof window !== "undefined") localStorage.setItem("adminRole", row.role);
     router.push("/admin/overview");
     return;
   }

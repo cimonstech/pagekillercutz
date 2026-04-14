@@ -158,8 +158,8 @@ function DesktopUserAuth({
               void (async () => {
                 setDropdownOpen(false);
                 const supabase = createClient();
+                await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
                 await supabase.auth.signOut();
-                localStorage.removeItem("adminRole");
                 router.push("/");
               })();
             }}
@@ -394,8 +394,8 @@ function MobileNavDrawer({
                     void (async () => {
                       onClose();
                       const supabase = createClient();
+                      await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
                       await supabase.auth.signOut();
-                      localStorage.removeItem("adminRole");
                       router.push("/");
                     })();
                   }}

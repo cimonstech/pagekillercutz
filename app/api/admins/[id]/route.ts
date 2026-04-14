@@ -1,20 +1,42 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { logger } from "@/lib/logger";
+import { requireAdmin, requireSuperAdmin } from "@/lib/requireAdmin";
 import type { Database } from "@/lib/database.types";
 
 type AdminRow = Database["public"]["Tables"]["admins"]["Row"];
-type AdminUpdate = Database["public"]["Tables"]["admins"]["Update"];
 type RouteContext = { params: Promise<{ id: string }> };
+
+const ALLOWED_ADMIN_PATCH_FIELDS = new Set([
+  "last_login",
+  "status",
+  "role",
+]);
 
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
     const { id } = await params;
+    const raw = (await request.json()) as Record<string, unknown>;
+
+    // Only super_admin can change role or status; regular admins can only update last_login
+    const hasSensitiveFields = raw.role !== undefined || raw.status !== undefined;
+    const auth = hasSensitiveFields ? await requireSuperAdmin() : await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
+    const safeUpdate: Record<string, unknown> = {};
+    for (const key of Object.keys(raw)) {
+      if (ALLOWED_ADMIN_PATCH_FIELDS.has(key)) {
+        safeUpdate[key] = raw[key];
+      }
+    }
+
+    if (Object.keys(safeUpdate).length === 0) {
+      return Response.json({ error: "No valid fields to update" }, { status: 400 });
+    }
+
     const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as AdminUpdate;
-    const updatePayload = { ...body } as unknown as never;
     const { data, error } = await supabase
       .from("admins")
-      .update(updatePayload)
+      .update(safeUpdate as never)
       .eq("id", id)
       .select("*")
       .single();
@@ -28,6 +50,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
 export async function DELETE(_: Request, { params }: RouteContext) {
   try {
+    const auth = await requireSuperAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { id } = await params;
     const supabase = getSupabaseAdmin();
 

@@ -45,7 +45,7 @@ export default function MaintenancePage() {
             </div>
             <div className="absolute -right-4 top-0 w-16 h-1 bg-outline/20 origin-left rotate-45 rounded-full" />
           </div>
-          <h1 className="font-display font-extrabold text-[56px] leading-[0.95] tracking-tight text-white mb-6 uppercase">We&apos;re Setting Up <br />the Next Set.</h1>
+          <h1 className="font-display font-extrabold text-[56px] leading-[0.95] tracking-display-title text-white mb-6 uppercase">We&apos;re Setting Up <br />the Next Set.</h1>
           <p className="font-headline text-on-surface-variant text-xl mb-12 max-w-lg">Page KillerCutz is currently undergoing maintenance. We&apos;ll be back shortly with a refined experience.</p>
           <div className="w-full max-w-md bg-surface-container-low/40 backdrop-blur-xl border-l-2 border-primary-container p-6 mb-8 text-left">
             <p className="italic text-on-surface/90 font-medium">&quot;Upgrading our digital racks to handle higher fidelity stream processing and artist dashboard integrations.&quot;</p>
@@ -55,7 +55,7 @@ export default function MaintenancePage() {
             <Link className="group flex items-center gap-2" href="mailto:support@pagekillercutz.com"><span className="material-symbols-outlined text-primary-container text-base group-hover:scale-110 transition-transform">alternate_email</span><span className="font-mono text-sm text-primary-container tracking-wider border-b border-transparent group-hover:border-primary-container transition-all">support@pagekillercutz.com</span></Link>
           </div>
         </main>
-        <footer className="absolute bottom-12 w-full flex justify-center"><div className="flex flex-col items-center gap-2 opacity-50"><span className="font-display font-black text-2xl text-white italic tracking-tighter">KILLERCUTZ</span><div className="h-[1px] w-8 bg-primary-container" /></div></footer>
+        <footer className="absolute bottom-12 w-full flex justify-center"><div className="flex flex-col items-center gap-2 opacity-50"><span className="font-display font-black text-2xl text-white italic tracking-display-title">KILLERCUTZ</span><div className="h-[1px] w-8 bg-primary-container" /></div></footer>
         <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-primary-container/5 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-primary-container/5 to-transparent pointer-events-none" />
       </div>

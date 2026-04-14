@@ -1,6 +1,11 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { emailsMatch, isActiveStaffAdmin } from "@/lib/playlistAccess";
+import { requireAdmin } from "@/lib/requireAdmin";
 import type { Database } from "@/lib/database.types";
+import { playlistPatchSchema } from "@/lib/validation/schemas";
+import { validate } from "@/lib/validation/validate";
 import { getPrimaryDjPhone } from "@/lib/notify/djPhones";
 import { notifyPlaylistLocked } from "@/lib/notify/dispatch";
 
@@ -8,17 +13,57 @@ type PlaylistRow = Database["public"]["Tables"]["playlists"]["Row"];
 type PlaylistUpdate = Database["public"]["Tables"]["playlists"]["Update"];
 type RouteContext = { params: Promise<{ eventId: string }> };
 
+async function assertPlaylistAccess(eventId: string, userEmail: string | undefined) {
+  if (!userEmail) {
+    return { ok: false as const, response: Response.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  const adminClient = getSupabaseAdmin();
+  const { data: booking } = await adminClient
+    .from("bookings")
+    .select("client_email")
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  const isAdmin = await isActiveStaffAdmin(userEmail);
+  const isOwner = booking ? emailsMatch(booking.client_email, userEmail) : false;
+
+  if (!isAdmin && !isOwner) {
+    return { ok: false as const, response: Response.json({ error: "Forbidden" }, { status: 403 }) };
+  }
+
+  return { ok: true as const, isAdmin };
+}
+
 export async function GET(_: Request, { params }: RouteContext) {
   try {
+    const supabaseUser = await createServerClient();
+    const {
+      data: { user },
+    } = await supabaseUser.auth.getUser();
+
+    if (!user?.email) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { eventId } = await params;
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase
+
+    const { data: playlist, error } = await supabase
       .from("playlists")
       .select("*")
       .eq("event_id", eventId)
-      .single();
+      .maybeSingle();
+
     if (error) throw error;
-    return Response.json({ playlist: data as PlaylistRow });
+    if (!playlist) {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const access = await assertPlaylistAccess(eventId, user.email);
+    if (!access.ok) return access.response;
+
+    return Response.json({ playlist: playlist as PlaylistRow });
   } catch (error) {
     logger.errorRaw("api/playlists/[eventId]", "Error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -27,9 +72,42 @@ export async function GET(_: Request, { params }: RouteContext) {
 
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
+    const supabaseUser = await createServerClient();
+    const {
+      data: { user },
+    } = await supabaseUser.auth.getUser();
+
+    if (!user?.email) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { eventId } = await params;
     const supabase = getSupabaseAdmin();
-    const body = (await request.json()) as PlaylistUpdate;
+
+    const { data: existing, error: existingErr } = await supabase
+      .from("playlists")
+      .select("*")
+      .eq("event_id", eventId)
+      .maybeSingle();
+    if (existingErr) throw existingErr;
+    if (!existing) {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const access = await assertPlaylistAccess(eventId, user.email);
+    if (!access.ok) return access.response;
+
+    const isAdmin = access.isAdmin;
+    if (!isAdmin && existing.locked) {
+      return Response.json({ error: "Playlist is locked." }, { status: 403 });
+    }
+
+    const raw = await request.json();
+    const parsed = validate(playlistPatchSchema, raw);
+    if (!parsed.success) {
+      return Response.json({ error: parsed.error, details: parsed.details }, { status: 400 });
+    }
+    const body = parsed.data;
     const lockChangedToTrue = body.locked === true;
 
     const payload: PlaylistUpdate = {
@@ -52,11 +130,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     if (error) throw error;
 
     if (lockChangedToTrue) {
-      const { data: booking } = await supabase
-        .from("bookings")
-        .select("*")
-                    .eq("event_id", eventId)
-        .single();
+      const { data: booking } = await supabase.from("bookings").select("*").eq("event_id", eventId).single();
       if (booking) {
         void notifyPlaylistLocked({
           eventId: booking.event_id,
@@ -82,6 +156,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
 export async function DELETE(_: Request, { params }: RouteContext) {
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) return auth.errorResponse;
+
     const { eventId } = await params;
     const supabase = getSupabaseAdmin();
     const { error } = await supabase.from("playlists").delete().eq("event_id", eventId);

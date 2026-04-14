@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useCartStore } from "@/lib/store/cartStore"
 import {
   Home, Music, ShoppingBag
 } from "lucide-react"
@@ -16,6 +17,7 @@ export default function MobileTabBar({
   onMoreTap,
 }: MobileTabBarProps) {
   const pathname = usePathname()
+  const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.qty, 0))
 
   const isActive = (href: string) =>
     href === "/"
@@ -238,6 +240,7 @@ export default function MobileTabBar({
                   ? "2px solid #00BFFF"
                   : "2px solid transparent",
                 transition: "all 150ms ease",
+                position: "relative",
               }}
             >
               <ShoppingBag
@@ -245,6 +248,28 @@ export default function MobileTabBar({
                 color={iconColor("/merch")}
                 strokeWidth={1.8}
               />
+              {cartCount > 0 ? (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "calc(50% - 18px)",
+                    minWidth: "16px",
+                    height: "16px",
+                    padding: "0 4px",
+                    borderRadius: "999px",
+                    background: "#00BFFF",
+                    color: "#000",
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    lineHeight: "16px",
+                    textAlign: "center",
+                  }}
+                >
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              ) : null}
               <span style={{
                 fontFamily: "Inter, sans-serif",
                 fontSize: "10px",
