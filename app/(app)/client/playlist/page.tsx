@@ -4,7 +4,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock, Info, Loader2, Pencil, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import { createPortal } from "react-dom";
 import type { Database } from "@/lib/database.types";
 import { useAuth } from "@/hooks/useAuth";
 import { useStaffAdmin } from "@/hooks/useStaffAdmin";
@@ -136,6 +147,25 @@ function formatDuration(seconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+/** Stable JSON for dirty detection vs last load/save */
+function playlistStateSignature(
+  genres: string[],
+  vibe: string | null,
+  mustPlay: TrackRow[],
+  doNotPlay: TrackRow[],
+  timeline: TimelineMoment[],
+  notes: string,
+) {
+  return JSON.stringify({
+    genres,
+    vibe,
+    must_play: mustPlay,
+    do_not_play: doNotPlay,
+    timeline,
+    extra_notes: notes.trim() || null,
+  });
+}
+
 function PlaylistSkeleton() {
   return (
     <div className="animate-pulse space-y-6">
@@ -150,26 +180,100 @@ function PlaylistSkeleton() {
 }
 
 function InfoTooltip({ children, placement = "below" }: { children: ReactNode; placement?: "below" | "beside-right" }) {
-  const panelPos =
-    placement === "beside-right"
-      ? "left-full top-0 ml-2"
-      : "left-0 top-[calc(100%+8px)]";
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    cancelClose();
+    closeTimerRef.current = window.setTimeout(() => setOpen(false), 140) as number;
+  }, [cancelClose]);
+
+  const measure = useCallback(() => {
+    const root = wrapRef.current;
+    const btn = root?.querySelector("button");
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const pad = 8;
+    const w = 300;
+    let left = placement === "beside-right" ? r.right + pad : r.left;
+    let top = placement === "beside-right" ? r.top : r.bottom + pad;
+    if (left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
+    if (top + 320 > window.innerHeight - 8) top = Math.max(8, r.top - 320 - pad);
+    setCoords({ top, left });
+  }, [placement]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    measure();
+  }, [open, measure]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onScroll = () => measure();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", measure);
+    };
+  }, [open, measure]);
+
+  const panel =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            role="tooltip"
+            className="fixed z-[100000] w-[min(300px,calc(100vw-16px))] max-h-[min(60vh,420px)] overflow-y-auto rounded-xl border border-white/[0.12] bg-[rgba(10,10,18,0.98)] p-3 text-left shadow-[0_24px_64px_rgba(0,0,0,0.65)] backdrop-blur-[24px]"
+            style={{ top: coords.top, left: coords.left }}
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
+          >
+            {children}
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div className="group relative inline-flex">
-      <button
-        type="button"
-        className="rounded p-0.5 text-on-surface-variant/50 outline-none transition-colors hover:text-on-surface-variant focus-visible:ring-1 focus-visible:ring-primary-container"
-        aria-label="More information"
-      >
-        <Info className="size-3.5" strokeWidth={2} />
-      </button>
+    <>
       <div
-        className={`invisible absolute z-[10000] w-[280px] rounded-xl border border-white/[0.10] bg-[rgba(12,12,20,0.98)] p-3 text-left opacity-0 shadow-[0_16px_48px_rgba(0,0,0,0.60)] backdrop-blur-[20px] transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 ${panelPos}`}
-        role="tooltip"
+        ref={wrapRef}
+        className="relative inline-flex"
+        onMouseEnter={() => {
+          cancelClose();
+          setOpen(true);
+          requestAnimationFrame(measure);
+        }}
+        onMouseLeave={scheduleClose}
+        onFocus={() => {
+          cancelClose();
+          setOpen(true);
+          requestAnimationFrame(measure);
+        }}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) scheduleClose();
+        }}
       >
-        {children}
+        <button
+          type="button"
+          className="rounded p-0.5 text-on-surface-variant/50 outline-none transition-colors hover:text-on-surface-variant focus-visible:ring-1 focus-visible:ring-primary-container"
+          aria-label="More information"
+          aria-expanded={open}
+        >
+          <Info className="size-3.5" strokeWidth={2} />
+        </button>
       </div>
-    </div>
+      {panel}
+    </>
   );
 }
 
@@ -363,7 +467,10 @@ function ClientPlaylistContent() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  /** Brief highlight after a successful save (distinct from the persistent “synced” strip). */
+  const [recentlySavedAt, setRecentlySavedAt] = useState<number | null>(null);
+  /** Last known server-aligned snapshot; when current state matches, show synced UI. */
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
   const [genres, setGenres] = useState<string[]>([]);
   const [vibe, setVibe] = useState<string | null>(null);
@@ -436,6 +543,13 @@ function ClientPlaylistContent() {
   }, [staffAdmin, searchParams]);
 
   useEffect(() => {
+    if (staffAdmin || loading || !booking) return;
+    setSavedSnapshot(playlistStateSignature(genres, vibe, mustPlay, doNotPlay, timeline, notes));
+    // Intentionally not depending on genres/… — only re-baseline after load or event switch, not on each keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- snapshot matches server after fetch, not live edits
+  }, [staffAdmin, loading, booking?.event_id]);
+
+  useEffect(() => {
     if (staffAdmin) return;
     const id = searchParams.get("eventId")?.trim();
     if (!id) return;
@@ -481,8 +595,10 @@ function ClientPlaylistContent() {
 
       if (data.playlist) setPlaylist(data.playlist);
 
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
+      const sig = playlistStateSignature(genres, vibe, mustPlay, doNotPlay, timeline, notes);
+      setSavedSnapshot(sig);
+      setRecentlySavedAt(Date.now());
+      window.setTimeout(() => setRecentlySavedAt(null), 3200);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -494,6 +610,11 @@ function ClientPlaylistContent() {
     booking?.event_name?.trim() ||
     booking?.event_type ||
     "Your Event";
+
+  const isInSyncWithServer = useMemo(() => {
+    if (savedSnapshot === null) return false;
+    return playlistStateSignature(genres, vibe, mustPlay, doNotPlay, timeline, notes) === savedSnapshot;
+  }, [savedSnapshot, genres, vibe, mustPlay, doNotPlay, timeline, notes]);
 
   const toggleGenre = (g: string) => {
     if (locked) return;
@@ -605,18 +726,22 @@ function ClientPlaylistContent() {
 
   return (
     <main className="relative z-[1] w-full min-w-0 pb-8 text-on-surface">
-      <header className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
-        <div>
-          <h1 className="font-headline text-2xl font-bold tracking-tight text-[#00BFFF]">Playlist Portal</h1>
-          <p className="mt-1 font-body text-sm text-on-surface-variant">Curate your event playlist — changes sync to Page KillerCutz.</p>
+      <header className="sticky top-0 z-[95] -mx-8 mb-6 border-b border-white/[0.08] bg-[#08080F]/90 px-8 py-4 backdrop-blur-xl supports-[backdrop-filter]:bg-[#08080F]/80">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="font-headline text-2xl font-bold tracking-tight text-[#00BFFF]">Playlist Portal</h1>
+            <p className="mt-1 font-body text-sm text-on-surface-variant">
+              Curate your event playlist — changes sync to Page KillerCutz.
+            </p>
+          </div>
+          <Link
+            href="/client/dashboard"
+            className="inline-flex shrink-0 items-center gap-2 rounded-sm border border-white/10 bg-white/[0.06] px-4 py-2 font-headline text-xs font-semibold text-primary shadow-[0_4px_24px_rgba(0,0,0,0.35)] transition-colors hover:border-primary/30 hover:bg-primary/10"
+          >
+            <span className="material-symbols-outlined text-base">arrow_back</span>
+            Back to dashboard
+          </Link>
         </div>
-        <Link
-          href="/client/dashboard"
-          className="inline-flex items-center gap-2 rounded-sm border border-white/10 bg-white/[0.05] px-4 py-2 font-headline text-xs font-semibold text-primary transition-colors hover:border-primary/30 hover:bg-primary/10"
-        >
-          <span className="material-symbols-outlined text-base">arrow_back</span>
-          Back to dashboard
-        </Link>
       </header>
 
       {fetchError ? (
@@ -636,7 +761,7 @@ function ClientPlaylistContent() {
         ) : null}
 
         <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 lg:grid-cols-[62%_38%]">
-          <div className="relative flex flex-col gap-6 overflow-visible">
+          <div className="relative order-2 flex flex-col gap-6 overflow-visible lg:order-1">
             {!loading && locked ? (
               <div className="w-full border-l-[3px] border-[#00BFFF] bg-white/[0.03] px-6 py-4">
                 <div className="flex items-start gap-3">
@@ -659,8 +784,8 @@ function ClientPlaylistContent() {
               </>
             ) : (
               <>
-                {/* Genres */}
-                <section className={`${glass} relative`}>
+                {/* Genres — z above must-play so Info tooltips aren’t covered */}
+                <section className={`${glass} relative z-[54]`}>
                   {locked ? (
                     <span className="material-symbols-outlined absolute right-6 top-6 text-on-surface-variant/40">lock</span>
                   ) : null}
@@ -718,7 +843,7 @@ function ClientPlaylistContent() {
                 </section>
 
                 {/* Vibe */}
-                <section className={`${glass} relative`}>
+                <section className={`${glass} relative z-[55]`}>
                   {locked ? (
                     <span className="material-symbols-outlined absolute right-6 top-6 text-on-surface-variant/40">lock</span>
                   ) : null}
@@ -765,8 +890,8 @@ function ClientPlaylistContent() {
                   </div>
                 </section>
 
-                {/* Must-play */}
-                <section className={`${glass} relative z-10 overflow-visible`}>
+                {/* Must-play — keep above blacklist + timeline when dropdowns overlap */}
+                <section className={`${glass} relative z-50 overflow-visible`}>
                   {locked ? (
                     <span className="material-symbols-outlined absolute right-6 top-6 text-on-surface-variant/40">lock</span>
                   ) : null}
@@ -902,8 +1027,8 @@ function ClientPlaylistContent() {
                   ) : null}
                 </section>
 
-                {/* Do-not-play */}
-                <section className={`${glass} relative z-[9] overflow-visible`}>
+                {/* Do-not-play — above Event Timeline so search dropdown isn’t covered */}
+                <section className={`${glass} relative z-40 overflow-visible`}>
                   {locked ? (
                     <span className="material-symbols-outlined absolute right-6 top-6 text-on-surface-variant/40">lock</span>
                   ) : null}
@@ -1025,8 +1150,8 @@ function ClientPlaylistContent() {
                   ) : null}
                 </section>
 
-                {/* Timeline */}
-                <section className={`${glass} relative`}>
+                {/* Timeline — below must-play + blacklist stacking so time picker doesn’t paint over them */}
+                <section className={`${glass} relative z-30`}>
                   {locked ? (
                     <span className="material-symbols-outlined absolute right-6 top-6 text-on-surface-variant/40">lock</span>
                   ) : null}
@@ -1149,15 +1274,25 @@ function ClientPlaylistContent() {
             )}
           </div>
 
-          {/* Sticky summary */}
-          <aside className="lg:sticky lg:top-6">
+          {/* Summary: first on mobile so sticky event bar + save are reachable; sticky on lg */}
+          <aside className="order-1 self-start lg:order-2 lg:sticky lg:top-6 lg:z-10">
             {loading ? (
               <StickySkeleton />
             ) : booking ? (
-              <div className={`${glass} relative overflow-hidden border-white/10 p-8 shadow-2xl`}>
+              <>
+                <div className="sticky top-0 z-[90] mb-4 flex items-start justify-between gap-3 rounded-2xl border border-white/[0.10] bg-[#0a0a14]/95 px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.55)] backdrop-blur-xl lg:hidden">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-headline text-base font-semibold leading-tight text-white">{eventTitle}</p>
+                    <p className="mt-1 font-mono text-[10px] text-[#00BFFF]">{booking.event_id}</p>
+                  </div>
+                  <span className="shrink-0 rounded-sm border border-secondary/25 bg-secondary/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-secondary">
+                    {booking.event_type}
+                  </span>
+                </div>
+                <div className={`${glass} relative overflow-hidden border-white/10 p-8 shadow-2xl`}>
                 <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 bg-primary/10 blur-[100px]" />
                 <div className="relative z-10">
-                  <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+                  <div className="mb-6 hidden flex-wrap items-start justify-between gap-3 lg:flex">
                     <div>
                       <h2 className="mb-1 font-headline text-3xl font-semibold tracking-tight text-on-surface">{eventTitle}</h2>
                       <div className="flex flex-wrap items-center gap-2">
@@ -1220,33 +1355,47 @@ function ClientPlaylistContent() {
                     </div>
                   ) : (
                     <>
-                      <button
-                        type="button"
-                        disabled={saving || !booking}
-                        onClick={() => void handleSave()}
-                        className={[
-                          "flex w-full items-center justify-center gap-2 rounded-sm py-4 font-headline text-lg font-bold uppercase tracking-widest transition-transform active:scale-[0.98]",
-                          saveSuccess
-                            ? "bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.35)]"
-                            : saving
+                      {isInSyncWithServer && !saving ? (
+                        <div
+                          className={[
+                            "flex w-full flex-col items-center justify-center gap-2 rounded-xl border px-4 py-5 text-center transition-[box-shadow,transform] duration-300",
+                            recentlySavedAt
+                              ? "border-emerald-400/50 bg-emerald-950/50 shadow-[0_0_32px_rgba(52,211,153,0.2)]"
+                              : "border-emerald-500/25 bg-emerald-950/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+                          ].join(" ")}
+                        >
+                          <span className="material-symbols-outlined text-3xl text-emerald-400/90" style={{ fontVariationSettings: "'FILL' 1" }}>
+                            cloud_done
+                          </span>
+                          <div>
+                            <p className="font-headline text-sm font-bold uppercase tracking-[0.2em] text-emerald-100/95">Playlist saved</p>
+                            <p className="mt-1 font-body text-xs leading-relaxed text-emerald-200/70">
+                              In sync with Page KillerCutz — edit anytime, then save again to update.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={saving || !booking}
+                          onClick={() => void handleSave()}
+                          className={[
+                            "flex w-full items-center justify-center gap-2 rounded-xl py-4 font-headline text-lg font-bold uppercase tracking-widest transition-transform active:scale-[0.98]",
+                            saving
                               ? "cursor-not-allowed bg-primary-container/40 text-on-primary-container opacity-70"
-                              : "bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(0,191,255,0.3)]",
-                        ].join(" ")}
-                      >
-                        {saving ? (
-                          <>
-                            <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
-                            SAVING…
-                          </>
-                        ) : saveSuccess ? (
-                          <>
-                            <span className="material-symbols-outlined text-xl">check_circle</span>
-                            SAVED!
-                          </>
-                        ) : (
-                          "SAVE PLAYLIST"
-                        )}
-                      </button>
+                              : "bg-primary-container text-on-primary-container shadow-[0_0_24px_rgba(0,191,255,0.35)] hover:shadow-[0_0_32px_rgba(0,191,255,0.45)]",
+                          ].join(" ")}
+                        >
+                          {saving ? (
+                            <>
+                              <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                              Saving…
+                            </>
+                          ) : (
+                            "Save playlist"
+                          )}
+                        </button>
+                      )}
                       {saveError ? (
                         <p className="mt-3 text-center font-body text-xs text-error">{saveError}</p>
                       ) : null}
@@ -1254,6 +1403,7 @@ function ClientPlaylistContent() {
                   )}
                 </div>
               </div>
+              </>
             ) : (
               <div className={`${glass} p-8 text-sm text-on-surface-variant`}>No booking data.</div>
             )}

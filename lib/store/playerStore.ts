@@ -26,12 +26,12 @@ type PlayerState = {
   currentTime: number;
   volume: number;
   isVisible: boolean;
-  /** When true, full bottom bar is hidden and a small circular control shows (see BottomPlayerBar). */
-  playerBarMinimized: boolean;
+  /** When true on desktop: floating mini player. On mobile: compact bottom strip (see BottomPlayerBar). */
+  isMinimized: boolean;
   queue: PlayerTrack[];
   shuffle: boolean;
   setTrack: (track: PlayerTrack) => Promise<void>;
-  setPlayerBarMinimized: (minimized: boolean) => void;
+  setMinimized: (minimized: boolean) => void;
   togglePlay: () => void;
   setIsPlaying: (playing: boolean) => void;
   setVolume: (v: number) => void;
@@ -68,7 +68,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTime: 0,
   volume: 0.85,
   isVisible: false,
-  playerBarMinimized: false,
+  isMinimized: false,
   queue: [],
   shuffle: false,
 
@@ -90,6 +90,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       }
     }
     const nextTrack = { ...track, audioUrl };
+    const isMobile =
+      typeof window !== "undefined" && window.innerWidth < 768;
     set({
       currentTrack: nextTrack,
       current: nextTrack,
@@ -98,10 +100,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       progress: 0,
       currentTime: 0,
       duration: trackDuration(nextTrack),
+      ...(isMobile ? { isMinimized: true } : {}),
     });
   },
 
-  setPlayerBarMinimized: (minimized) => set({ playerBarMinimized: minimized }),
+  setMinimized: (minimized) => set({ isMinimized: minimized }),
 
   togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
   setIsPlaying: (playing) => set({ isPlaying: playing }),
@@ -147,7 +150,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       currentTime: 0,
       duration: 0,
       isVisible: false,
-      playerBarMinimized: false,
+      isMinimized: false,
     }),
   skipNext: () => get().nextTrack(),
   skipPrev: () => get().prevTrack(),

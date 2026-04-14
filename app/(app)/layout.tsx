@@ -11,7 +11,10 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#08080F] font-body text-on-surface antialiased">
+    <div
+      className="min-h-screen bg-[#08080F] font-body text-on-surface antialiased"
+      style={{ ["--player-bottom" as string]: "60px" }}
+    >
       <AppSidebar />
       <CartDrawer />
       <main

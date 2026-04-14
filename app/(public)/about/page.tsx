@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
@@ -43,6 +44,17 @@ const SOCIAL_LINKS = [
   { name: "SoundCloud", href: "#", Icon: IconSoundCloud },
   { name: "TikTok", href: "#", Icon: IconTiktok },
 ] as const;
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "About Page KillerCutz — Accra Scratch DJ & Music Producer",
+  },
+  description:
+    "Page KillerCutz is a professional scratch DJ and music producer from Accra, Ghana. With 12+ years of experience and 500+ events, he has performed at Republic Bank Excellence Ball, Stanbic Bank durbar, Bank of Ghana eCedi Hackathon dinner, and events for Helios Towers. Followed by Kofi Kinaata.",
+  alternates: {
+    canonical: "https://pagekillercutz.com/about",
+  },
+};
 
 const PRESS_ASSETS = [
   { icon: "token", title: "Hi-Res Logo", desc: "Vector and PNG formats (Black/White/Cyan)", cta: "DOWNLOAD .ZIP (12MB)" },
@@ -100,6 +112,23 @@ export default function AboutPage() {
             <div className="space-y-5 text-on-surface-variant leading-[1.8] text-sm max-w-2xl">
               <p>{DJ_INFO.bio}</p>
               <p>{DJ_INFO.bioSecondary}</p>
+              <p>
+                Based in <strong className="text-on-surface/90">Accra, Greater Accra, Ghana</strong>, Page is available
+                across Ghana and beyond for West Africa bookings. His sets blend{" "}
+                <strong className="text-on-surface/90">Afrobeats</strong>, <strong className="text-on-surface/90">Highlife</strong>,{" "}
+                <strong className="text-on-surface/90">Amapiano</strong>, and{" "}
+                <strong className="text-on-surface/90">scratch DJing</strong> into a signature sound for every crowd.
+              </p>
+              <p>
+                Notable stages include the <strong className="text-on-surface/90">Republic Bank Ghana Excellence Ball 2024</strong>,{" "}
+                <strong className="text-on-surface/90">Stanbic Bank Ghana Fabric Launch and Staff Durbar</strong>, the{" "}
+                <strong className="text-on-surface/90">Bank of Ghana eCedi Hackathon Award Dinner with EMTECH</strong>,{" "}
+                <strong className="text-on-surface/90">Helios Towers Ghana 15th anniversary</strong>,{" "}
+                <strong className="text-on-surface/90">Bank of America Ghana</strong>, and{" "}
+                <strong className="text-on-surface/90">OmniBSIC</strong> — trusted by brands that expect precision and
+                energy. He is followed by award-winning Ghanaian singer and songwriter{" "}
+                <strong className="text-on-surface/90">Kofi Kinaata</strong> on social platforms.
+              </p>
             </div>
 
             {/* Stats */}

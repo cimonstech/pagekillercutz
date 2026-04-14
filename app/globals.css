@@ -601,3 +601,23 @@ body {
   background: #ffffff;
   animation-delay: 0.03s;
 }
+
+/* Booking form: native <select> / date pickers on Windows often get a light popup with
+   inherited white text — invisible until hover. Force dark scheme + readable options. */
+.booking-form-native-controls select,
+.booking-form-native-controls input[type="date"],
+.booking-form-native-controls input[type="time"],
+.booking-form-native-controls input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+.booking-form-native-controls select option {
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+}
+
+.booking-form-native-controls select option:checked,
+.booking-form-native-controls select option:hover {
+  background-color: var(--color-surface-container-high);
+  color: #ffffff;
+}

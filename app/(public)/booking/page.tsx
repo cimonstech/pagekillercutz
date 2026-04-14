@@ -79,6 +79,9 @@ const MOCK_PACKAGES = [
 const inputClass =
   "w-full rounded-[10px] border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-[14px] text-white outline-none transition-[border-color,box-shadow] placeholder:text-white/35 focus:border-[#00BFFF] focus:shadow-[0_0_0_3px_rgba(0,191,255,0.10)] font-body";
 
+/** Native selects: pair with `.booking-form-native-controls` + globals.css so Windows/Chrome option lists stay readable */
+const selectInputClass = `${inputClass} cursor-pointer pr-10 [color-scheme:dark]`;
+
 /** Locked when logged in: name came from account metadata */
 const lockedInputClass =
   "w-full cursor-not-allowed rounded-[10px] border border-white/[0.05] bg-white/[0.03] py-3 pl-4 pr-10 text-[14px] text-white/50 outline-none focus:border-white/[0.05] focus:shadow-none font-body";
@@ -304,7 +307,7 @@ export default function BookingPage() {
       </nav>
 
       {currentStep === 1 && (
-        <section className="space-y-6">
+        <section className="booking-form-native-controls space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className={labelClass}>Full Name</label>
@@ -414,17 +417,17 @@ export default function BookingPage() {
             <div>
               <label className={labelClass}>Event Type</label>
               <select
-                className={`${inputClass} ${fieldErrors.eventType ? "border-[#FF4560]" : ""}`}
+                className={`${selectInputClass} ${fieldErrors.eventType ? "border-[#FF4560]" : ""}`}
                 value={bookingData.eventType}
                 onChange={(e) => setField("eventType", e.target.value)}
               >
                 <option value="">Select type</option>
-                <option>Wedding</option>
-                <option>Corporate</option>
-                <option>Festival</option>
-                <option>Club Night</option>
-                <option>Birthday</option>
-                <option>Other</option>
+                <option value="Wedding">Wedding</option>
+                <option value="Corporate">Corporate</option>
+                <option value="Festival">Festival</option>
+                <option value="Club Night">Club Night</option>
+                <option value="Birthday">Birthday</option>
+                <option value="Other">Other</option>
               </select>
               {fieldErrors.eventType ? (
                 <p className="mt-1 font-body text-[12px] text-[#FF4560]">{fieldErrors.eventType}</p>
