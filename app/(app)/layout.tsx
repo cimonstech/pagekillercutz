@@ -1,4 +1,5 @@
 import AppSidebar from "@/components/layout/AppSidebar";
+import MobileLayout from "@/components/layout/MobileLayout";
 import CartDrawer from "@/components/merch/CartDrawer";
 
 /**
@@ -11,21 +12,27 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className="min-h-screen bg-[#08080F] font-body text-on-surface antialiased"
-      style={{ ["--player-bottom" as string]: "60px" }}
-    >
-      <AppSidebar />
+    <div className="min-h-screen bg-[#08080F] font-body text-on-surface antialiased">
       <CartDrawer />
-      <main
-        className="min-h-screen min-w-0 pb-[var(--player-offset,0px)]"
-        style={{
-          marginLeft: 104,
-          padding: 32,
-        }}
-      >
-        {children}
-      </main>
+
+      <div className="desktop-only">
+        <AppSidebar />
+        <main
+          className="min-h-screen min-w-0 pb-[var(--player-offset,0px)]"
+          style={{
+            marginLeft: 104,
+            padding: 32,
+          }}
+        >
+          {children}
+        </main>
+      </div>
+
+      <div className="mobile-only">
+        <MobileLayout>
+          {children}
+        </MobileLayout>
+      </div>
     </div>
   );
 }

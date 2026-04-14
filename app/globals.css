@@ -121,6 +121,31 @@ body {
   font-family: var(--font-body);
 }
 
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .public-sidebar,
+  .app-sidebar {
+    display: none !important;
+  }
+}
+
 /* Used by SpinningVinyl (inline animation duration) — not reliant on Tailwind’s animate-spin */
 @keyframes spin {
   from {

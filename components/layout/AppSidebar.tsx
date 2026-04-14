@@ -97,7 +97,7 @@ export default function AppSidebar() {
   ] as const;
 
   return (
-    <aside style={PILL_STYLE} aria-label="App navigation">
+    <aside className="app-sidebar" style={PILL_STYLE} aria-label="App navigation">
       <nav className="flex flex-col items-center" style={{ gap: 4 }} aria-label="Primary">
         {topLinks.map(({ href, label, Icon }) => {
           const active = isNavActive(href, pathname);

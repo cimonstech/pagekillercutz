@@ -18,15 +18,6 @@ function isAuthShellPath(pathname: string) {
   return NO_PLAYER_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-/** Routes that use `app/(app)/layout.tsx` (mobile tab bar clearance). */
-function isAppPortalRoute(pathname: string) {
-  return (
-    pathname.startsWith("/client") ||
-    pathname.startsWith("/merch") ||
-    pathname.startsWith("/track-order")
-  );
-}
-
 /** Admin app mounts its own BottomPlayerBar in app/admin/layout.tsx (with padded main). */
 function isAdminAppPath(pathname: string) {
   return pathname.startsWith("/admin") && pathname !== "/admin/login";
@@ -39,12 +30,13 @@ export default function GlobalPlayerMount() {
   const isMinimized = usePlayerStore((s) => s.isMinimized);
 
   useEffect(() => {
-    const appTab = isAppPortalRoute(pathname);
-    const bottom = appTab ? "60px" : "0px";
-    document.documentElement.style.setProperty("--player-bottom", bottom);
-    return () => {
-      document.documentElement.style.removeProperty("--player-bottom");
+    const mq = window.matchMedia("(max-width: 767px)");
+    const apply = () => {
+      document.documentElement.style.setProperty("--player-bottom", mq.matches ? "88px" : "0px");
     };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
   }, [pathname]);
 
   useEffect(() => {
@@ -57,8 +49,7 @@ export default function GlobalPlayerMount() {
     const mq = window.matchMedia("(max-width: 767px)");
     const apply = () => {
       const mobile = mq.matches;
-      const appTab = isAppPortalRoute(pathname);
-      const pb = appTab ? 60 : 0;
+      const pb = mobile ? 88 : 0;
 
       if (mobile) {
         if (isMinimized) {

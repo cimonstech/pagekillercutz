@@ -79,7 +79,7 @@ export default function MerchPage() {
   };
 
   return (
-    <div className="min-h-full bg-[#08080F] pb-16 pt-2 text-on-surface">
+    <div className="mx-auto min-h-full max-w-screen-xl bg-[#08080F] px-3 pb-16 pt-2 text-on-surface sm:px-4">
       <header className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-headline text-[32px] font-semibold leading-tight text-white">Merch Drop</h1>
@@ -118,7 +118,7 @@ export default function MerchPage() {
       </div>
 
       {loading ? (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <li key={i} className="animate-pulse rounded-2xl border border-white/[0.08]">
               <div className="h-[180px] rounded-t-2xl bg-white/10" />
@@ -134,7 +134,7 @@ export default function MerchPage() {
       ) : products.length === 0 ? (
         <p className="text-sm text-[#A0A8C0]">No results</p>
       ) : (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {products.map((p) => {
             const img = p.image_url ?? "/killercutz-logo.webp";
             return (

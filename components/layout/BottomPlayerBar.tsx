@@ -189,7 +189,7 @@ export default function BottomPlayerBar() {
       }}
       style={{
         position: "fixed",
-        bottom: "var(--player-bottom, 0px)",
+        bottom: isMobile ? "88px" : "0px",
         left: 0,
         right: 0,
         height: "64px",

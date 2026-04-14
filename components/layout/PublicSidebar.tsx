@@ -72,7 +72,7 @@ export default function PublicSidebar() {
   return (
     <aside
       ref={sidebarRef}
-      className="hidden sm:flex"
+      className="public-sidebar hidden sm:flex"
       style={PILL_STYLE}
       aria-label="Public navigation"
     >

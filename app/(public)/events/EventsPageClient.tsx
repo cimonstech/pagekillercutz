@@ -68,7 +68,7 @@ export default function EventsPageClient() {
   }, [activeFilter]);
 
   return (
-    <div className="px-4 sm:px-8 lg:px-12 py-10">
+    <div className="px-4 py-10 pb-24 sm:px-8 lg:px-12">
       {/* Header */}
       <header className="mb-10">
         <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tighter text-white mb-2">Live Dates</h1>
@@ -112,14 +112,19 @@ export default function EventsPageClient() {
       ) : events.length === 0 ? (
         <p className="mb-14 text-sm text-on-surface-variant">No results</p>
       ) : (
-        <AnimateIn stagger={0.08} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+        <AnimateIn stagger={0.08} className="grid grid-cols-1 gap-6 mb-14 md:grid-cols-2 lg:grid-cols-3">
           {events.map((ev) => {
             const img = ev.media_urls?.[0];
             return (
               <Link
                 key={ev.id}
                 href={`/events/${ev.id}`}
-                className="group relative block overflow-hidden rounded-2xl glass transition-all duration-300 hover:-translate-y-1"
+                className="group relative block overflow-hidden rounded-2xl border border-white/10 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_0_32px_rgba(0,191,255,0.16)]"
+                style={{
+                  background: "rgba(12,14,24,0.88)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                }}
               >
                 <BorderDrawEdges />
                 <div className="relative z-10">
@@ -131,7 +136,7 @@ export default function EventsPageClient() {
                         src={img}
                         alt={ev.title}
                         fill
-                        className="object-cover opacity-90"
+                        className="object-cover opacity-100"
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
@@ -146,15 +151,15 @@ export default function EventsPageClient() {
 
                   <div className="space-y-3 p-5">
                     <h3 className="font-headline text-base font-semibold">{ev.title}</h3>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-on-surface-variant">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-on-surface-variant/90">
                       {ev.description ?? ""}
                     </p>
                     <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center gap-2 font-label text-[11px] text-on-surface-variant">
+                      <div className="flex items-center gap-2 font-label text-[11px] text-on-surface-variant/90">
                         <span className="material-symbols-outlined text-[14px]">calendar_today</span>
                         {formatEventDate(ev.event_date)}
                       </div>
-                      <div className="flex items-center gap-2 font-label text-[11px] text-on-surface-variant">
+                      <div className="flex items-center gap-2 font-label text-[11px] text-on-surface-variant/90">
                         <span className="material-symbols-outlined text-[14px]">location_on</span>
                         {ev.location}
                       </div>

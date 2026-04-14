@@ -12,10 +12,6 @@ import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
 import HomeAnnouncementBar from "@/components/home/HomeAnnouncementBar";
 import HeroMusicCard from "@/components/music/HeroMusicCard";
 import HomeGenreChips from "@/components/home/HomeGenreChips";
-import ShaderBackground from "@/components/ui/ShaderBackground";
-import PublicSidebar from "@/components/layout/PublicSidebar";
-import PublicTopBar from "@/components/layout/PublicTopBar";
-import PublicFooter from "@/components/layout/PublicFooter";
 import AnimateIn from "@/components/ui/AnimateIn";
 import { buildAlbumPlayerQueue } from "@/lib/album-playback";
 import { formatDuration } from "@/lib/player-utils";
@@ -275,14 +271,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden">
-      <ShaderBackground />
-      <PublicSidebar />
-
-      <div className="relative z-10 flex min-h-screen min-w-0 flex-1 flex-col ml-0 sm:ml-[calc(16px+56px+24px)]">
-        <PublicTopBar />
-
-        <main className="flex-1 pb-[var(--player-offset,0px)]">
+    <main className="min-w-0 flex-1 pb-[var(--player-offset,0px)]">
           {/* ── Hero (announcement pill overlays top of image) ── */}
           <section className="relative -mt-1 min-h-[480px] overflow-hidden">
             {/* Background image — fills hero; sits visually under the booking pill */}
@@ -908,10 +897,6 @@ export default function HomePage() {
             </section>
             </AnimateIn>
           </div>
-        </main>
-
-        <PublicFooter />
-      </div>
-    </div>
+    </main>
   );
 }
