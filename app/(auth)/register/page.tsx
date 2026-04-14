@@ -189,12 +189,7 @@ export default function RegisterPage() {
                   </button>
                 </form>
 
-            <div className="relative flex items-center my-8">
-              <div className="flex-grow border-t border-white/5" />
-              <span className="flex-shrink mx-4 font-mono text-[11px] text-on-surface-variant/40 uppercase tracking-[0.2em]">or</span>
-              <div className="flex-grow border-t border-white/5" />
-            </div>
-            <footer className="text-center">
+            <footer className="text-center mt-8">
               <p className="text-[13px] text-on-surface-variant">
                 Already have an account?
                 <Link className="text-primary-container font-semibold hover:underline underline-offset-4 ml-1 inline-flex items-center gap-1" href="/sign-in">
