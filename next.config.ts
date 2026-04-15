@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
   {
@@ -17,12 +19,16 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // Google Tag Manager requires its own origin in script-src.
+      // 'unsafe-eval' is added in dev only — React needs it for call-stack reconstruction.
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://assets.pagekillercutz.com https://*.supabase.co https://*.dzcdn.net https://e-cdns-images.dzcdn.net https://cdns-images.dzcdn.net https://cdn-images.dzcdn.net",
+      // data: covers Material Symbols / Google Fonts data-URI font faces
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https://assets.pagekillercutz.com https://*.supabase.co https://*.dzcdn.net https://e-cdns-images.dzcdn.net https://cdns-images.dzcdn.net https://cdn-images.dzcdn.net https://www.googletagmanager.com https://www.google-analytics.com",
       "media-src 'self' blob: https://assets.pagekillercutz.com https://*.dzcdn.net",
-      "connect-src 'self' https://*.supabase.co https://api.resend.com https://api.letsfish.africa https://api.deezer.com wss://*.supabase.co",
+      // GA/GTM need connect-src for their measurement + collection endpoints
+      "connect-src 'self' https://*.supabase.co https://api.resend.com https://api.letsfish.africa https://api.deezer.com wss://*.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://region1.google-analytics.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },

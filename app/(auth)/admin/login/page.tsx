@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
         staffEmail: authData.user.email ?? null,
       });
 
-      await fetch("/api/auth/admin-session", {
+      const sessionRes = await fetch("/api/auth/admin-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,6 +148,21 @@ export default function AdminLoginPage() {
           role: row.role,
         }),
       });
+
+      if (!sessionRes.ok) {
+        const body = await sessionRes.json().catch(() => ({})) as { error?: string };
+        const msg = body.error ?? "Session error";
+        await supabase.auth.signOut();
+        setSession({ role: null, staffEmail: null });
+        setErrorMessage(
+          sessionRes.status === 500
+            ? `Server configuration error (${msg}). Contact the site administrator.`
+            : msg,
+        );
+        setErrorKind("auth");
+        setLoading(false);
+        return;
+      }
 
       void fetch(`/api/admins/${row.id}`, {
         method: "PATCH",
