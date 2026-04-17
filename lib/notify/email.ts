@@ -34,7 +34,17 @@ export interface EmailPayload {
   reuseNotificationId?: string;
 }
 
-const FROM = process.env.EMAIL_FROM || "Page KillerCutz <noreply@pagekillercutz.com>";
+const DEFAULT_FROM = "Page KillerCutz <noreply@pagekillercutz.com>";
+
+function resolveFromAddress(): string {
+  const from = process.env.EMAIL_FROM?.trim();
+  return from && from.length > 0 ? from : DEFAULT_FROM;
+}
+
+function extractDomain(from: string): string {
+  const match = from.match(/@([^>\s]+)/);
+  return match?.[1]?.toLowerCase() ?? "unknown";
+}
 
 export async function sendEmail(payload: EmailPayload): Promise<EmailResult> {
   const admin = getSupabaseAdmin();
@@ -75,26 +85,29 @@ export async function sendEmail(payload: EmailPayload): Promise<EmailResult> {
 
   try {
     const resend = getResend();
+    const from = resolveFromAddress();
+    const fromDomain = extractDomain(from);
     const { data, error } = await resend.emails.send({
-      from: FROM,
+      from,
       to: Array.isArray(payload.to) ? payload.to : [payload.to],
       subject: payload.subject,
       html: payload.html,
     });
 
     if (error) {
+      const msg = `${error.message} (from domain: ${fromDomain})`;
       if (notificationId) {
         await admin
           .from("notifications")
           .update({
             status: "failed",
-            error_message: error.message,
+            error_message: msg,
             failed_at: new Date().toISOString(),
           } satisfies NotificationUpdate)
           .eq("id", notificationId);
       }
-      logger.errorRaw("email", "[Email] Resend error:", error);
-      return { success: false, error: error.message };
+      logger.errorRaw("email", "[Email] Resend error:", { from, fromDomain, error });
+      return { success: false, error: msg };
     }
 
     if (notificationId) {

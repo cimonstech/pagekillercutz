@@ -138,12 +138,19 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
       }),
     });
 
+    const contentType = res.headers.get("content-type") ?? "unknown";
+    const raw = await res.text();
     let data: FishAfricaResponse = {};
     try {
-      data = (await res.json()) as FishAfricaResponse;
+      data = raw ? (JSON.parse(raw) as FishAfricaResponse) : {};
     } catch {
-      logger.error("sms", "Invalid JSON response from Fish Africa");
-      const msg = "Invalid response";
+      const rawPreview = raw.slice(0, 280);
+      logger.error(
+        "sms",
+        `Invalid JSON response from Fish Africa (status=${res.status}, content-type=${contentType})`,
+        rawPreview,
+      );
+      const msg = `Invalid response (status=${res.status}, content-type=${contentType})`;
       if (notificationId) {
         await admin
           .from("notifications")
