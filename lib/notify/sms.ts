@@ -125,33 +125,18 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
   logger.info("sms", `Sending to ${recipients.join(", ")}...`);
 
   try {
-    const endpoint = process.env.FISH_AFRICA_SMS_ENDPOINT || "https://api.letsfish.africa/v1/sms";
-    const payload = {
-      sender_id: senderId,
-      message,
-      recipients,
-    };
-
-    const sendOnce = (url: string) =>
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-    let usedEndpoint = endpoint;
-    let res = await sendOnce(usedEndpoint);
-
-    // Some gateways enforce trailing slash and may return 405 + HTML without it.
-    if (res.status === 405 && !usedEndpoint.endsWith("/")) {
-      usedEndpoint = `${usedEndpoint}/`;
-      logger.warn("sms", `405 from SMS endpoint, retrying with trailing slash: ${usedEndpoint}`);
-      res = await sendOnce(usedEndpoint);
-    }
+    const res = await fetch("https://api.letsfish.africa/v1/sms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        sender_id: senderId,
+        message,
+        recipients,
+      }),
+    });
 
     const contentType = res.headers.get("content-type") ?? "unknown";
     const raw = await res.text();
@@ -162,10 +147,10 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
       const rawPreview = raw.slice(0, 280);
       logger.error(
         "sms",
-        `Invalid JSON response from Fish Africa (status=${res.status}, content-type=${contentType}, endpoint=${usedEndpoint})`,
+        `Invalid JSON response from Fish Africa (status=${res.status}, content-type=${contentType})`,
         rawPreview,
       );
-      const msg = `Invalid response (status=${res.status}, content-type=${contentType}, endpoint=${usedEndpoint})`;
+      const msg = `Invalid response (status=${res.status}, content-type=${contentType})`;
       if (notificationId) {
         await admin
           .from("notifications")
@@ -180,8 +165,7 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
     }
 
     if (!res.ok || !data.success) {
-      const providerMsg = errorMessageFromResponse(data);
-      const msg = `${providerMsg} (status=${res.status}, endpoint=${usedEndpoint})`;
+      const msg = errorMessageFromResponse(data);
       if (notificationId) {
         await admin
           .from("notifications")
@@ -192,7 +176,7 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
           } satisfies NotificationUpdate)
           .eq("id", notificationId);
       }
-      logger.error("sms", "Fish Africa error: " + JSON.stringify({ endpoint: usedEndpoint, data }));
+      logger.error("sms", "Fish Africa error: " + JSON.stringify(data));
       return { success: false, error: msg };
     }
 
@@ -208,7 +192,7 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
     }
     logger.info(
       "sms",
-      `Sent successfully. Reference: ${firstResult?.reference ?? "—"} Status: ${firstResult?.status ?? "—"} Endpoint: ${usedEndpoint}`,
+      `Sent successfully. Reference: ${firstResult?.reference ?? "—"} Status: ${firstResult?.status ?? "—"}`,
     );
 
     return {
