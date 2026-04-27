@@ -12,8 +12,7 @@ const ALLOWED_PACKAGE_PATCH_FIELDS = new Set([
   "price",
   "active",
   "display_order",
-  "features",
-  "highlight",
+  "inclusions",
 ]);
 
 export async function GET(_: Request, { params }: RouteContext) {
@@ -39,6 +38,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const raw = (await request.json()) as Record<string, unknown>;
 
     const safeUpdate: Record<string, unknown> = {};
+    // Backward compatibility: older clients may still send `features`.
+    if (Array.isArray(raw.features) && !("inclusions" in raw)) {
+      safeUpdate.inclusions = raw.features;
+    }
     for (const key of Object.keys(raw)) {
       if (ALLOWED_PACKAGE_PATCH_FIELDS.has(key)) {
         safeUpdate[key] = raw[key];
