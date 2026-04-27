@@ -181,7 +181,7 @@ export default function PackagesTab() {
                 </div>
                 <div className="col-span-2">
                   <span className="text-2xl font-syne text-secondary tracking-tight">
-                    GHS {(p.price || 0).toLocaleString()}
+                    {(p.price || 0).toLocaleString()}
                   </span>
                   <span className="block text-[10px] text-on-surface-variant uppercase">Per Event</span>
                 </div>
@@ -269,7 +269,7 @@ export default function PackagesTab() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono text-primary uppercase mb-2">Price (GHS)</label>
+                  <label className="block text-[10px] font-mono text-primary uppercase mb-2">Price</label>
                   <input
                     required
                     type="number"

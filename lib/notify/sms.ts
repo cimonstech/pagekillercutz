@@ -34,10 +34,12 @@ function normalisePhone(phone: string): string {
   return digits;
 }
 
+type FishAfricaMessageItem = { reference?: string; status?: string };
+
 type FishAfricaResponse = {
   success?: boolean;
   message?: string;
-  data?: Array<{ reference?: string; status?: string }>;
+  data?: FishAfricaMessageItem[];
   error?: string | { detail?: string };
 };
 
@@ -50,6 +52,16 @@ function errorMessageFromResponse(data: FishAfricaResponse): string {
     return data.message;
   }
   return "SMS send failed";
+}
+
+function parseResponse(raw: string): { data: FishAfricaResponse; items: FishAfricaMessageItem[] } {
+  const parsed = raw ? JSON.parse(raw) : {};
+  // Fish Africa may return an array directly or { success, data: [...] }
+  if (Array.isArray(parsed)) {
+    return { data: { success: true, data: parsed }, items: parsed };
+  }
+  const obj = parsed as FishAfricaResponse;
+  return { data: obj, items: obj.data ?? [] };
 }
 
 export async function sendSMS(to: string | string[], message: string, meta?: SMSMeta): Promise<SMSResult> {
@@ -141,8 +153,9 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
     const contentType = res.headers.get("content-type") ?? "unknown";
     const raw = await res.text();
     let data: FishAfricaResponse = {};
+    let items: FishAfricaMessageItem[] = [];
     try {
-      data = raw ? (JSON.parse(raw) as FishAfricaResponse) : {};
+      ({ data, items } = parseResponse(raw));
     } catch {
       const rawPreview = raw.slice(0, 280);
       logger.error(
@@ -164,7 +177,7 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
       return { success: false, error: msg };
     }
 
-    if (!res.ok || !data.success) {
+    if (!res.ok) {
       const msg = errorMessageFromResponse(data);
       if (notificationId) {
         await admin
@@ -176,11 +189,11 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
           } satisfies NotificationUpdate)
           .eq("id", notificationId);
       }
-      logger.error("sms", "Fish Africa error: " + JSON.stringify(data));
+      logger.error("sms", `Fish Africa error (status=${res.status}): ` + JSON.stringify(data));
       return { success: false, error: msg };
     }
 
-    const firstResult = data.data?.[0];
+    const firstResult = items[0];
     if (notificationId) {
       await admin
         .from("notifications")

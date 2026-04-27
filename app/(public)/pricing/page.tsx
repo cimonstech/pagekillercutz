@@ -106,7 +106,7 @@ export default function PricingPage() {
                   <h3 className="mb-5 font-headline text-lg font-bold uppercase tracking-wider">{pkg.name}</h3>
 
                   <div className="mb-8 flex items-baseline gap-1">
-                    <span className="font-display text-5xl font-bold text-white">{pkg.price.toLocaleString()}</span>
+                    <span className="font-display text-5xl font-bold text-white">GHS {pkg.price.toLocaleString()}</span>
                     <span className="font-label text-xs text-on-surface-variant">/SET</span>
                   </div>
 

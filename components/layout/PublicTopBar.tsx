@@ -16,7 +16,7 @@ import { PAGE_ICON_URL } from "@/lib/constants";
 const CENTER_LINKS = [
   { href: "/", label: "Home", match: "home" },
   { href: "/music", label: "Mixes", match: "mixes" },
-  { href: "/music?view=charts", label: "Charts", match: "charts" },
+  { href: "/pricing", label: "Pricing", match: "pricing" },
   { href: "/events", label: "Live", match: "live" },
   { href: "/about", label: "About", match: "about" },
 ] as const;
@@ -193,7 +193,7 @@ function PublicTopBarInner({
   const isActive = (match: (typeof CENTER_LINKS)[number]["match"]) => {
     if (match === "home") return pathname === "/";
     if (match === "mixes") return pathname === "/music" && !chartsView;
-    if (match === "charts") return chartsView;
+    if (match === "pricing") return pathname === "/pricing";
     if (match === "live") return pathname === "/events" || pathname.startsWith("/events/");
     if (match === "about") return pathname === "/about";
     return false;
@@ -276,7 +276,7 @@ function MobileNavDrawer({
   const isActive = (match: (typeof CENTER_LINKS)[number]["match"]) => {
     if (match === "home") return pathname === "/";
     if (match === "mixes") return pathname === "/music" && !chartsView;
-    if (match === "charts") return chartsView;
+    if (match === "pricing") return pathname === "/pricing";
     if (match === "live") return pathname === "/events" || pathname.startsWith("/events/");
     if (match === "about") return pathname === "/about";
     return false;
