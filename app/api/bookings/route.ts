@@ -105,9 +105,8 @@ async function provisionClientAuthAfterBooking(
   }
 
   const smsBody = `Page KillerCutz: Check email at ${row.client_email.trim()} to set your password and open your playlist portal. Event ID: ${row.event_id}.`;
-  void sendSMS(row.client_phone, smsBody).then((r) => {
-    if (!r.success) logger.errorRaw("route", "[api/bookings] client SMS:", r.error ?? "unknown");
-  });
+  const smsResult = await sendSMS(row.client_phone, smsBody);
+  if (!smsResult.success) logger.errorRaw("route", "[api/bookings] client SMS:", smsResult.error ?? "unknown");
 
   return "invite_sent";
 }
@@ -262,7 +261,7 @@ export async function POST(request: Request) {
     const row = data as BookingRow;
     logger.infoRaw("route", "[api/bookings] Success:", row.event_id);
 
-    void sendNewBookingRequestToDj({
+    await sendNewBookingRequestToDj({
       eventId: row.event_id,
       clientName: b.clientName.trim(),
       clientEmail: b.clientEmail.trim(),

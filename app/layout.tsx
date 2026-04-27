@@ -92,15 +92,15 @@ export const metadata: Metadata = {
   publisher: "Page KillerCutz",
 
   icons: {
-    icon: [{ url: "https://assets.pagekillercutz.com/pagekillercutz/pageicon.png", type: "image/png" }],
+    icon: [{ url: "/icon", type: "image/png" }],
     apple: [
       {
-        url: "https://assets.pagekillercutz.com/pagekillercutz/pageicon.png",
+        url: "/apple-icon",
         sizes: "180x180",
         type: "image/png",
       },
     ],
-    shortcut: "https://assets.pagekillercutz.com/pagekillercutz/pageicon.png",
+    shortcut: "/icon",
   },
 
   manifest: "/favicon/site.webmanifest",
