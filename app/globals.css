@@ -267,6 +267,33 @@ body {
     border-radius: 10px;
   }
 
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(143, 214, 255, 0.55);
+  }
+
+  /* Client dashboard recent updates scrollbar */
+  .updates-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(143, 214, 255, 0.45) transparent;
+  }
+
+  .updates-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .updates-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .updates-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(143, 214, 255, 0.38);
+    border-radius: 999px;
+  }
+
+  .updates-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(143, 214, 255, 0.62);
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

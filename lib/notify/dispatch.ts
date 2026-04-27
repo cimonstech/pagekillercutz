@@ -56,9 +56,19 @@ export async function notifyReminder7Day(data: T.BookingData) {
   const djPhones = getDjSmsRecipients();
   const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
-  await Promise.allSettled([
-    sendSMS(d.clientPhone, T.sms_reminder7day_client(d)),
-    ...(djPhones.length ? [sendSMS(djPhones, T.sms_reminder7day_dj(d))] : []),
+  const results = await Promise.allSettled([
+    sendSMS(d.clientPhone, T.sms_reminder7day_client(d), {
+      type: "reminder7day_client_sms",
+      bookingId: d.eventId,
+    }),
+    ...(djPhones.length
+      ? [
+          sendSMS(djPhones, T.sms_reminder7day_dj(d), {
+            type: "reminder7day_dj_sms",
+            bookingId: d.eventId,
+          }),
+        ]
+      : []),
     sendEmail({
       to: d.clientEmail,
       subject: `7 Days to Go — ${d.eventId}`,
@@ -69,17 +79,30 @@ export async function notifyReminder7Day(data: T.BookingData) {
         venue: d.venue,
         portalUrl: portalUrl(d),
       }),
+      type: "reminder7day_client_email",
+      bookingId: d.eventId,
     }),
   ]);
+  logResults(`reminder_7day:${d.eventId}`, results);
 }
 
 export async function notifyReminder1Day(data: T.BookingData) {
   const djPhones = getDjSmsRecipients();
   const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
-  await Promise.allSettled([
-    sendSMS(d.clientPhone, T.sms_reminder1day_client(d)),
-    ...(djPhones.length ? [sendSMS(djPhones, T.sms_reminder1day_dj(d))] : []),
+  const results = await Promise.allSettled([
+    sendSMS(d.clientPhone, T.sms_reminder1day_client(d), {
+      type: "reminder1day_client_sms",
+      bookingId: d.eventId,
+    }),
+    ...(djPhones.length
+      ? [
+          sendSMS(djPhones, T.sms_reminder1day_dj(d), {
+            type: "reminder1day_dj_sms",
+            bookingId: d.eventId,
+          }),
+        ]
+      : []),
     sendEmail({
       to: d.clientEmail,
       subject: `Tomorrow! — ${d.eventId}`,
@@ -90,6 +113,8 @@ export async function notifyReminder1Day(data: T.BookingData) {
         venue: d.venue,
         portalUrl: portalUrl(d),
       }),
+      type: "reminder1day_client_email",
+      bookingId: d.eventId,
     }),
     sendEmail({
       to: DJ_EMAIL,
@@ -101,21 +126,39 @@ export async function notifyReminder1Day(data: T.BookingData) {
         venue: d.venue,
         adminUrl: `${BASE_URL}/admin`,
       }),
+      type: "reminder1day_dj_email",
+      bookingId: d.eventId,
     }),
   ]);
+  logResults(`reminder_1day:${d.eventId}`, results);
 }
 
 export async function notifyMorningOf(data: T.BookingData) {
   const djPhones = getDjSmsRecipients();
   const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
-  if (djPhones.length) await sendSMS(djPhones, T.sms_morningOf_dj(d));
+  if (!djPhones.length) {
+    logger.infoRaw("dispatch", `[notify][morning_of:${d.eventId}] no DJ recipients`);
+    return;
+  }
+  const result = await sendSMS(djPhones, T.sms_morningOf_dj(d), {
+    type: "morning_of_dj_sms",
+    bookingId: d.eventId,
+  });
+  if (!result.success) {
+    logger.errorRaw("dispatch", `[notify][morning_of:${d.eventId}] FAILED:`, result.error);
+  } else {
+    logger.infoRaw("dispatch", `[notify][morning_of:${d.eventId}] ok`);
+  }
 }
 
 export async function notifyPlaylistLocked(data: T.BookingData) {
   const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
   const formattedDate = T.formatBookingDate(d.eventDate);
-  await Promise.allSettled([
-    sendSMS(d.clientPhone, T.sms_playlistLocked_client(d)),
+  const results = await Promise.allSettled([
+    sendSMS(d.clientPhone, T.sms_playlistLocked_client(d), {
+      type: "playlist_locked_client_sms",
+      bookingId: d.eventId,
+    }),
     sendEmail({
       to: d.clientEmail,
       subject: `Playlist Locked — ${d.eventId}`,
@@ -126,8 +169,11 @@ export async function notifyPlaylistLocked(data: T.BookingData) {
         venue: d.venue,
         portalUrl: portalUrl(d),
       }),
+      type: "playlist_locked_client_email",
+      bookingId: d.eventId,
     }),
   ]);
+  logResults(`playlist_locked:${d.eventId}`, results);
 }
 
 function logResults(

@@ -73,13 +73,31 @@ export function startCronJobs() {
     ]);
 
     for (const b of b7) {
-      await notifyReminder7Day(toBookingData(b as Record<string, unknown>));
+      const booking = toBookingData(b as Record<string, unknown>);
+      try {
+        logger.infoRaw("cron", `[cron][7-day] sending reminders for ${booking.eventId}`);
+        await notifyReminder7Day(booking);
+      } catch (err) {
+        logger.errorRaw("cron", `[cron][7-day] failed for ${booking.eventId}:`, err);
+      }
     }
     for (const b of b1) {
-      await notifyReminder1Day(toBookingData(b as Record<string, unknown>));
+      const booking = toBookingData(b as Record<string, unknown>);
+      try {
+        logger.infoRaw("cron", `[cron][1-day] sending reminders for ${booking.eventId}`);
+        await notifyReminder1Day(booking);
+      } catch (err) {
+        logger.errorRaw("cron", `[cron][1-day] failed for ${booking.eventId}:`, err);
+      }
     }
     for (const b of b0) {
-      await notifyMorningOf(toBookingData(b as Record<string, unknown>));
+      const booking = toBookingData(b as Record<string, unknown>);
+      try {
+        logger.infoRaw("cron", `[cron][morning-of] sending reminders for ${booking.eventId}`);
+        await notifyMorningOf(booking);
+      } catch (err) {
+        logger.errorRaw("cron", `[cron][morning-of] failed for ${booking.eventId}:`, err);
+      }
     }
 
     logger.infoRaw("cron", `[cron] Done. 7-day: ${b7.length}, 1-day: ${b1.length}, today: ${b0.length}`);

@@ -15,7 +15,7 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useCartStore } from "@/lib/store/cartStore";
 
@@ -53,7 +53,7 @@ function isNavActive(href: string, pathname: string): boolean {
 export default function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const itemCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.qty, 0));
   const setCartOpen = useCartStore((s) => s.setIsOpen);
   const [undeliveredOrders, setUndeliveredOrders] = useState(0);
@@ -61,23 +61,31 @@ export default function AppSidebar() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user?.email || cancelled) return;
-      const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}&limit=200`);
-      if (!res.ok || cancelled) return;
-      const json = (await res.json()) as {
-        orders?: { fulfillment_status: string }[];
-      };
-      const orders = json.orders ?? [];
-      const n = orders.filter((o) => o.fulfillment_status !== "delivered").length;
-      setUndeliveredOrders(n);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user?.email || cancelled) return;
+        const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}&limit=200`);
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as {
+          orders?: { fulfillment_status: string }[];
+        };
+        const orders = json.orders ?? [];
+        const n = orders.filter((o) => o.fulfillment_status !== "delivered").length;
+        setUndeliveredOrders(n);
+      } catch (error) {
+        // Supabase lock-steal aborts can happen during rapid remounts/strict mode.
+        // Ignore expected lock contention; avoid unhandled promise rejections.
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.includes("lock:") || message.includes("Lock ") || message.includes("steal")) return;
+        console.error("[AppSidebar] Failed to load order badge count:", error);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [supabase.auth]);
+  }, [supabase]);
 
   const onLogout = async () => {
     await supabase.auth.signOut();

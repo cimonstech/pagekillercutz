@@ -28,6 +28,7 @@ function initials(name: string, email: string): string {
 
 export default function ClientProfilePage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const { toast, showToast, dismissToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,26 +48,25 @@ export default function ClientProfilePage() {
   const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
-    const supabase = createClient();
     setLoading(true);
-    const {
-      data: { user: u },
-    } = await supabase.auth.getUser();
-    if (!u?.email) {
-      router.replace("/sign-in");
-      return;
-    }
-    setUser(u);
-    const meta = u.user_metadata as { full_name?: string; phone?: string };
-    const rawPhone = meta.phone ?? "";
-    const displayPhone = rawPhone.replace(/^\+\s*233\s*/i, "").replace(/^\+/, "");
-    setFormData({
-      fullName: meta.full_name ?? "",
-      phone: displayPhone,
-      email: u.email ?? "",
-    });
-
     try {
+      const {
+        data: { user: u },
+      } = await supabase.auth.getUser();
+      if (!u?.email) {
+        router.replace("/sign-in");
+        return;
+      }
+      setUser(u);
+      const meta = u.user_metadata as { full_name?: string; phone?: string };
+      const rawPhone = meta.phone ?? "";
+      const displayPhone = rawPhone.replace(/^\+\s*233\s*/i, "").replace(/^\+/, "");
+      setFormData({
+        fullName: meta.full_name ?? "",
+        phone: displayPhone,
+        email: u.email ?? "",
+      });
+
       const [oRes, pRes] = await Promise.all([
         fetch("/api/orders?limit=200", { credentials: "include" }),
         fetch("/api/plays/stats", { credentials: "include" }),
@@ -79,12 +79,15 @@ export default function ClientProfilePage() {
         const j = (await pRes.json()) as { totalPlays?: number };
         setPlayCount(j.totalPlays ?? 0);
       }
-    } catch {
-      /* ignore */
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!(message.includes("lock:") || message.includes("Lock ") || message.includes("steal"))) {
+        /* ignore non-critical profile load errors */
+      }
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, supabase]);
 
   useEffect(() => {
     void load();
@@ -100,7 +103,6 @@ export default function ClientProfilePage() {
   const pwScore = passwordStrengthScore(newPw);
 
   const onSaveProfile = async () => {
-    const supabase = createClient();
     setSavingProfile(true);
     try {
       const digits = formData.phone.replace(/\D/g, "");
@@ -118,7 +120,6 @@ export default function ClientProfilePage() {
   };
 
   const onUpdatePassword = async () => {
-    const supabase = createClient();
     if (newPw !== confirmPw) {
       showToast("New passwords do not match.", "error");
       return;
@@ -152,7 +153,6 @@ export default function ClientProfilePage() {
   };
 
   const onDeleteAccount = async () => {
-    const supabase = createClient();
     if (deleteConfirm !== "DELETE") return;
     setDeleting(true);
     try {

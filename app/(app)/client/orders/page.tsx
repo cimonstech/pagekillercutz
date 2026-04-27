@@ -113,6 +113,7 @@ function SpendTooltip({
 
 export default function ClientOrdersPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const { toast, showToast, dismissToast } = useToast();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,27 +130,30 @@ export default function ClientOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const load = useCallback(async () => {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user?.email) {
-      router.replace("/sign-in");
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.email) {
+        router.replace("/sign-in");
+        return;
+      }
       const res = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}&limit=100`);
       const json = (await res.json()) as { orders?: OrderRow[]; error?: string };
       if (!res.ok) throw new Error(json.error ?? "Failed to load orders");
       setOrders(json.orders ?? []);
     } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      if (message.includes("lock:") || message.includes("Lock ") || message.includes("steal")) {
+        return;
+      }
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, supabase]);
 
   useEffect(() => {
     void load();

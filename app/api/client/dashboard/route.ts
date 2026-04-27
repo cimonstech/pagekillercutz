@@ -5,11 +5,53 @@ import type { Database } from "@/lib/database.types";
 
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
+type NotificationRow = Database["public"]["Tables"]["notifications"]["Row"];
 
 type PlaylistMapRow = Pick<
   Database["public"]["Tables"]["playlists"]["Row"],
   "event_id" | "locked" | "must_play" | "do_not_play" | "timeline"
 >;
+
+type RecentUpdate = {
+  id: string;
+  icon: "notifications";
+  tone: "primary" | "secondary";
+  message: string;
+  time: string;
+};
+
+function phoneDigits(raw: string | null | undefined): string {
+  return (raw ?? "").replace(/\D/g, "");
+}
+
+function relativeTimeFromIso(iso: string): string {
+  const now = Date.now();
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return "just now";
+  const diffMs = Math.max(0, now - t);
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+function toUpdateMessage(n: NotificationRow): string {
+  const eventRef = n.booking_id ? ` for ${n.booking_id}` : "";
+  if (n.status === "failed") {
+    return `${n.channel.toUpperCase()} update failed${eventRef}.`;
+  }
+  const t = n.type.toLowerCase();
+  if (t.includes("booking_confirmed")) return "Your booking was confirmed by Page KillerCutz.";
+  if (t.includes("payment_confirmed")) return "Payment confirmation was sent.";
+  if (t.includes("playlist_locked")) return "Your playlist lock update was sent.";
+  if (t.includes("reminder7day")) return "7-day reminder was sent.";
+  if (t.includes("reminder1day")) return "1-day reminder was sent.";
+  if (t.includes("morning_of")) return "Event day reminder was sent.";
+  return `${n.channel.toUpperCase()} notification ${n.status}.`;
+}
 
 function startOfToday(): Date {
   const t = new Date();
@@ -135,6 +177,39 @@ export async function GET(request: Request) {
       .order("created_at", { ascending: false })
       .limit(3);
 
+    const phones = [...new Set(allBookings.map((b) => phoneDigits(b.client_phone)).filter(Boolean))];
+    const [emailNotifRes, phoneNotifRes] = await Promise.all([
+      admin
+        .from("notifications")
+        .select("*")
+        .ilike("recipient_email", user.email ?? "")
+        .order("created_at", { ascending: false })
+        .limit(8),
+      phones.length > 0
+        ? admin
+            .from("notifications")
+            .select("*")
+            .in("recipient_phone", phones)
+            .order("created_at", { ascending: false })
+            .limit(8)
+        : Promise.resolve({ data: [], error: null } as { data: NotificationRow[]; error: null }),
+    ]);
+
+    const mergedMap = new Map<string, NotificationRow>();
+    for (const n of ([...(emailNotifRes.data ?? []), ...(phoneNotifRes.data ?? [])] as NotificationRow[])) {
+      if (!mergedMap.has(n.id)) mergedMap.set(n.id, n);
+    }
+    const recentNotifications = Array.from(mergedMap.values())
+      .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+      .slice(0, 6)
+      .map((n) => ({
+        id: n.id,
+        icon: "notifications" as const,
+        tone: n.status === "failed" ? ("secondary" as const) : ("primary" as const),
+        message: toUpdateMessage(n),
+        time: relativeTimeFromIso(n.created_at),
+      }));
+
     const eventDate = eventDateOnly(primaryBooking.event_date);
     const diffTime = eventDate.getTime() - today.getTime();
     const daysUntilEvent = Number.isNaN(diffTime) ? 0 : Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -152,6 +227,7 @@ export async function GET(request: Request) {
       pastBookings,
       playlistMap,
       recentOrders: (recentOrders ?? []) as OrderRow[],
+      recentNotifications,
     });
   } catch (error) {
     logger.errorRaw("route", "[api/client/dashboard]", error);

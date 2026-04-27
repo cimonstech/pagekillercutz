@@ -35,33 +35,19 @@ type DashboardData = {
   pastBookings: BookingRow[];
   playlistMap: Record<string, PlaylistMapRow>;
   recentOrders: OrderRow[];
+  recentNotifications: {
+    id: string;
+    icon: "notifications";
+    tone: "primary" | "secondary";
+    message: string;
+    time: string;
+  }[];
 };
 
 const glass =
   "rounded-[20px] border border-white/[0.08] bg-white/[0.05] p-6 backdrop-blur-[20px]";
 
 const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
-
-const notifications = [
-  {
-    icon: "notifications" as const,
-    tone: "primary" as const,
-    message: "Your booking was confirmed by Page KillerCutz.",
-    time: "2 hours ago",
-  },
-  {
-    icon: "notifications" as const,
-    tone: "secondary" as const,
-    message: "Playlist lock reminder — 7 days to go.",
-    time: "1 day ago",
-  },
-  {
-    icon: "notifications" as const,
-    tone: "primary" as const,
-    message: "Payment confirmation is still pending.",
-    time: "3 days ago",
-  },
-];
 
 function jsonArrLen(v: unknown): number {
   return Array.isArray(v) ? v.length : 0;
@@ -147,6 +133,7 @@ function DashboardSkeleton() {
 
 export default function ClientDashboardPage() {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const [data, setData] = useState<DashboardData | null>(null);
   const [activeBookingId, setActiveBookingId] = useState<string | null>(null);
   const [activePackage, setActivePackage] = useState<PackageRow | null>(null);
@@ -157,31 +144,30 @@ export default function ClientDashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const supabase = createClient();
 
     void (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (cancelled) return;
-      if (!user?.email) {
-        router.replace("/sign-in");
-        return;
-      }
-
-      const { data: adminRecord } = await supabase
-        .from("admins")
-        .select("role")
-        .eq("email", user.email)
-        .maybeSingle();
-
-      if (cancelled) return;
-      if (adminRecord) {
-        router.replace("/admin");
-        return;
-      }
-
       try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (cancelled) return;
+        if (!user?.email) {
+          router.replace("/sign-in");
+          return;
+        }
+
+        const { data: adminRecord } = await supabase
+          .from("admins")
+          .select("role")
+          .eq("email", user.email)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (adminRecord) {
+          router.replace("/admin");
+          return;
+        }
+
         const res = await fetch("/api/client/dashboard");
         const json = (await res.json()) as { error?: string } & Partial<DashboardData>;
         if (cancelled) return;
@@ -200,10 +186,13 @@ export default function ClientDashboardPage() {
           pastBookings: json.pastBookings ?? [],
           playlistMap: json.playlistMap ?? {},
           recentOrders: json.recentOrders ?? [],
+          recentNotifications: json.recentNotifications ?? [],
         };
         setData(payload);
         setActivePackage(json.package ?? null);
-      } catch {
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.includes("lock:") || message.includes("Lock ") || message.includes("steal")) return;
         if (!cancelled) setError("Failed to load dashboard");
       } finally {
         if (!cancelled) setLoading(false);
@@ -213,7 +202,7 @@ export default function ClientDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, supabase]);
 
   const activeBooking = useMemo(() => {
     if (!data) return null;
@@ -347,6 +336,7 @@ export default function ClientDashboardPage() {
         ? "—"
         : "—";
 
+  const recentUpdates = data.recentNotifications.slice(0, 6);
   const upcomingN = data.upcomingBookings.length;
   const subline =
     upcomingN === 0
@@ -619,7 +609,7 @@ export default function ClientDashboardPage() {
         </div>
 
         {/* ROW 2 */}
-        <div className={`col-span-12 flex min-w-0 flex-col md:col-span-4 lg:col-span-3 ${glass}`}>
+        <div className={`col-span-12 flex h-[340px] min-w-0 flex-col md:col-span-4 lg:col-span-3 ${glass}`}>
           <h3 className="mb-6 font-headline text-lg font-semibold text-on-surface">Your Playlist</h3>
           <div className="flex flex-1 flex-col space-y-6">
             <div className="flex items-center gap-4">
@@ -691,7 +681,7 @@ export default function ClientDashboardPage() {
         </div>
 
         <div
-          className={`relative col-span-12 flex flex-col items-center justify-center md:col-span-4 lg:col-span-3 ${glass}`}
+          className={`relative col-span-12 flex h-[340px] flex-col items-center justify-center md:col-span-4 lg:col-span-3 ${glass}`}
           style={{
             boxShadow:
               "0 0 0 1px rgba(0,191,255,0.20), 0 8px 32px rgba(0,191,255,0.08)",
@@ -717,43 +707,42 @@ export default function ClientDashboardPage() {
               </>
             )}
           </div>
-          <div className="absolute bottom-4 flex gap-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-            <div className="h-1.5 w-1.5 rounded-full bg-primary/30" />
-          </div>
         </div>
 
-        <div className={`col-span-12 md:col-span-12 lg:col-span-6 ${glass}`}>
+        <div className={`col-span-12 flex h-[340px] flex-col md:col-span-12 lg:col-span-6 ${glass}`}>
           <div className="mb-6 flex items-center justify-between">
             <h3 className="font-headline text-lg font-semibold text-on-surface">Recent Updates</h3>
             <span className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-primary">View All</span>
           </div>
-          <div className="space-y-4">
-            {notifications.map((n, i) => (
-              <div
-                key={i}
-                className="group flex items-center gap-4 rounded p-3 transition-colors hover:bg-surface-container-highest/30"
-              >
-                <span
-                  className={[
-                    "material-symbols-outlined rounded p-2",
-                    n.tone === "primary" ? "bg-primary/10 text-primary-container" : "bg-secondary/10 text-secondary",
-                  ].join(" ")}
+          <div className="updates-scrollbar flex-1 space-y-4 overflow-y-auto pr-1">
+            {recentUpdates.length === 0 ? (
+              <p className="font-body text-sm text-on-surface-variant">No updates yet.</p>
+            ) : (
+              recentUpdates.map((n) => (
+                <div
+                  key={n.id}
+                  className="group flex items-center gap-4 rounded p-3 transition-colors hover:bg-surface-container-highest/30"
                 >
-                  {n.icon}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-body text-[13px] font-medium text-on-surface">{n.message}</p>
-                  <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">
-                    {n.time}
-                  </p>
+                  <span
+                    className={[
+                      "material-symbols-outlined rounded p-2",
+                      n.tone === "primary" ? "bg-primary/10 text-primary-container" : "bg-secondary/10 text-secondary",
+                    ].join(" ")}
+                  >
+                    {n.icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-body text-[13px] font-medium text-on-surface">{n.message}</p>
+                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-on-surface-variant">
+                      {n.time}
+                    </p>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100">
+                    chevron_right
+                  </span>
                 </div>
-                <span className="material-symbols-outlined text-on-surface-variant opacity-0 transition-opacity group-hover:opacity-100">
-                  chevron_right
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

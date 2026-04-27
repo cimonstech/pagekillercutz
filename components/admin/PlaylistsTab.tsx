@@ -131,7 +131,7 @@ export default function PlaylistsTab() {
   return (
     <div className="min-h-screen relative flex">
       <ToastComponent />
-      <div className="flex-1 p-8 pr-[512px]">
+      <div className="flex-1 p-8">
         <header className="flex items-center justify-between mb-10 flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <h2 className="font-headline font-semibold text-[28px] text-white tracking-tight">Playlists</h2>
