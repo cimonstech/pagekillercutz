@@ -1,21 +1,35 @@
 import { z } from "zod";
 
-export const bookingSchema = z.object({
-  clientName: z.string().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
-  clientEmail: z.string().email("Invalid email address"),
-  clientPhone: z.string().min(10, "Phone number too short").max(20, "Phone number too long"),
-  eventType: z.enum(["Wedding", "Corporate", "Festival", "Club Night", "Birthday", "Other"]),
-  eventDate: z.string().refine((d) => !Number.isNaN(Date.parse(d)), { message: "Invalid date" }),
-  venue: z.string().min(3, "Venue is required").max(200, "Venue too long"),
-  guestCount: z.preprocess(
-    (v) => (v === "" || v === null || v === undefined ? undefined : v),
-    z.coerce.number().int().min(1).max(100000).optional(),
-  ),
-  notes: z.string().max(1000, "Notes too long").nullable().optional(),
-  eventName: z.string().max(200).nullable().optional(),
-  packageName: z.string().nullable().optional(),
-  genres: z.array(z.string()).optional(),
-});
+export const bookingSchema = z
+  .object({
+    clientName: z.string().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
+    clientEmail: z.string().email("Invalid email address"),
+    clientPhone: z.string().min(10, "Phone number too short").max(20, "Phone number too long"),
+    eventType: z.enum(["Wedding", "Corporate", "Festival", "Club Night", "Birthday", "Other"]),
+    eventDate: z.string().refine((d) => !Number.isNaN(Date.parse(d)), { message: "Invalid date" }),
+    venue: z.string().min(3, "Venue is required").max(200, "Venue too long"),
+    guestCount: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : v),
+      z.coerce.number().int().min(1).max(100000).optional(),
+    ),
+    notes: z.string().max(1000, "Notes too long").nullable().optional(),
+    eventName: z.string().max(200).nullable().optional(),
+    packageName: z.string().nullable().optional(),
+    genres: z.array(z.string()).optional(),
+    eventStartTime: z.string().max(20).nullable().optional(),
+    eventDurationHours: z.coerce.number().int().min(1).max(24).optional(),
+    isRequest: z.boolean().optional(),
+    isCompany: z.boolean().optional(),
+    companyName: z.string().max(200).nullable().optional(),
+    repTitle: z.string().max(120).nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.isCompany) return true;
+      return Boolean(data.companyName?.trim() && data.repTitle?.trim());
+    },
+    { message: "Company name and job title are required for corporate bookings", path: ["companyName"] },
+  );
 
 export const orderSchema = z.object({
   customerName: z.string().min(2).max(100),

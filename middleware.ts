@@ -17,13 +17,13 @@ async function verifyAdminCookie(
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const adminCookie = request.cookies.get("admin_session")?.value;
+  const adminSession = await verifyAdminCookie(adminCookie);
 
   // /admin/* (except login) — require verified signed admin session cookie.
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const adminCookie = request.cookies.get("admin_session")?.value;
-    const adminSession = await verifyAdminCookie(adminCookie);
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin-login")) {
     if (!adminSession) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      return NextResponse.redirect(new URL("/admin-login", request.url));
     }
 
     const superAdminRoutes = ["/admin/accounts", "/admin/audit-log", "/admin/settings"];
@@ -79,11 +79,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(signIn);
   }
 
+  // Maintenance mode for non-admin, non-API public/app routes.
+  if (
+    !adminSession &&
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/_next") &&
+    pathname !== "/maintenance" &&
+    pathname !== "/favicon.ico"
+  ) {
+    const { data: platformRows } = await supabase
+      .from("platform_settings")
+      .select("key,value")
+      .in("key", ["maintenance_mode"])
+      .limit(1);
+    const maintenanceValue = (platformRows?.[0] as { value?: unknown } | undefined)?.value;
+    const maintenanceOn = Boolean(maintenanceValue === true || maintenanceValue === "true");
+    if (maintenanceOn) {
+      return NextResponse.redirect(new URL("/maintenance", request.url));
+    }
+  }
+
   supabaseResponse.headers.set("X-Frame-Options", "SAMEORIGIN");
   supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/client/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

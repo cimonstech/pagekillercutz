@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       logger.errorRaw("api/admins/invite", "Generate link failed:", linkErr);
       return Response.json(
         {
-          error: `Admin created but invite email failed. Ask them to use 'Forgot Password' at ${baseUrl}/admin/login`,
+          error: `Admin created but invite email failed. Ask them to use 'Forgot Password' at ${baseUrl}/admin-login`,
         },
         { status: 500 },
       );
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
         role,
         invitedBy: user.email || "Super Admin",
         setupUrl,
-        loginUrl: `${baseUrl}/admin/login`,
+        loginUrl: `${baseUrl}/admin-login`,
       }),
     });
 
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       logger.errorRaw("api/admins/invite", "Send email failed:", emailResult.error);
       return Response.json(
         {
-          error: `Admin created but invite email failed. Ask them to use 'Forgot Password' at ${baseUrl}/admin/login`,
+          error: `Admin created but invite email failed. Ask them to use 'Forgot Password' at ${baseUrl}/admin-login`,
         },
         { status: 500 },
       );

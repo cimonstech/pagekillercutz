@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
-    const loginUrl = `${BASE_URL}/admin/login`;
+    const loginUrl = `${BASE_URL}/admin-login`;
 
     await sendEmail({
       to: email,

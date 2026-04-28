@@ -16,11 +16,11 @@ import {
   YAxis,
 } from "recharts";
 import { createClient } from "@/lib/supabase/client";
+import PaymentDetails from "@/components/payment/PaymentDetails";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 type ItemWithImage = OrderItem & { image_url?: string };
 
-const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
 const ORDERS_PER_PAGE = 5;
 const BG = "#08080F";
 
@@ -425,13 +425,12 @@ export default function ClientOrdersPage() {
                           className="mt-3 rounded-[10px] border border-white/[0.06] p-3"
                           style={{ borderLeftWidth: 2, borderLeftColor: "#00BFFF" }}
                         >
-                          <p className="font-body text-[12px] text-[#A0A8C0]">
-                            Send GH₵{Number(latestOrder.total).toLocaleString()} via MoMo
-                          </p>
-                          <p className="mt-1 font-mono text-[12px] text-[#00BFFF]">
-                            Ref: {latestOrder.order_number}
-                          </p>
-                          <p className="mt-1 font-mono text-[12px] text-[#00BFFF]">{DJ_MOMO}</p>
+                          <PaymentDetails
+                            reference={latestOrder.order_number}
+                            amount={Number(latestOrder.total)}
+                            amountLabel="Amount to Pay"
+                            compact
+                          />
                         </div>
                       ) : null}
 

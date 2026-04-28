@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Database } from "@/lib/database.types";
 import { useAdminStore } from "@/lib/store/adminStore";
@@ -128,6 +128,27 @@ export default function AuditLogTab() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDismissAll = async () => {
+    if (!failedNotifications.length) return;
+    setNotificationActionId("dismiss-all");
+    await Promise.all(
+      failedNotifications.map((n) =>
+        fetch("/api/notifications", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: n.id,
+            status: "dismissed",
+          }),
+        }),
+      ),
+    );
+    setFailedNotifications([]);
+    setNotificationActionId(null);
+  };
+
   return (
     <section className="p-8 flex-1 flex flex-col gap-8">
       {!failedLoading && failedNotifications.length > 0 ? (
@@ -138,15 +159,48 @@ export default function AuditLogTab() {
             backdropFilter: "blur(16px)",
           }}
         >
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 shrink-0" size={22} color="#FF4560" aria-hidden />
-            <div className="min-w-0 flex-1">
-              <p
-                className="font-headline text-[14px] font-semibold leading-snug text-white"
-                style={{ fontWeight: 600 }}
+          <div className="min-w-0 flex-1">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <AlertTriangle size={18} color="#FF4560" />
+                <span
+                  style={{
+                    fontFamily: "Space Grotesk",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    color: "white",
+                  }}
+                >
+                  {failedNotifications.length} notification(s) failed to send.
+                </span>
+              </div>
+              <button
+                onClick={() => void handleDismissAll()}
+                disabled={notificationActionId === "dismiss-all"}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#A0A8C0",
+                  fontFamily: "Space Grotesk",
+                  fontWeight: 500,
+                  fontSize: "12px",
+                  cursor: notificationActionId === "dismiss-all" ? "not-allowed" : "pointer",
+                  opacity: notificationActionId === "dismiss-all" ? 0.6 : 1,
+                }}
               >
-                {failedNotifications.length} notification(s) failed to send.
-              </p>
+                Dismiss All
+              </button>
+            </div>
+            <div className="min-w-0 flex-1">
               <ul className="mt-4 space-y-3">
                 {failedNotifications.map((n) => {
                   const recipient = n.recipient_email || n.recipient_phone || "—";
@@ -172,6 +226,26 @@ export default function AuditLogTab() {
                           {recipient}
                         </p>
                         <p className="line-clamp-2 font-mono text-[11px] text-[#FF4560]/90">{errShort}</p>
+                        <div
+                          style={{
+                            fontFamily: "Space Mono",
+                            fontSize: "10px",
+                            color: "#5A6080",
+                            marginTop: "2px",
+                          }}
+                        >
+                          {new Date(n.created_at).toLocaleDateString("en-GH", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                          {" · "}
+                          {new Date(n.created_at).toLocaleTimeString("en-GH", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </div>
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <button
@@ -298,7 +372,7 @@ export default function AuditLogTab() {
       )}
 
       <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-[160px_240px_1fr_140px] px-6 py-3 text-[10px] font-label text-slate-500 uppercase tracking-widest border-b border-white/5">
+        <div className="grid grid-cols-[160px_280px_1fr_140px] px-6 py-3 text-[10px] font-label text-slate-500 uppercase tracking-widest border-b border-white/5">
           <div>Timestamp</div>
           <div>Actor</div>
           <div>Action & Description</div>
@@ -314,7 +388,7 @@ export default function AuditLogTab() {
           rows.map((r) => (
             <div
               key={r.id}
-              className={`grid grid-cols-[160px_240px_1fr_140px] px-6 py-4 items-center glass-row rounded-sm ${
+              className={`grid grid-cols-[160px_280px_1fr_140px] px-6 py-4 items-center glass-row rounded-sm ${
                 r.archived ? "border-l-2 border-amber-500/40 opacity-90" : ""
               }`}
             >
@@ -336,23 +410,52 @@ export default function AuditLogTab() {
                   </span>
                 ) : null}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3 pr-2">
                 <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center border border-white/5">
                   <span className="material-symbols-outlined text-slate-400 text-sm">person</span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-white">{r.actor}</span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-medium text-white" title={r.actor}>{r.actor}</span>
                   <span className="text-[10px] text-on-surface-variant uppercase">{r.actor_role}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap pl-3">
                 <span className={`px-2 py-0.5 text-[10px] font-bold rounded-sm border uppercase ${badgeClass(r.action_type)}`}>
                   {r.action_type}
                 </span>
-                <p className="text-sm text-on-surface-variant">
-                  {r.description}{" "}
-                  {r.target_id ? <span className="text-primary-container">{r.target_id}</span> : null}
-                </p>
+                <div>
+                  <p className="text-sm text-on-surface-variant">
+                    {r.description}{" "}
+                    {r.target_id ? <span className="text-primary-container">{r.target_id}</span> : null}
+                  </p>
+                  <div
+                    style={{
+                      fontFamily: "Space Mono",
+                      fontSize: "10px",
+                      color: "#5A6080",
+                      marginTop: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <Clock size={11} color="#5A6080" />
+                    {new Date(r.created_at).toLocaleDateString("en-GH", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                    {" · "}
+                    {new Date(r.created_at).toLocaleTimeString("en-GH", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: true,
+                    })}
+                    {" GMT"}
+                  </div>
+                </div>
               </div>
               <div className="font-label text-[11px] text-slate-500 text-right">{r.ip_address ?? "—"}</div>
             </div>

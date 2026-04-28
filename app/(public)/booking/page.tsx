@@ -1,9 +1,13 @@
 "use client";
 
-import { Check, Copy, Loader2, Lock, User } from "lucide-react";
+import { AlertCircle, Calendar, Check, CheckCircle, Copy, Loader2, Lock, User, Zap } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import AvailabilityCalendar from "@/components/booking/AvailabilityCalendar";
+import PaymentDetails from "@/components/payment/PaymentDetails";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 type BookingData = {
   fullName: string;
@@ -12,6 +16,11 @@ type BookingData = {
   eventType: string;
   eventName: string;
   eventDate: string;
+  eventStartTime: string;
+  eventDurationHours: string;
+  clientSegment: "personal" | "corporate";
+  companyName: string;
+  repTitle: string;
   venue: string;
   guestCount: string;
   additionalNotes: string;
@@ -25,11 +34,39 @@ const INITIAL_BOOKING: BookingData = {
   eventType: "",
   eventName: "",
   eventDate: "",
+  eventStartTime: "",
+  eventDurationHours: "",
+  clientSegment: "personal",
+  companyName: "",
+  repTitle: "",
   venue: "",
   guestCount: "",
   additionalNotes: "",
   packageName: "",
 };
+
+const packageDurations: Record<string, number> = {
+  Essential: 3,
+  Signature: 5,
+  Premium: 6,
+};
+
+function generateTimeOptions() {
+  const times: Array<{ value: string; label: string }> = [];
+  for (let h = 6; h <= 23; h++) {
+    for (const m of [0, 30]) {
+      const hour = String(h).padStart(2, "0");
+      const min = String(m).padStart(2, "0");
+      const ampm = h < 12 ? "AM" : "PM";
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      times.push({
+        value: `${hour}:${min}`,
+        label: `${hour12}:${min} ${ampm}`,
+      });
+    }
+  }
+  return times;
+}
 
 const MOCK_PACKAGES = [
   {
@@ -103,9 +140,13 @@ export default function BookingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   /** True when full_name or name was present in Auth metadata at load (locks name field). */
   const [hadExistingName, setHadExistingName] = useState(false);
+  const [selectedDateStatus, setSelectedDateStatus] = useState<"available" | "amber" | "blocked" | null>(null);
+  const [requestAcknowledged, setRequestAcknowledged] = useState(false);
+  const { settings } = usePlatformSettings();
+
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    const supabase = createClient();
     void supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
       setIsLoggedIn(true);
@@ -145,7 +186,45 @@ export default function BookingPage() {
     !hadExistingName &&
     bookingData.fullName.trim().length === 0;
 
+  if (settings && !settings.accept_bookings) {
+    return (
+      <div style={{ textAlign: "center", padding: "80px 32px" }}>
+        <Calendar size={48} color="rgba(255,255,255,0.20)" />
+        <h2 style={{ fontFamily: "Space Grotesk", color: "white", marginTop: "16px" }}>Bookings Paused</h2>
+        <p
+          style={{
+            fontFamily: "Inter",
+            color: "#A0A8C0",
+            maxWidth: "400px",
+            margin: "8px auto 24px",
+          }}
+        >
+          PAGE KillerCutz is not accepting new bookings at this time. Please check back soon or get in touch.
+        </p>
+        <Link
+          href="/contact"
+          style={{
+            padding: "12px 28px",
+            borderRadius: "999px",
+            background: "#00BFFF",
+            color: "#000",
+            fontFamily: "Space Grotesk",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Contact Us →
+        </Link>
+      </div>
+    );
+  }
+
   const validateStep1 = (): boolean => {
+    if (selectedDateStatus === "blocked" && !requestAcknowledged) {
+      setSubmitError("Please acknowledge that this date is booked before continuing.");
+      return false;
+    }
+    setSubmitError(null);
     const next: Partial<Record<keyof BookingData, string>> = {};
     if (!bookingData.fullName.trim()) next.fullName = "Required";
     if (!bookingData.email.trim()) next.email = "Required";
@@ -154,8 +233,12 @@ export default function BookingPage() {
     if (!phoneDigits) next.phone = "Required";
     else if (phoneDigits.length < 9) next.phone = "Enter a valid phone number";
     if (!bookingData.eventType.trim()) next.eventType = "Required";
-    if (!bookingData.eventDate.trim()) next.eventDate = "Required";
+    if (!bookingData.eventDate.trim()) next.eventDate = "Select a date on the calendar";
     if (!bookingData.venue.trim()) next.venue = "Required";
+    if (bookingData.clientSegment === "corporate") {
+      if (!bookingData.companyName.trim()) next.companyName = "Required";
+      if (!bookingData.repTitle.trim()) next.repTitle = "Required";
+    }
     setFieldErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -167,10 +250,200 @@ export default function BookingPage() {
     setCurrentStep(2);
   };
 
+  const DateStatusPanel = () => {
+    if (!bookingData.eventDate) {
+      return (
+        <div
+          style={{
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.07)",
+            borderRadius: "16px",
+            padding: "28px 24px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "14px",
+              background: "rgba(0,191,255,0.08)",
+              border: "1px solid rgba(0,191,255,0.20)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <Calendar size={24} color="#00BFFF" />
+          </div>
+
+          <div
+            style={{
+              fontFamily: "Space Grotesk",
+              fontWeight: 600,
+              fontSize: "16px",
+              color: "white",
+              marginBottom: "8px",
+            }}
+          >
+            Choose your event date
+          </div>
+
+          <p
+            style={{
+              fontFamily: "Inter",
+              fontSize: "13px",
+              color: "#5A6080",
+              lineHeight: 1.6,
+              marginBottom: "24px",
+            }}
+          >
+            Select a date on the calendar to check availability and continue with your booking.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "12px",
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+              paddingTop: "20px",
+            }}
+          >
+            {[
+              { value: "100+", label: "Events" },
+              { value: "12+", label: "Years" },
+              { value: "Accra", label: "Ghana" },
+            ].map((stat) => (
+              <div key={stat.label} style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontFamily: "Space Grotesk",
+                    fontWeight: 700,
+                    fontSize: "18px",
+                    color: "#00BFFF",
+                  }}
+                >
+                  {stat.value}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "Inter",
+                    fontSize: "11px",
+                    color: "#5A6080",
+                    marginTop: "2px",
+                  }}
+                >
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const formattedDate = new Date(`${bookingData.eventDate}T00:00:00`).toLocaleDateString("en-GH", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    const statusConfig = {
+      available: {
+        icon: CheckCircle,
+        iconColor: "#22c55e",
+        bg: "rgba(34,197,94,0.06)",
+        border: "rgba(34,197,94,0.20)",
+        title: "Date available",
+        subtitle: "Great choice — this date is open. Continue filling in your details below.",
+      },
+      amber: {
+        icon: Zap,
+        iconColor: "#F5A623",
+        bg: "rgba(245,166,35,0.06)",
+        border: "rgba(245,166,35,0.20)",
+        title: "Limited availability",
+        subtitle:
+          "PAGE KillerCutz has a prior commitment on this date. Please specify your start time carefully in the next step — there may still be a slot open.",
+      },
+      blocked: {
+        icon: AlertCircle,
+        iconColor: "#FF4560",
+        bg: "rgba(255,69,96,0.06)",
+        border: "rgba(255,69,96,0.20)",
+        title: "Date fully booked",
+        subtitle:
+          "This date is currently taken. You can still submit a request — the team will review if they can make it work.",
+      },
+    } as const;
+
+    const config = statusConfig[(selectedDateStatus ?? "available") as keyof typeof statusConfig];
+    const Icon = config.icon;
+
+    return (
+      <div
+        style={{
+          background: config.bg,
+          border: `1px solid ${config.border}`,
+          borderRadius: "16px",
+          padding: "24px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+          <Icon size={22} color={config.iconColor} />
+          <div style={{ fontFamily: "Space Grotesk", fontWeight: 700, fontSize: "16px", color: "white" }}>
+            {config.title}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: "10px",
+            padding: "12px 16px",
+            marginBottom: "14px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "Space Mono",
+              fontSize: "9px",
+              color: "#5A6080",
+              textTransform: "uppercase",
+              marginBottom: "4px",
+            }}
+          >
+            Selected date
+          </div>
+          <div style={{ fontFamily: "Space Grotesk", fontWeight: 600, fontSize: "15px", color: "white" }}>
+            {formattedDate}
+          </div>
+        </div>
+
+        <p style={{ fontFamily: "Inter", fontSize: "13px", color: "#A0A8C0", lineHeight: 1.6, margin: 0 }}>
+          {config.subtitle}
+        </p>
+
+        {selectedDateStatus === "blocked" ? (
+          <div style={{ marginTop: "14px", fontFamily: "Inter", fontSize: "12px", color: "#FF4560" }}>
+            ↓ Tick the box below to proceed with a request.
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
   const handleStep2Continue = async () => {
     setSubmitError(null);
     if (!selectedPackage) {
       setSubmitError("Please select a package to continue.");
+      return;
+    }
+    if (!bookingData.eventStartTime.trim()) {
+      setSubmitError("Please select your event start time to continue.");
       return;
     }
 
@@ -178,6 +451,9 @@ export default function BookingPage() {
       ? bookingData.phone.trim().replace(/\s/g, "")
       : `+233${bookingData.phone.replace(/\D/g, "").replace(/^0+/, "")}`;
 
+    const isRequest = selectedDateStatus === "blocked";
+    const includedHours = packageDurations[selectedPackage] ?? 3;
+    const durationToSend = Number(bookingData.eventDurationHours) || includedHours;
     const body = {
       clientName: bookingData.fullName,
       clientEmail: bookingData.email,
@@ -190,6 +466,12 @@ export default function BookingPage() {
       notes: bookingData.additionalNotes.trim() || null,
       packageName: selectedPackage,
       genres: [] as string[],
+      eventStartTime: bookingData.eventStartTime.trim() || null,
+      eventDurationHours: durationToSend,
+      isRequest,
+      isCompany: bookingData.clientSegment === "corporate",
+      companyName: bookingData.clientSegment === "corporate" ? bookingData.companyName.trim() : null,
+      repTitle: bookingData.clientSegment === "corporate" ? bookingData.repTitle.trim() : null,
     };
 
     setSubmitting(true);
@@ -221,7 +503,6 @@ export default function BookingPage() {
       setBookingData((d) => ({ ...d, packageName: selectedPackage }));
 
       if (isLoggedIn && !hadExistingName && bookingData.fullName.trim()) {
-        const supabase = createClient();
         void supabase.auth
           .updateUser({
             data: { full_name: bookingData.fullName.trim() },
@@ -308,6 +589,54 @@ export default function BookingPage() {
 
       {currentStep === 1 && (
         <section className="booking-form-native-controls space-y-6">
+          <div>
+            <label className={labelClass}>Select your event date</label>
+            <div className="booking-calendar-grid mt-2">
+              <AvailabilityCalendar
+                onDateSelect={(date, status) => {
+                  setBookingData((prev) => ({ ...prev, eventDate: date }));
+                  setSelectedDateStatus(status);
+                  setRequestAcknowledged(false);
+                  setFieldErrors((e) => ({ ...e, eventDate: undefined }));
+                }}
+                selectedDate={bookingData.eventDate || null}
+              />
+              <DateStatusPanel />
+            </div>
+            {selectedDateStatus === "blocked" ? (
+              <div
+                className="mt-3 rounded-[12px] border border-[rgba(255,69,96,0.25)] bg-[rgba(255,69,96,0.08)] p-4"
+                role="region"
+                aria-label="Fully booked date notice"
+              >
+                <p className="font-headline text-[14px] font-semibold text-[#FF4560]">This date is currently fully booked</p>
+                <p className="mt-2 font-body text-[13px] leading-relaxed text-[#A0A8C0]">
+                  Page KillerCutz already has a commitment on this date. You can still submit a request and the team will review if they can accommodate your event. No payment will be required until your request is confirmed.
+                </p>
+                <label className="mt-3 flex cursor-pointer items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={requestAcknowledged}
+                    onChange={(e) => setRequestAcknowledged(e.target.checked)}
+                    className="mt-0.5 accent-[#FF4560]"
+                  />
+                  <span className="font-body text-[13px] leading-snug text-[#A0A8C0]">
+                    I understand this date is currently booked. I am submitting a request only. No payment is required until my request is reviewed and confirmed.
+                  </span>
+                </label>
+              </div>
+            ) : null}
+            {selectedDateStatus === "amber" ? (
+              <div className="mt-3 rounded-[10px] border border-[rgba(245,166,35,0.20)] bg-[rgba(245,166,35,0.06)] px-4 py-3">
+                <p className="font-body text-[13px] text-[#F5A623]">
+                  Limited availability on this date. Please specify your event time carefully in the next step.
+                </p>
+              </div>
+            ) : null}
+            {fieldErrors.eventDate ? (
+              <p className="mt-2 font-body text-[12px] text-[#FF4560]">{fieldErrors.eventDate}</p>
+            ) : null}
+          </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className={labelClass}>Full Name</label>
@@ -434,18 +763,6 @@ export default function BookingPage() {
               ) : null}
             </div>
             <div>
-              <label className={labelClass}>Event Date</label>
-              <input
-                className={`${inputClass} ${fieldErrors.eventDate ? "border-[#FF4560]" : ""}`}
-                value={bookingData.eventDate}
-                onChange={(e) => setField("eventDate", e.target.value)}
-                type="date"
-              />
-              {fieldErrors.eventDate ? (
-                <p className="mt-1 font-body text-[12px] text-[#FF4560]">{fieldErrors.eventDate}</p>
-              ) : null}
-            </div>
-            <div>
               <label className={labelClass}>Guest Count</label>
               <input
                 className={inputClass}
@@ -456,6 +773,80 @@ export default function BookingPage() {
                 min={1}
               />
             </div>
+            <div className="md:col-span-2">
+              <label className={labelClass}>Booking type</label>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                {(
+                  [
+                    { value: "personal" as const, label: "Personal event", desc: "Wedding, birthday, party" },
+                    { value: "corporate" as const, label: "Corporate / organisation", desc: "Company, institution, NGO" },
+                  ] as const
+                ).map((option) => {
+                  const active = bookingData.clientSegment === option.value;
+                  return (
+                    <label
+                      key={option.value}
+                      className={[
+                        "flex flex-1 cursor-pointer flex-col gap-1 rounded-[12px] border p-3.5 transition-all sm:p-3.5",
+                        active
+                          ? "border-[#00BFFF] bg-[rgba(0,191,255,0.06)]"
+                          : "border-white/[0.08] bg-white/[0.03]",
+                      ].join(" ")}
+                    >
+                      <input
+                        type="radio"
+                        name="clientSegment"
+                        value={option.value}
+                        checked={active}
+                        onChange={() => {
+                          setBookingData((prev) => ({ ...prev, clientSegment: option.value }));
+                          setFieldErrors((e) => ({ ...e, companyName: undefined, repTitle: undefined }));
+                        }}
+                        className="sr-only"
+                      />
+                      <span className={`font-headline text-[13px] font-semibold ${active ? "text-[#00BFFF]" : "text-white"}`}>{option.label}</span>
+                      <span className="font-body text-[11px] text-[#5A6080]">{option.desc}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+            {bookingData.clientSegment === "corporate" ? (
+              <>
+                <div>
+                  <label className={labelClass}>
+                    Company / organisation name <span className="text-[#FF4560]">*</span>
+                  </label>
+                  <input
+                    className={`${inputClass} ${fieldErrors.companyName ? "border-[#FF4560]" : ""}`}
+                    value={bookingData.companyName}
+                    onChange={(e) => setField("companyName", e.target.value)}
+                    placeholder="e.g. Stanbic Bank Ghana"
+                    type="text"
+                    required
+                  />
+                  {fieldErrors.companyName ? (
+                    <p className="mt-1 font-body text-[12px] text-[#FF4560]">{fieldErrors.companyName}</p>
+                  ) : null}
+                </div>
+                <div>
+                  <label className={labelClass}>
+                    Your job title <span className="text-[#FF4560]">*</span>
+                  </label>
+                  <input
+                    className={`${inputClass} ${fieldErrors.repTitle ? "border-[#FF4560]" : ""}`}
+                    value={bookingData.repTitle}
+                    onChange={(e) => setField("repTitle", e.target.value)}
+                    placeholder="e.g. Events coordinator"
+                    type="text"
+                    required
+                  />
+                  {fieldErrors.repTitle ? (
+                    <p className="mt-1 font-body text-[12px] text-[#FF4560]">{fieldErrors.repTitle}</p>
+                  ) : null}
+                </div>
+              </>
+            ) : null}
           </div>
           <div>
             <label className={labelClass}>Venue / Location</label>
@@ -564,6 +955,108 @@ export default function BookingPage() {
               );
             })}
           </div>
+
+          {selectedPackage ? (
+            <div
+              style={{
+                marginTop: "24px",
+                padding: "20px",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "14px",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "Space Mono",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  color: "#5A6080",
+                  textTransform: "uppercase",
+                  marginBottom: "16px",
+                }}
+              >
+                Event Timing
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                }}
+              >
+                <div>
+                  <label className={labelClass}>Event Start Time</label>
+                  <select
+                    value={bookingData.eventStartTime || ""}
+                    onChange={(e) => setField("eventStartTime", e.target.value)}
+                    className={selectInputClass}
+                    required
+                  >
+                    <option value="">Select start time</option>
+                    {generateTimeOptions().map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Duration</label>
+                  <select
+                    value={
+                      bookingData.eventDurationHours ||
+                      String(packageDurations[selectedPackage] ?? 3)
+                    }
+                    onChange={(e) => setField("eventDurationHours", e.target.value)}
+                    className={selectInputClass}
+                  >
+                    {Array.from({
+                      length: (packageDurations[selectedPackage] ?? 3) + 4,
+                    }).map((_, i) => {
+                      const hrs = i + 1;
+                      const included = packageDurations[selectedPackage] ?? 3;
+                      const isIncluded = hrs <= included;
+                      return (
+                        <option key={hrs} value={String(hrs)}>
+                          {hrs} hour{hrs > 1 ? "s" : ""}
+                          {!isIncluded ? " (overtime)" : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  {Number(bookingData.eventDurationHours || 0) >
+                  (packageDurations[selectedPackage] ?? 3) ? (
+                    <div
+                      style={{
+                        marginTop: "6px",
+                        fontFamily: "Inter",
+                        fontSize: "11px",
+                        color: "#F5A623",
+                      }}
+                    >
+                      Overtime applies after {packageDurations[selectedPackage] ?? 3} hours at GHS 500/hr
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "12px",
+                  fontFamily: "Inter",
+                  fontSize: "12px",
+                  color: "#5A6080",
+                }}
+              >
+                {selectedPackage} package includes up to {packageDurations[selectedPackage] ?? 3} hours of performance.
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
             <button
@@ -683,11 +1176,13 @@ export default function BookingPage() {
             <p className="text-center font-mono text-[10px] font-medium uppercase tracking-widest text-[#A0A8C0]">
               Payment instructions
             </p>
-            <p className="mt-3 font-body text-[13px] leading-relaxed text-[#A0A8C0]">
-              Send your service fee via Mobile Money or bank transfer. Use your Event ID as the payment reference or
-              narration. Your booking is confirmed once Page KillerCutz receives and verifies payment.
-            </p>
-            <p className="mt-3 text-center font-mono text-[14px] text-[#00BFFF]">MoMo: +233 24 412 3456</p>
+            <div className="mt-3">
+              <PaymentDetails
+                reference={eventId}
+                amount={MOCK_PACKAGES.find((p) => p.id === selectedPackage)?.price}
+                amountLabel="Amount Due"
+              />
+            </div>
           </div>
 
           <button

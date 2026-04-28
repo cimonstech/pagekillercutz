@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BorderDrawEdges } from "@/components/ui/BorderDrawEdges";
 import AnimateIn from "@/components/ui/AnimateIn";
+import ReviewsShowcase from "@/components/public/ReviewsShowcase";
 import { DJ_INFO, DJ_STATS } from "@/lib/constants";
 
 function IconInstagram({ className, ...props }: SVGProps<SVGSVGElement>) {
@@ -70,29 +71,6 @@ const EQUIPMENT = [
   "2x Technics SL-1210MK7 Turntables",
 ];
 
-const TESTIMONIALS = [
-  {
-    initials: "AM",
-    quote:
-      '"The energy Page brings is unparalleled. He doesn\'t just play tracks; he creates an atmosphere that keeps the dancefloor locked for 4+ hours straight."',
-    name: "Amara Mensah",
-    role: "Events Director, GloFest",
-  },
-  {
-    initials: "SO",
-    quote:
-      '"Incredible technical skill mixed with a deep understanding of crowd psychology. A professional through and through."',
-    name: "Samuel Osei",
-    role: "Manager, The Sky Lounge Accra",
-  },
-  {
-    initials: "KL",
-    quote:
-      '"The premier choice for luxury brand activations. Page KillerCutz understands exactly how to balance background sophistication with foreground energy."',
-    name: "Kofi Larbi",
-    role: "Marketing Lead, Obsidian Global",
-  },
-];
 
 export default function AboutPage() {
   return (
@@ -306,32 +284,8 @@ export default function AboutPage() {
             <span className="font-label text-[10px] tracking-[0.3em] uppercase text-secondary">Feedback</span>
             <h2 className="font-headline text-3xl font-bold mt-2">What They Say</h2>
           </AnimateIn>
-          <AnimateIn stagger={0.1} className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map(({ initials, quote, name, role }) => (
-              <div key={name} className="glass rounded-2xl p-8">
-                <div className="flex gap-1 text-secondary mb-5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="material-symbols-outlined text-[18px]"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      star
-                    </span>
-                  ))}
-                </div>
-                <p className="font-headline text-sm font-medium text-on-surface mb-7 italic leading-relaxed">{quote}</p>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-sm">
-                    {initials}
-                  </div>
-                  <div>
-                    <p className="font-headline font-bold text-sm">{name}</p>
-                    <p className="font-label text-xs text-on-surface-variant">{role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <AnimateIn from={14}>
+            <ReviewsShowcase limit={6} />
           </AnimateIn>
         </section>
       </div>

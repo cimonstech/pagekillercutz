@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Booking calendar layout (step 1) */
+.booking-calendar-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .booking-calendar-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ─── Design Tokens ─────────────────────────────────────────────────── */
 :root {
   --player-offset: 0px;
@@ -194,6 +217,100 @@ body {
   vertical-align: middle;
   line-height: 1;
   user-select: none;
+}
+
+/* Client dashboard responsive layout */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+.dashboard-bento-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.recent-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-bento-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 16px;
+    padding-bottom: 96px;
+  }
+
+  .contract-modal-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-cta-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .recent-orders-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .event-switcher-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-bento-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero-card {
+    height: 220px !important;
+  }
+
+  .dashboard-hero-title {
+    font-size: 20px !important;
+  }
+
+  .dashboard-cta-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-welcome {
+    font-size: 18px !important;
+  }
+
+  .dashboard-book-again {
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+  }
+
+  .package-features-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 375px) {
+  .payment-momo-number {
+    font-size: 20px !important;
+  }
 }
 
 /* ─── Glass utilities ────────────────────────────────────────────────── */
@@ -664,12 +781,13 @@ body {
 }
 
 .booking-form-native-controls select option {
-  background-color: var(--color-surface-container-low);
-  color: var(--color-on-surface);
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 .booking-form-native-controls select option:checked,
 .booking-form-native-controls select option:hover {
-  background-color: var(--color-surface-container-high);
-  color: #ffffff;
+  background-color: #dbeafe !important;
+  color: #0f172a !important;
 }

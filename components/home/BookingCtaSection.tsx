@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import AnimateIn from "@/components/ui/AnimateIn";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 export default function BookingCtaSection() {
   const router = useRouter();
+  const { settings } = usePlatformSettings();
   return (
     <AnimateIn from={24}>
       <section className="glass flex flex-col gap-6 rounded-2xl p-8 sm:flex-row sm:items-center sm:justify-between">
@@ -22,13 +24,15 @@ export default function BookingCtaSection() {
           >
             Book Now <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
-          <button
-            type="button"
-            onClick={() => router.push("/pricing")}
-            className="flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-3 font-bold text-white transition-colors hover:bg-white/10"
-          >
-            View Packages <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
+          {settings?.show_pricing_on_homepage !== false ? (
+            <button
+              type="button"
+              onClick={() => router.push("/pricing")}
+              className="flex items-center justify-center gap-2 rounded-full border border-white/20 px-8 py-3 font-bold text-white transition-colors hover:bg-white/10"
+            >
+              View Packages <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
+          ) : null}
         </div>
       </section>
     </AnimateIn>

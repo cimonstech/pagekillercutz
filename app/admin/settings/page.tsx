@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAdminToast } from "@/hooks/useAdminToast";
+import { invalidatePaymentCache, type PaymentSettings } from "@/hooks/usePaymentSettings";
 
 const DEFAULT_SETTINGS: Record<
   "accept_bookings" | "merch_store_active" | "playlist_portal_open" | "maintenance_mode" | "show_pricing" | "music_streaming",
@@ -67,6 +68,10 @@ export default function SuperAdminSettingsPage() {
   const [testingEmail, setTestingEmail] = useState(false);
   const [djPhone, setDjPhone] = useState("");
   const [djEmail, setDjEmail] = useState("");
+  const [role, setRole] = useState<string>("");
+  const [savingPayment, setSavingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
   const showToastRef = useRef(showToast);
   showToastRef.current = showToast;
@@ -80,10 +85,11 @@ export default function SuperAdminSettingsPage() {
       })
       .then((data) => {
         if (cancelled) return;
-        if (data.role !== "super_admin") {
+        if (data.role !== "super_admin" && data.role !== "admin") {
           router.replace("/admin/overview");
           return;
         }
+        setRole(data.role ?? "");
         setAccessOk(true);
       })
       .catch(() => {
@@ -97,16 +103,41 @@ export default function SuperAdminSettingsPage() {
   useEffect(() => {
     if (!accessOk) return;
     setLoading(true);
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data: { settings?: Record<string, unknown> }) => {
+    Promise.all([fetch("/api/settings").then((r) => r.json()), fetch("/api/payment-settings").then((r) => r.json())])
+      .then(([data, paymentData]: [{ settings?: Record<string, unknown> }, { settings?: PaymentSettings }]) => {
         if (data.settings && typeof data.settings === "object") {
           setSettings(normalizeSettings(data.settings));
         }
+        if (paymentData.settings) setPaymentSettings(paymentData.settings);
       })
       .catch(() => showToastRef.current("Could not load settings.", "error"))
       .finally(() => setLoading(false));
   }, [accessOk]);
+
+  const savePaymentSettings = async () => {
+    if (!paymentSettings) return;
+    setSavingPayment(true);
+    setPaymentError(null);
+    try {
+      const res = await fetch("/api/payment-settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paymentSettings),
+      });
+      const json = (await res.json()) as { settings?: PaymentSettings; error?: string };
+      if (!res.ok) {
+        setPaymentError(json.error ?? "Failed to update payment details");
+        return;
+      }
+      if (json.settings) setPaymentSettings(json.settings);
+      invalidatePaymentCache();
+      showToast("Payment details updated");
+    } catch {
+      setPaymentError("Failed to update payment details");
+    } finally {
+      setSavingPayment(false);
+    }
+  };
 
   const patchSetting = useCallback(async (key: SettingsKey, value: boolean) => {
     setSaving(key);
@@ -364,6 +395,161 @@ export default function SuperAdminSettingsPage() {
           </div>
         </div>
 
+        <div className="lg:col-span-12 glass-card p-6 sm:p-8 border-l border-white/5">
+          <h2 className="text-lg font-headline font-semibold text-white">Payment Details</h2>
+          <p className="mt-1 text-[13px] text-on-surface-variant">Update how clients send payment.</p>
+
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="font-headline text-[16px] font-semibold text-white">Mobile Money</p>
+                <button
+                  type="button"
+                  className={`relative h-6 w-11 rounded-full ${paymentSettings?.momo_enabled ? "bg-[#00BFFF]" : "bg-white/20"}`}
+                  onClick={() =>
+                    setPaymentSettings((p) => (p ? { ...p, momo_enabled: !p.momo_enabled } : p))
+                  }
+                >
+                  <span
+                    className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${
+                      paymentSettings?.momo_enabled ? "left-6" : "left-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${paymentSettings?.momo_enabled ? "" : "opacity-50"}`}>
+                <div>
+                  <label className="mb-1 block text-xs text-on-surface-variant">Network</label>
+                  <div className="flex gap-2">
+                    {(["MTN", "Vodafone", "AirtelTigo"] as const).map((network) => (
+                      <button
+                        key={network}
+                        type="button"
+                        disabled={!paymentSettings?.momo_enabled}
+                        onClick={() => setPaymentSettings((p) => (p ? { ...p, momo_network: network } : p))}
+                        className="rounded-full px-3 py-1.5 text-xs font-semibold"
+                        style={{
+                          background:
+                            paymentSettings?.momo_network === network
+                              ? network === "MTN"
+                                ? "#FFCC00"
+                                : network === "Vodafone"
+                                  ? "#E60000"
+                                  : "#0066CC"
+                              : "rgba(255,255,255,0.06)",
+                          color: paymentSettings?.momo_network === network ? (network === "MTN" ? "#000" : "#fff") : "#A0A8C0",
+                        }}
+                      >
+                        {network}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-on-surface-variant">MoMo Number</label>
+                  <input
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+                    placeholder="0240000000"
+                    value={paymentSettings?.momo_number ?? ""}
+                    onChange={(e) => setPaymentSettings((p) => (p ? { ...p, momo_number: e.target.value } : p))}
+                    disabled={!paymentSettings?.momo_enabled}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-xs text-on-surface-variant">Registered Account Name</label>
+                  <input
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+                    placeholder="Name as registered on MoMo"
+                    value={paymentSettings?.momo_account_name ?? ""}
+                    onChange={(e) => setPaymentSettings((p) => (p ? { ...p, momo_account_name: e.target.value } : p))}
+                    disabled={!paymentSettings?.momo_enabled}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="font-headline text-[16px] font-semibold text-white">Bank Transfer</p>
+                <button
+                  type="button"
+                  className={`relative h-6 w-11 rounded-full ${paymentSettings?.bank_enabled ? "bg-[#00BFFF]" : "bg-white/20"}`}
+                  onClick={() =>
+                    setPaymentSettings((p) => (p ? { ...p, bank_enabled: !p.bank_enabled } : p))
+                  }
+                >
+                  <span
+                    className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${
+                      paymentSettings?.bank_enabled ? "left-6" : "left-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 ${paymentSettings?.bank_enabled ? "" : "opacity-50"}`}>
+                <input className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" placeholder="e.g. GCB Bank" value={paymentSettings?.bank_name ?? ""} onChange={(e) => setPaymentSettings((p) => (p ? { ...p, bank_name: e.target.value } : p))} disabled={!paymentSettings?.bank_enabled} />
+                <input className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" placeholder="0000000000" value={paymentSettings?.bank_account_number ?? ""} onChange={(e) => setPaymentSettings((p) => (p ? { ...p, bank_account_number: e.target.value } : p))} disabled={!paymentSettings?.bank_enabled} />
+                <input className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" placeholder="Name on account" value={paymentSettings?.bank_account_name ?? ""} onChange={(e) => setPaymentSettings((p) => (p ? { ...p, bank_account_name: e.target.value } : p))} disabled={!paymentSettings?.bank_enabled} />
+                <input className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white" placeholder="e.g. Accra Main Branch" value={paymentSettings?.bank_branch ?? ""} onChange={(e) => setPaymentSettings((p) => (p ? { ...p, bank_branch: e.target.value } : p))} disabled={!paymentSettings?.bank_enabled} />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
+              <label className="mb-1 block text-xs text-on-surface-variant">Payment Instructions</label>
+              <textarea
+                rows={3}
+                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white"
+                placeholder="Any additional payment instructions shown to clients..."
+                value={paymentSettings?.payment_instructions ?? ""}
+                onChange={(e) => setPaymentSettings((p) => (p ? { ...p, payment_instructions: e.target.value } : p))}
+              />
+              <label className="mb-1 mt-4 block text-xs text-on-surface-variant">Preferred Method</label>
+              <div className="space-y-2">
+                {[
+                  { id: "momo", label: "Mobile Money first" },
+                  { id: "bank", label: "Bank Transfer first" },
+                  { id: "both", label: "Show both equally" },
+                ].map((opt) => (
+                  <label key={opt.id} className="flex items-center gap-2 text-sm text-white">
+                    <input
+                      type="radio"
+                      name="preferred_method"
+                      checked={paymentSettings?.preferred_method === opt.id}
+                      onChange={() => setPaymentSettings((p) => (p ? { ...p, preferred_method: opt.id } : p))}
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {paymentError ? <p className="mt-3 text-sm text-error">{paymentError}</p> : null}
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => void savePaymentSettings()}
+              disabled={savingPayment}
+              className="rounded-full bg-[#00BFFF] px-6 py-2.5 font-headline text-sm font-semibold text-[#004a65] disabled:opacity-50"
+            >
+              {savingPayment ? "Saving..." : "Save Payment Details"}
+            </button>
+          </div>
+          {paymentSettings?.updated_by ? (
+            <p className="mt-2 text-right text-[11px] text-on-surface-variant">
+              Last updated by {paymentSettings.updated_by} on{" "}
+              {paymentSettings.updated_at
+                ? new Date(paymentSettings.updated_at).toLocaleString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "—"}
+            </p>
+          ) : null}
+        </div>
+
         {settings.maintenance_mode && (
           <div className="lg:col-span-12 glass-card p-6 sm:p-8 border-l-[3px] border-error relative">
             <div className="flex items-center gap-3 mb-6">
@@ -389,6 +575,7 @@ export default function SuperAdminSettingsPage() {
           </div>
         )}
 
+        {role === "super_admin" ? (
         <div className="lg:col-span-12 glass-card p-6 sm:p-8 border-l-[3px] border-error">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-error">priority_high</span>
@@ -410,6 +597,7 @@ export default function SuperAdminSettingsPage() {
             </div>
           </div>
         </div>
+        ) : null}
       </div>
 
       {maintenanceDialogOpen ? (

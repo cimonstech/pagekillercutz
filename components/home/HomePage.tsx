@@ -8,6 +8,7 @@ import HowItWorksSection from "@/components/home/HowItWorksSection";
 import NewReleasesSection from "@/components/home/NewReleasesSection";
 import PopularTracksSection from "@/components/home/PopularTracksSection";
 import RecentEventsSection from "@/components/home/RecentEventsSection";
+import ReviewsShowcase from "@/components/public/ReviewsShowcase";
 
 export default function HomePage() {
   return (
@@ -22,6 +23,7 @@ export default function HomePage() {
         </section>
         <HomeGenreChips />
         <RecentEventsSection />
+        <ReviewsShowcase limit={6} />
         <NewReleasesSection />
         <ArtistAboutSection />
         <BookingCtaSection />

@@ -4,11 +4,18 @@ import { sendEmail } from "./email";
 import * as ET from "./emailTemplates";
 import * as T from "./templates";
 import { getDjSmsRecipients, getPrimaryDjPhone } from "./djPhones";
+import { getSupabaseAdmin } from "../supabase";
 
 const DJ_EMAIL = process.env.DJ_EMAIL!;
 
 const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
-const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
+
+async function getMomoDisplay(): Promise<string> {
+  const admin = getSupabaseAdmin();
+  const { data } = await admin.from("payment_settings").select("*").maybeSingle();
+  if (data?.momo_number) return `${data.momo_network ?? "MoMo"} ${data.momo_number}`;
+  return "Payment details on your dashboard";
+}
 
 function portalUrl(d: T.BookingData): string {
   return d.portalUrl || `${BASE_URL}/sign-in`;
@@ -17,6 +24,7 @@ function portalUrl(d: T.BookingData): string {
 export async function notifyBookingConfirmed(data: T.BookingData) {
   const djPhones = getDjSmsRecipients();
   const d = { ...data, djPhone: getPrimaryDjPhone(), djEmail: DJ_EMAIL };
+  const momoDisplay = await getMomoDisplay();
   const formattedDate = T.formatBookingDate(d.eventDate);
   const pkg = d.packageName?.trim() || "Signature";
   const results = await Promise.allSettled([
@@ -32,7 +40,7 @@ export async function notifyBookingConfirmed(data: T.BookingData) {
         eventDate: formattedDate,
         venue: d.venue,
         packageName: pkg,
-        djMomo: DJ_MOMO,
+        djMomo: momoDisplay,
         portalUrl: portalUrl(d),
       }),
     }),

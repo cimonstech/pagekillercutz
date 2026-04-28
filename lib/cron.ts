@@ -8,6 +8,9 @@ import {
 } from "./notify/dispatch";
 import { getPrimaryDjPhone } from "./notify/djPhones";
 import type { BookingData } from "./notify/templates";
+import { randomBytes } from "crypto";
+import { sendEmail } from "./notify/email";
+import { reviewRequestEmail } from "./notify/emailTemplates";
 
 function getSupabase() {
   return createClient(
@@ -101,6 +104,73 @@ export function startCronJobs() {
     }
 
     logger.infoRaw("cron", `[cron] Done. 7-day: ${b7.length}, 1-day: ${b1.length}, today: ${b0.length}`);
+  }, {
+    timezone: "Africa/Accra",
+  });
+
+  cron.schedule("0 10 * * *", async () => {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    const dateStr = threeDaysAgo.toISOString().split("T")[0]!;
+    const supabase = getSupabase();
+
+    const { data: bookings, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("event_date", dateStr)
+      .eq("status", "confirmed")
+      .eq("payment_status", "paid");
+
+    if (error) {
+      logger.errorRaw("cron", "[cron][reviews] bookings query failed:", error);
+      return;
+    }
+
+    for (const booking of bookings ?? []) {
+      const { data: existing } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("event_id", booking.event_id)
+        .maybeSingle();
+      if (existing?.id) continue;
+
+      const token = randomBytes(32).toString("hex");
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 30);
+
+      const { error: insertError } = await supabase.from("reviews").insert({
+        booking_id: booking.id,
+        event_id: booking.event_id,
+        client_name: booking.client_name,
+        client_email: booking.client_email,
+        event_type: booking.event_type,
+        event_month: new Date(`${booking.event_date}T00:00:00`).toLocaleDateString("en-GH", {
+          month: "long",
+          year: "numeric",
+        }),
+        status: "pending",
+        token,
+        token_expires_at: expires.toISOString(),
+      });
+      if (insertError) {
+        logger.errorRaw("cron", "[cron][reviews] create review row failed:", insertError);
+        continue;
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://pagekillercutz.com";
+      const reviewUrl = `${baseUrl}/review/${token}`;
+      await sendEmail({
+        to: booking.client_email,
+        subject: "How was your event? Leave a review",
+        html: reviewRequestEmail({
+          clientName: booking.client_name,
+          eventType: booking.event_type,
+          reviewUrl,
+        }),
+        type: "review_request",
+        bookingId: booking.id,
+      });
+    }
   }, {
     timezone: "Africa/Accra",
   });

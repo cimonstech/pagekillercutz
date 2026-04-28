@@ -12,7 +12,6 @@ import type { Database } from "@/lib/database.types";
 type BookingRow = Database["public"]["Tables"]["bookings"]["Row"];
 
 const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
-const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
 
 /** Trigger 2 — admin confirmed booking: client + DJ. */
 export async function POST(request: Request) {
@@ -32,6 +31,10 @@ export async function POST(request: Request) {
     }
 
     const d = bookingRowToData(row as BookingRow);
+    const { data: paymentSettings } = await supabase.from("payment_settings").select("*").maybeSingle();
+    const momoDisplay = paymentSettings?.momo_number
+      ? `${paymentSettings?.momo_network ?? "MoMo"} ${paymentSettings.momo_number}`
+      : "Payment details on your dashboard";
     const djPhones = getDjSmsRecipients();
     const DJ_EMAIL = process.env.DJ_EMAIL;
     if (!djPhones.length || !DJ_EMAIL) {
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
           eventDate: formattedDate,
           venue: d.venue,
           packageName: pkg,
-          djMomo: DJ_MOMO,
+          djMomo: momoDisplay,
           portalUrl: d.portalUrl || `${BASE_URL}/sign-in`,
         }),
       }),

@@ -4,15 +4,15 @@ import Link from "next/link";
 import { Check, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import PaymentDetails from "@/components/payment/PaymentDetails";
 
 type Props = {
   orderNumber: string;
   total: number;
-  djMomo: string;
   onClose: () => void;
 };
 
-export default function OrderConfirmation({ orderNumber, total, djMomo, onClose }: Props) {
+export default function OrderConfirmation({ orderNumber, total, onClose }: Props) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
 
@@ -25,9 +25,6 @@ export default function OrderConfirmation({ orderNumber, total, djMomo, onClose 
       /* ignore */
     }
   };
-
-  const fmt = (n: number) =>
-    new Intl.NumberFormat("en-GH", { maximumFractionDigits: 0 }).format(n);
 
   return (
     <div className="flex w-full min-w-0 flex-col items-center px-0 py-1 text-center sm:px-1 sm:py-2">
@@ -67,13 +64,9 @@ export default function OrderConfirmation({ orderNumber, total, djMomo, onClose 
         }}
       >
         <h3 className="font-headline text-[15px] font-semibold text-white">Complete Your Payment</h3>
-        <p className="mt-2 font-body text-[13px] text-[#A0A8C0]">
-          Send GH₵{fmt(total)} via Mobile Money to:
-        </p>
-        <p className="mt-2 font-label text-[16px] font-bold text-[#00BFFF]">{djMomo}</p>
-        <p className="mt-2 font-body text-[13px] text-[#A0A8C0]">
-          Use <span className="font-medium text-white/90">{orderNumber}</span> as the payment reference.
-        </p>
+        <div className="mt-3">
+          <PaymentDetails reference={orderNumber} amount={total} amountLabel="Order Total" />
+        </div>
       </div>
 
       <p className="mt-4 font-body text-[12px] text-[#5A6080] sm:mt-6">Check your email and SMS for full details.</p>

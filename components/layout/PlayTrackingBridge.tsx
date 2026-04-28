@@ -16,7 +16,7 @@ function resolveMusicId(track: PlayerTrack): string | undefined {
   return undefined;
 }
 
-const NO_TRACK_PREFIXES = ["/sign-in", "/register", "/verify-email", "/reset-password", "/admin/login"] as const;
+const NO_TRACK_PREFIXES = ["/sign-in", "/register", "/verify-email", "/reset-password", "/admin-login"] as const;
 
 function isAuthShellPath(pathname: string) {
   return NO_TRACK_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));

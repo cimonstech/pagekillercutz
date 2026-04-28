@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, Info, Loader2, Pencil, Search, X } from "lucide-react";
+import { ArrowRight, Clock, Info, Loader2, Lock, Pencil, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Suspense,
@@ -19,6 +19,8 @@ import { createPortal } from "react-dom";
 import type { Database } from "@/lib/database.types";
 import { normalizeCoverUrl } from "@/lib/coverUrl";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { useStaffAdmin } from "@/hooks/useStaffAdmin";
 
 type BookingsRow = Database["public"]["Tables"]["bookings"]["Row"];
@@ -105,8 +107,6 @@ const PREDEFINED_GENRES = [
 ] as const;
 
 const PREDEFINED_GENRE_SET = new Set<string>(PREDEFINED_GENRES);
-
-const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
 
 const plusCyanClass =
   "flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-[#00BFFF]/30 bg-[rgba(0,191,255,0.12)] text-[20px] font-light leading-none text-[#00BFFF] transition-all duration-150 ease-in-out hover:border-[#00BFFF] hover:bg-[rgba(0,191,255,0.20)] disabled:cursor-not-allowed disabled:opacity-40";
@@ -454,6 +454,8 @@ function useDeezerSearch(genreBias?: string[]) {
 
 function ClientPlaylistContent() {
   const router = useRouter();
+  const { settings } = usePlatformSettings();
+
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const staffAdmin = useStaffAdmin(user);
@@ -467,6 +469,7 @@ function ClientPlaylistContent() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { settings: paymentSettings } = usePaymentSettings();
   const [saveError, setSaveError] = useState<string | null>(null);
   /** Brief highlight after a successful save (distinct from the persistent “synced” strip). */
   const [recentlySavedAt, setRecentlySavedAt] = useState<number | null>(null);
@@ -617,6 +620,15 @@ function ClientPlaylistContent() {
     return playlistStateSignature(genres, vibe, mustPlay, doNotPlay, timeline, notes) === savedSnapshot;
   }, [savedSnapshot, genres, vibe, mustPlay, doNotPlay, timeline, notes]);
 
+  const hasPlaylistContent = useMemo(() => {
+    const hasVibe = Boolean((vibe ?? "").trim());
+    const hasGenres = genres.length > 0;
+    const hasTracks = mustPlay.length > 0 || doNotPlay.length > 0;
+    const hasTimeline = timeline.length > 0;
+    const hasNotes = Boolean((notes ?? "").trim());
+    return hasVibe || hasGenres || hasTracks || hasTimeline || hasNotes;
+  }, [vibe, genres, mustPlay, doNotPlay, timeline, notes]);
+
   const toggleGenre = (g: string) => {
     if (locked) return;
     setGenres((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
@@ -721,6 +733,20 @@ function ClientPlaylistContent() {
     return (
       <main className="relative z-[1] flex min-h-[40vh] w-full items-center justify-center pb-8 text-on-surface">
         <p className="font-body text-sm text-on-surface-variant">Redirecting…</p>
+      </main>
+    );
+  }
+
+  if (settings && !settings.playlist_portal_open) {
+    return (
+      <main className="relative z-[1] flex min-h-[40vh] w-full items-center justify-center pb-8 text-on-surface">
+        <div style={{ textAlign: "center", padding: "80px 32px" }}>
+          <Lock size={48} color="rgba(255,255,255,0.20)" />
+          <h2 style={{ fontFamily: "Space Grotesk", color: "white", marginTop: "16px" }}>Playlist Portal Closed</h2>
+          <p style={{ fontFamily: "Inter", color: "#A0A8C0" }}>
+            The playlist portal is temporarily closed. Your playlist data is safe.
+          </p>
+        </div>
       </main>
     );
   }
@@ -1369,7 +1395,11 @@ function ClientPlaylistContent() {
                         <p className="font-body text-[11px] leading-relaxed text-on-surface-variant">
                           Send payment via MoMo using your Event ID as reference.
                         </p>
-                        <p className="font-mono text-xs text-[#00BFFF]">{DJ_MOMO}</p>
+                        <p className="font-mono text-xs text-[#00BFFF]">
+                          {paymentSettings?.momo_number
+                            ? `${paymentSettings.momo_network} ${paymentSettings.momo_number}`
+                            : "Payment details available in your dashboard"}
+                        </p>
                       </div>
                     ) : null}
                   </div>
@@ -1381,7 +1411,7 @@ function ClientPlaylistContent() {
                     </div>
                   ) : (
                     <>
-                      {isInSyncWithServer && !saving ? (
+                      {isInSyncWithServer && hasPlaylistContent && !saving ? (
                         <div
                           className={[
                             "flex w-full flex-col items-center justify-center gap-2 rounded-xl border px-4 py-5 text-center transition-[box-shadow,transform] duration-300",

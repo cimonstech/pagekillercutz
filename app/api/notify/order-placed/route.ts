@@ -4,6 +4,7 @@ import { orderPlacedClient } from "@/lib/notify/emailTemplates";
 import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { sendSMS } from "@/lib/notify/sms";
 import { logger } from "@/lib/logger";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 type Body = {
   orderNumber: string;
@@ -28,8 +29,12 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as Body;
     const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pagekillercutz.com").replace(/\/$/, "");
-    const DJ_MOMO = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
     const djPhones = getDjSmsRecipients();
+    const admin = getSupabaseAdmin();
+    const { data: paymentSettings } = await admin.from("payment_settings").select("*").maybeSingle();
+    const momoDisplay = paymentSettings?.momo_number
+      ? `${paymentSettings?.momo_network ?? "MoMo"} ${paymentSettings.momo_number}`
+      : "Payment details in confirmation";
 
     if (!body.orderNumber || !body.customerPhone) {
       return Response.json({ error: "Invalid payload" }, { status: 400 });
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
       `Page KillerCutz order has been placed!\n` +
       `Order ID: ${body.orderNumber}\n` +
       `Total: GH₵${body.total.toLocaleString("en-GH")}\n` +
-      `Send payment via MoMo to ${DJ_MOMO}\n` +
+      `Send payment via MoMo to ${momoDisplay}\n` +
       `Use ${body.orderNumber} as reference.\n` +
       `Track: ${BASE_URL}/track-order\n` +
       `— Page KillerCutz`;
@@ -61,7 +66,7 @@ export async function POST(request: Request) {
           price: i.price,
         })),
         total: body.total,
-        djMomo: DJ_MOMO,
+        djMomo: momoDisplay,
         trackUrl: `${BASE_URL}/track-order`,
       }),
     });

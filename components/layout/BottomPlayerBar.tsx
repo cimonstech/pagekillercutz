@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { normalizeCoverUrl } from "@/lib/coverUrl";
 import { formatDuration } from "@/lib/player-utils";
 import { usePlayerStore } from "@/lib/store/playerStore";
@@ -81,6 +82,7 @@ export default function BottomPlayerBar() {
   const prevTrack = usePlayerStore((s) => s.prevTrack);
   const nextTrack = usePlayerStore((s) => s.nextTrack);
   const stop = usePlayerStore((s) => s.stop);
+  const { settings } = usePlatformSettings();
 
   const [isMobile, setIsMobile] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -163,6 +165,8 @@ export default function BottomPlayerBar() {
 
   if (!isVisible || !current) return null;
   const noAudio = !current.audioUrl;
+  const streamingEnabled = settings?.music_streaming_enabled !== false;
+  const playDisabled = noAudio || !streamingEnabled;
   const isPreview = Boolean(current.audioUrl?.includes("deezer") || current.audioUrl?.includes("dzcdn"));
   const durationValue = duration || current.durationSec || current.duration || 0;
   const progressRatio = durationValue > 0 ? Math.min(1, progress / durationValue) : 0;
@@ -291,7 +295,7 @@ export default function BottomPlayerBar() {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          togglePlay();
+          if (!playDisabled) togglePlay();
         }}
         style={{
           width: "40px",
@@ -307,6 +311,8 @@ export default function BottomPlayerBar() {
           boxShadow: "0 0 16px rgba(0,191,255,0.30)",
         }}
         aria-label={isPlaying ? "Pause" : "Play"}
+        title={!streamingEnabled ? "Streaming temporarily unavailable" : undefined}
+        disabled={playDisabled}
       >
         {isPlaying ? (
           <Pause size={18} color="#000" fill="#000" />
@@ -319,6 +325,7 @@ export default function BottomPlayerBar() {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
+          if (!streamingEnabled) return;
           nextTrack();
         }}
         style={{
@@ -326,7 +333,7 @@ export default function BottomPlayerBar() {
           height: "36px",
           background: "none",
           border: "none",
-          cursor: "pointer",
+          cursor: streamingEnabled ? "pointer" : "not-allowed",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -629,18 +636,21 @@ export default function BottomPlayerBar() {
           <SkipBack size={28} />
         </button>
 
-        <button
+      <button
           type="button"
-          onClick={() => togglePlay()}
-          disabled={noAudio}
+        onClick={() => {
+          if (!playDisabled) togglePlay();
+        }}
+        disabled={playDisabled}
+        title={!streamingEnabled ? "Streaming temporarily unavailable" : undefined}
           style={{
             width: "68px",
             height: "68px",
             borderRadius: "50%",
             background: "#00BFFF",
             border: "none",
-            cursor: noAudio ? "not-allowed" : "pointer",
-            opacity: noAudio ? 0.5 : 1,
+          cursor: playDisabled ? "not-allowed" : "pointer",
+          opacity: playDisabled ? 0.5 : 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -777,11 +787,14 @@ export default function BottomPlayerBar() {
             </button>
             <button
               type="button"
-              disabled={noAudio}
-              className={`flex h-9 w-9 items-center justify-center rounded-full ${noAudio ? "cursor-not-allowed opacity-40" : ""}`}
+              disabled={playDisabled}
+              title={!streamingEnabled ? "Streaming temporarily unavailable" : undefined}
+              className={`flex h-9 w-9 items-center justify-center rounded-full ${playDisabled ? "cursor-not-allowed opacity-40" : ""}`}
               style={{ backgroundColor: ACCENT, color: "#000000" }}
               aria-label={isPlaying ? "Pause" : "Play"}
-              onClick={() => togglePlay()}
+              onClick={() => {
+                if (!playDisabled) togglePlay();
+              }}
             >
               <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                 {isPlaying ? "pause" : "play_arrow"}
@@ -849,14 +862,16 @@ export default function BottomPlayerBar() {
               </button>
               <button
                 type="button"
-                disabled={noAudio}
-                title={noAudio ? "No audio available" : undefined}
+                disabled={playDisabled}
+                title={!streamingEnabled ? "Streaming temporarily unavailable" : noAudio ? "No audio available" : undefined}
                 className={`flex h-11 w-11 items-center justify-center rounded-full shadow-[0_0_20px_rgba(0,191,255,0.40)] transition-[transform,box-shadow] md:h-12 md:w-12 ${
-                  noAudio ? "cursor-not-allowed opacity-50" : "hover:scale-105 active:scale-95"
+                  playDisabled ? "cursor-not-allowed opacity-50" : "hover:scale-105 active:scale-95"
                 }`}
                 style={{ backgroundColor: ACCENT, color: "#000000" }}
                 aria-label={isPlaying ? "Pause" : "Play"}
-                onClick={() => togglePlay()}
+                onClick={() => {
+                  if (!playDisabled) togglePlay();
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = "0 0 28px rgba(0,191,255,0.60)";
                 }}
@@ -868,7 +883,7 @@ export default function BottomPlayerBar() {
                   className="material-symbols-outlined text-[30px] md:text-[32px]"
                   style={{ fontVariationSettings: "'FILL' 1" }}
                 >
-                  {isPlaying ? "pause" : noAudio ? "music_note" : "play_arrow"}
+                  {isPlaying ? "pause" : playDisabled ? "music_note" : "play_arrow"}
                 </span>
               </button>
               <button

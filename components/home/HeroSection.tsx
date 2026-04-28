@@ -26,6 +26,7 @@ export default function HeroSection() {
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const heroRef = useRef<HTMLDivElement>(null);
   const [heroMusic, setHeroMusic] = useState<MusicRow[]>([]);
+  const [reviewStats, setReviewStats] = useState<{ average: number; count: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +53,24 @@ export default function HeroSection() {
       }
     };
     void loadHeroMusic();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/reviews?limit=60")
+      .then((r) => r.json())
+      .then((j: { reviews?: { rating: number }[] }) => {
+        const rows = j.reviews ?? [];
+        const count = rows.length;
+        const average = count ? rows.reduce((s, x) => s + (x.rating || 0), 0) / count : 0;
+        if (!cancelled) setReviewStats({ average, count });
+      })
+      .catch(() => {
+        if (!cancelled) setReviewStats(null);
+      });
     return () => {
       cancelled = true;
     };
@@ -151,6 +170,16 @@ export default function HeroSection() {
         <p className="kc-hero-subtitle mb-6 max-w-lg font-headline text-base text-on-surface-variant">
           Master of the decks. Afrobeat &amp; Highlife fusion from Accra to the world.
         </p>
+        {reviewStats?.count ? (
+          <div className="mb-4">
+            <p className="font-display text-2xl font-extrabold leading-none text-[#F5A623]">
+              {reviewStats.average.toFixed(1)} ★
+            </p>
+            <p className="mt-1 font-label text-[10px] uppercase tracking-widest text-white/50">
+              Based on {reviewStats.count} reviews
+            </p>
+          </div>
+        ) : null}
         <div className="kc-hero-ctas inline-grid w-max max-w-full auto-cols-max grid-flow-col items-center gap-3">
           <button
             type="button"

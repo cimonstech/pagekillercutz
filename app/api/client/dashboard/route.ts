@@ -102,12 +102,12 @@ export async function GET(request: Request) {
 
     const upcomingBookings = allBookings.filter((b) => {
       const ed = eventDateOnly(b.event_date);
-      return ed >= today && b.status !== "cancelled";
+      return ed >= today && !["cancelled", "declined"].includes(b.status);
     });
 
     const pastBookings = allBookings.filter((b) => {
       const ed = eventDateOnly(b.event_date);
-      return ed < today || b.status === "cancelled";
+      return ed < today || ["cancelled", "declined"].includes(b.status);
     });
 
     const pastNewestFirst = [...pastBookings].sort(
@@ -143,6 +143,18 @@ export async function GET(request: Request) {
     const { data: playlist } = await admin
       .from("playlists")
       .select("*")
+      .eq("event_id", primaryBooking.event_id)
+      .maybeSingle();
+
+    const { data: contractSettings } = await admin
+      .from("contract_settings")
+      .select("deposit_percentage")
+      .eq("is_current", true)
+      .maybeSingle();
+
+    const { data: contract } = await admin
+      .from("contracts")
+      .select("id, status, signing_token, client_signed_at, pdf_url, contract_text")
       .eq("event_id", primaryBooking.event_id)
       .maybeSingle();
 
@@ -219,6 +231,8 @@ export async function GET(request: Request) {
     return Response.json({
       booking: b,
       playlist: playlist ?? null,
+      contract: contract ?? null,
+      contractSettings: contractSettings ?? null,
       package: packageData ?? null,
       daysUntilEvent,
       eventData: eventData ?? null,

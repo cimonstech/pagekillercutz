@@ -84,8 +84,6 @@ export default function CheckoutForm({ onClose }: Props) {
     [items],
   );
 
-  const djMomo = process.env.NEXT_PUBLIC_DJ_MOMO ?? "+233 24 412 3456";
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -225,7 +223,6 @@ export default function CheckoutForm({ onClose }: Props) {
       <OrderConfirmation
         orderNumber={orderNumber}
         total={confirmedTotal}
-        djMomo={djMomo}
         onClose={onClose}
       />
     );

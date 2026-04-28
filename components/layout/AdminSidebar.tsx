@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   Calendar,
   CalendarCheck,
+  CalendarDays,
   ClipboardList,
   LayoutDashboard,
   ListMusic,
@@ -15,6 +16,7 @@ import {
   Settings,
   ShoppingBag,
   ShoppingCart,
+  Star,
   Tag,
   UserCircle,
   Users,
@@ -32,6 +34,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin/overview", label: "Overview", Icon: LayoutDashboard },
   { href: "/admin/bookings", label: "Bookings", Icon: CalendarCheck },
+  { href: "/admin/calendar", label: "Calendar", Icon: CalendarDays },
   { href: "/admin/clients", label: "Clients", Icon: Users },
   { href: "/admin/playlists", label: "Playlists", Icon: ListMusic },
   { href: "/admin/orders", label: "Orders", Icon: ShoppingCart },
@@ -39,6 +42,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/music", label: "Music", Icon: Music },
   { href: "/admin/merch", label: "Merch", Icon: ShoppingBag },
   { href: "/admin/events", label: "Events", Icon: Calendar },
+  { href: "/admin/reviews", label: "Reviews", Icon: Star },
+  { href: "/admin/contract-settings", label: "Contract", superOnly: true, Icon: ClipboardList },
   { href: "/admin/accounts", label: "Accounts", superOnly: true, Icon: Users },
   { href: "/admin/audit-log", label: "Audit Log", superOnly: true, Icon: ClipboardList },
 ];
@@ -61,7 +66,7 @@ export default function AdminSidebar() {
     await fetch("/api/auth/admin-session", { method: "DELETE" }).catch(() => {});
     await supabase.auth.signOut();
     setSession({ role: null, staffEmail: null });
-    router.push("/admin/login");
+    router.push("/admin-login");
   };
 
   return (

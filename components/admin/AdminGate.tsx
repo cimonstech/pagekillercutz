@@ -29,7 +29,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
 
       if (!user?.email) {
         setSession({ role: null, staffEmail: null });
-        router.replace("/admin/login");
+        router.replace("/admin-login");
         return;
       }
 
@@ -40,7 +40,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         await clearAdminSession();
         await supabase.auth.signOut();
         setSession({ role: null, staffEmail: null });
-        router.replace("/admin/login");
+        router.replace("/admin-login");
         return;
       }
 
@@ -55,7 +55,7 @@ export default function AdminGate({ children }: { children: React.ReactNode }) {
         await clearAdminSession();
         await supabase.auth.signOut();
         setSession({ role: null, staffEmail: null });
-        router.replace("/admin/login");
+        router.replace("/admin-login");
         return;
       }
 

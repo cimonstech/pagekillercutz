@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Plus, ShoppingCart } from "lucide-react";
 import type { Database } from "@/lib/database.types";
+import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 import { useCartStore } from "@/lib/store/cartStore";
 
 type Cat = "all" | "apparel" | "headwear" | "accessories" | "vinyl";
@@ -36,6 +37,7 @@ export default function MerchPage() {
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { settings } = usePlatformSettings();
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +82,18 @@ export default function MerchPage() {
       setTimeout(() => setCartOpen(true), 400);
     }
   };
+
+  if (settings && !settings.merch_store_active) {
+    return (
+      <div style={{ textAlign: "center", padding: "80px 32px" }}>
+        <ShoppingCart size={48} color="rgba(255,255,255,0.20)" />
+        <h2 style={{ fontFamily: "Space Grotesk", color: "white", marginTop: "16px" }}>Store Temporarily Closed</h2>
+        <p style={{ fontFamily: "Inter", color: "#A0A8C0" }}>
+          The merch store is currently unavailable. Check back soon.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto min-h-full max-w-screen-xl bg-[#08080F] px-3 pb-16 pt-2 text-on-surface sm:px-4">

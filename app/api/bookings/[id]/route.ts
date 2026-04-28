@@ -9,6 +9,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 const ALLOWED_BOOKING_PATCH_FIELDS = new Set([
   "status",
   "payment_status",
+  "deposit_paid",
+  "deposit_paid_at",
   "event_date",
   "venue",
   "event_type",
@@ -18,6 +20,7 @@ const ALLOWED_BOOKING_PATCH_FIELDS = new Set([
   "package_name",
   "genres",
   "admin_notes",
+  "booking_type",
 ]);
 
 export async function GET(_: Request, { params }: RouteContext) {

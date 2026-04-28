@@ -38,6 +38,7 @@ type FishAfricaMessageItem = { reference?: string; status?: string };
 
 type FishAfricaResponse = {
   success?: boolean;
+  status?: string;
   message?: string;
   data?: FishAfricaMessageItem[];
   error?: string | { detail?: string };
@@ -137,11 +138,29 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
   logger.info("sms", `Sending to ${recipients.join(", ")}...`);
 
   try {
+    const [appId, appSecret] = apiKey.split(".");
+    if (!appId || !appSecret) {
+      const msg = "Invalid API key format";
+      if (notificationId) {
+        await admin
+          .from("notifications")
+          .update({
+            status: "failed",
+            error_message: msg,
+            failed_at: new Date().toISOString(),
+          } satisfies NotificationUpdate)
+          .eq("id", notificationId);
+      }
+      logger.error("sms", "FISH_AFRICA_API_KEY format invalid. Must be app_id.app_secret");
+      return { success: false, error: msg };
+    }
+
     const res = await fetch("https://api.letsfish.africa/v1/sms", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        Accept: "application/json",
       },
       body: JSON.stringify({
         sender_id: senderId,
@@ -152,6 +171,28 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
 
     const contentType = res.headers.get("content-type") ?? "unknown";
     const raw = await res.text();
+
+    // Cloudflare / upstream edge blocks often return HTML or text, not JSON.
+    if (!contentType.toLowerCase().includes("application/json")) {
+      const rawPreview = raw.slice(0, 280);
+      const msg = "SMS blocked by Cloudflare. Deploy to VPS to resolve.";
+      logger.error(
+        "sms",
+        `Cloudflare block (${res.status}) non-JSON response. content-type=${contentType}. preview=${rawPreview}`,
+      );
+      if (notificationId) {
+        await admin
+          .from("notifications")
+          .update({
+            status: "failed",
+            error_message: msg,
+            failed_at: new Date().toISOString(),
+          } satisfies NotificationUpdate)
+          .eq("id", notificationId);
+      }
+      return { success: false, error: msg };
+    }
+
     let data: FishAfricaResponse = {};
     let items: FishAfricaMessageItem[] = [];
     try {
@@ -177,8 +218,18 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
       return { success: false, error: msg };
     }
 
-    if (!res.ok) {
-      const msg = errorMessageFromResponse(data);
+    if (!res.ok || data.status === "error" || data.success === false) {
+      const baseMsg = errorMessageFromResponse(data) || `HTTP ${res.status}`;
+      const lower = baseMsg.toLowerCase();
+      let hint = "";
+      if (lower.includes("sender")) {
+        hint = " (Sender ID may not be approved)";
+      } else if (lower.includes("credit") || lower.includes("balance")) {
+        hint = " (Check account balance)";
+      } else if (lower.includes("fulfill")) {
+        hint = " (Temporary Fish Africa issue — retry later)";
+      }
+      const msg = `${baseMsg}${hint}`;
       if (notificationId) {
         await admin
           .from("notifications")
@@ -189,7 +240,7 @@ export async function sendSMS(to: string | string[], message: string, meta?: SMS
           } satisfies NotificationUpdate)
           .eq("id", notificationId);
       }
-      logger.error("sms", `Fish Africa error (status=${res.status}): ` + JSON.stringify(data));
+      logger.error("sms", `Fish Africa error (status=${res.status}): ${baseMsg}`);
       return { success: false, error: msg };
     }
 

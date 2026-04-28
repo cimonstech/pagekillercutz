@@ -94,7 +94,7 @@ export default function AdminProfilePage() {
         data: { user: u },
       } = await supabase.auth.getUser();
       if (!u?.email) {
-        router.replace("/admin/login");
+        router.replace("/admin-login");
         return;
       }
       setUser(u);
@@ -188,7 +188,7 @@ export default function AdminProfilePage() {
       await supabase.auth.signOut({ scope: "global" });
       await fetch("/api/auth/admin-session", { method: "DELETE" });
       setSession({ role: null, staffEmail: null });
-      router.push("/admin/login");
+      router.push("/admin-login");
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Sign out failed", "error");
     } finally {

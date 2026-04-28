@@ -13,9 +13,24 @@ export type BookingsRow = {
   notes: string | null;
   genres: string[];
   package_name: string | null;
-  status: "pending" | "confirmed" | "cancelled";
+  package_price: number | null;
+  deposit_due_date: string | null;
+  balance_due_date: string | null;
+  deposit_amount: number | null;
+  balance_amount: number | null;
+  deposit_paid: boolean | null;
+  deposit_paid_at: string | null;
+  status: "pending" | "confirmed" | "cancelled" | "request" | "declined";
   payment_status: "unpaid" | "paid";
   created_at: string;
+  event_start_time: string | null;
+  event_duration_hours: number | null;
+  event_end_time: string | null;
+  event_start_time_input: string | null;
+  booking_type: string;
+  is_company: boolean;
+  company_name: string | null;
+  rep_title: string | null;
 };
 
 export type ContactMessagesRow = {
@@ -45,8 +60,61 @@ export type Database = {
     Tables: {
       bookings: {
         Row: BookingsRow;
-        Insert: Omit<BookingsRow, "id" | "created_at" | "event_id">;
+        Insert: Partial<
+          Omit<BookingsRow, "id" | "created_at" | "event_end_time">
+        > &
+          Pick<
+            BookingsRow,
+            | "event_id"
+            | "client_name"
+            | "client_email"
+            | "client_phone"
+            | "event_type"
+            | "event_date"
+            | "venue"
+            | "genres"
+            | "status"
+            | "payment_status"
+            | "booking_type"
+            | "is_company"
+          > & {
+            id?: string;
+            created_at?: string;
+            event_end_time?: string | null;
+          };
         Update: Partial<BookingsRow>;
+        Relationships: [];
+      };
+      calendar_blocks: {
+        Row: {
+          id: string;
+          block_date: string;
+          block_type: "full_day" | "time_range";
+          start_time: string | null;
+          end_time: string | null;
+          reason: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          block_date: string;
+          block_type?: "full_day" | "time_range";
+          start_time?: string | null;
+          end_time?: string | null;
+          reason?: string | null;
+          created_by?: string | null;
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<{
+          block_date: string;
+          block_type: "full_day" | "time_range";
+          start_time: string | null;
+          end_time: string | null;
+          reason: string | null;
+          created_by: string | null;
+          created_at: string;
+        }>;
         Relationships: [];
       };
       playlists: {
@@ -298,6 +366,127 @@ export type Database = {
           failed_at?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["notifications"]["Row"]>;
+        Relationships: [];
+      };
+      reviews: {
+        Row: {
+          id: string;
+          booking_id: string | null;
+          event_id: string;
+          client_name: string;
+          client_email: string;
+          event_type: string | null;
+          event_month: string | null;
+          rating: number | null;
+          review_text: string | null;
+          status: "pending" | "approved" | "hidden" | "rejected";
+          hidden_reason: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          submitted_at: string;
+          token: string | null;
+          token_expires_at: string | null;
+        };
+        Insert: {
+          booking_id?: string | null;
+          event_id: string;
+          client_name: string;
+          client_email: string;
+          event_type?: string | null;
+          event_month?: string | null;
+          rating?: number | null;
+          review_text?: string | null;
+          status?: "pending" | "approved" | "hidden" | "rejected";
+          hidden_reason?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          submitted_at?: string;
+          token?: string | null;
+          token_expires_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Row"]>;
+        Relationships: [];
+      };
+      contract_settings: {
+        Row: {
+          id: string;
+          version: number;
+          is_current: boolean;
+          deposit_percentage: number;
+          payment_deadline_days: number;
+          cancellation_tiers: Array<{
+            days_min: number;
+            days_max: number | null;
+            percentage_retained: number;
+            label: string;
+          }>;
+          dj_cancellation_compensation_pct: number;
+          dj_cancellation_notice_days: number;
+          overtime_rate_ghs: number;
+          free_postponements_allowed: number;
+          postponement_min_notice_days: number;
+          buffer_hours: number;
+          custom_clauses: string[];
+          force_majeure_text: string;
+          governing_law: string;
+          updated_by: string | null;
+          updated_at: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["contract_settings"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["contract_settings"]["Row"]>;
+        Relationships: [];
+      };
+      payment_settings: {
+        Row: {
+          id: string;
+          momo_enabled: boolean;
+          momo_network: string;
+          momo_number: string | null;
+          momo_account_name: string | null;
+          bank_enabled: boolean;
+          bank_name: string | null;
+          bank_account_number: string | null;
+          bank_account_name: string | null;
+          bank_branch: string | null;
+          preferred_method: "momo" | "bank" | "both" | string;
+          payment_instructions: string | null;
+          updated_by: string | null;
+          updated_at: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["payment_settings"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["payment_settings"]["Row"]>;
+        Relationships: [];
+      };
+      contracts: {
+        Row: {
+          id: string;
+          booking_id: string | null;
+          event_id: string;
+          contract_settings_version: number | null;
+          contract_html: string;
+          contract_text: string;
+          contract_hash: string;
+          status: "pending" | "signed" | "voided" | "pre-signed";
+          signing_token: string | null;
+          token_expires_at: string | null;
+          client_signed_at: string | null;
+          client_ip: string | null;
+          client_user_agent: string | null;
+          client_signature_type: string | null;
+          client_signature_data: string | null;
+          dj_signature_data: string | null;
+          pdf_url: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["contracts"]["Row"]> & {
+          event_id: string;
+          contract_html: string;
+          contract_text: string;
+          contract_hash: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["contracts"]["Row"]>;
         Relationships: [];
       };
     };

@@ -11,7 +11,7 @@ const NO_PLAYER_PREFIXES = [
   "/register",
   "/verify-email",
   "/reset-password",
-  "/admin/login",
+  "/admin-login",
 ] as const;
 
 function isAuthShellPath(pathname: string) {
@@ -20,7 +20,7 @@ function isAuthShellPath(pathname: string) {
 
 /** Admin app mounts its own BottomPlayerBar in app/admin/layout.tsx (with padded main). */
 function isAdminAppPath(pathname: string) {
-  return pathname.startsWith("/admin") && pathname !== "/admin/login";
+  return pathname.startsWith("/admin");
 }
 
 export default function GlobalPlayerMount() {

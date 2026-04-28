@@ -1243,6 +1243,72 @@ export function accountSetupEmail(data: {
   );
 }
 
+export function contractSigningEmail(data: {
+  clientName: string;
+  eventId: string;
+  eventDate: string;
+  dashboardUrl: string;
+  expiresIn?: string;
+}): string {
+  return baseTemplate(
+    "Please sign your service agreement",
+    `
+    <div class="card">
+      <h1>Your booking is confirmed</h1>
+      <p>
+        Hi ${esc(data.clientName)},
+      </p>
+      <p>
+        Your booking for
+        <strong>${esc(data.eventId)}</strong>
+        on ${esc(data.eventDate)} has been
+        confirmed by PAGE KillerCutz.
+      </p>
+      <p>
+        Before you can curate your playlist,
+        please review and sign your service
+        agreement. This takes less than
+        2 minutes.
+      </p>
+    </div>
+
+    <div class="card" style="border-left: 3px solid #00BFFF;">
+      <p class="label">Next step</p>
+      <p>
+        Click the button below to go to
+        your dashboard. Your service
+        agreement will be ready to sign
+        there.
+      </p>
+    </div>
+
+    <div style="text-align:center; margin: 24px 0;">
+      <a href="${esc(data.dashboardUrl)}" class="btn">
+        Sign My Agreement &amp; Get Started →
+      </a>
+    </div>
+
+    <div class="card" style="background: rgba(0,0,0,0.04);">
+      <div class="detail-row">
+        <span class="detail-label">Event ID</span>
+        <span class="detail-value event-id">${esc(data.eventId)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Event Date</span>
+        <span class="detail-value">${esc(data.eventDate)}</span>
+      </div>
+    </div>
+
+    <p style="text-align:center; color: #888; font-size: 12px;">
+      If you have already signed your
+      agreement, clicking this button
+      will take you straight to your
+      playlist portal.
+    </p>
+    `,
+  );
+}
+
 export function bookingRequestReceivedEmail(data: {
   clientName: string;
   eventId: string;
@@ -1273,4 +1339,156 @@ export function bookingRequestReceivedEmail(data: {
     </div>
     `,
   );
+}
+
+export function urgentRequestEmail(data: {
+  eventId: string;
+  clientName: string;
+  clientPhone: string;
+  eventDate: string;
+  eventStartTime: string;
+  venue: string;
+  packageName: string;
+  adminUrl: string;
+}): string {
+  return baseTemplate(`URGENT: Booking Request — ${esc(data.eventDate)}`, `
+    <div class="card card-red">
+      <p class="label" style="color:#FF4560;">URGENT — DATE ALREADY BOOKED</p>
+      <h1>New Booking Request</h1>
+      <p>
+        A client has requested this date which is already heavily committed or blocked.
+        Please review and decide quickly.
+      </p>
+    </div>
+    <div class="card">
+      <div class="detail-row">
+        <span class="detail-label">Event ID</span>
+        <span class="detail-value event-id">${esc(data.eventId)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Client</span>
+        <span class="detail-value">${esc(data.clientName)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Phone</span>
+        <span class="detail-value">${esc(data.clientPhone)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date</span>
+        <span class="detail-value">${esc(data.eventDate)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Start Time</span>
+        <span class="detail-value">${esc(data.eventStartTime || "Not specified")}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Venue</span>
+        <span class="detail-value">${esc(data.venue)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Package</span>
+        <span class="detail-value">${esc(data.packageName || "Not selected")}</span>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <a href="${esc(data.adminUrl)}" class="btn" style="background:#FF4560;color:#fff;">
+        Review Request Now →
+      </a>
+    </div>
+    `);
+}
+
+export function bookingRequestAcceptedClient(data: {
+  clientName: string;
+  eventId: string;
+  eventDate: string;
+  venue: string;
+  packageName: string;
+  djMomo: string;
+  portalUrl: string;
+}): string {
+  const pkg = esc(data.packageName || "Your package");
+  return baseTemplate(`Your booking request was accepted — ${esc(data.eventId)}`, `
+    <div class="card card-cyan">
+      <p class="label">Request accepted</p>
+      <h1>Hi ${esc(data.clientName)}</h1>
+      <p>
+        Great news — Page KillerCutz can accommodate your event. Your booking is now pending payment.
+        Complete payment using your Event ID as the reference to secure the date.
+      </p>
+    </div>
+    <div class="card">
+      <div class="detail-row">
+        <span class="detail-label">Event ID</span>
+        <span class="detail-value event-id">${esc(data.eventId)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Date</span>
+        <span class="detail-value">${esc(data.eventDate)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Venue</span>
+        <span class="detail-value">${esc(data.venue)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Package</span>
+        <span class="detail-value">${pkg}</span>
+      </div>
+    </div>
+    <div class="card card-gold">
+      <p class="label">DJ Mobile Money</p>
+      <div class="momo-number">${esc(data.djMomo)}</div>
+      <p style="font-size:12px;color:#5A6080;margin-top:8px;margin-bottom:0">
+        Reference: ${esc(data.eventId)}
+      </p>
+    </div>
+    <div style="text-align:center">
+      <a href="${esc(data.portalUrl)}" class="btn">Open Playlist Portal →</a>
+    </div>
+    `);
+}
+
+export function bookingRequestDeclinedClient(data: {
+  clientName: string;
+  eventId: string;
+  eventDate: string;
+}): string {
+  return baseTemplate(`Update on your booking request — ${esc(data.eventId)}`, `
+    <div class="card">
+      <p class="label">Booking request</p>
+      <h1>Hi ${esc(data.clientName)}</h1>
+      <p>
+        Thank you for your interest in Page KillerCutz. Unfortunately we are unable to accommodate
+        your request for <strong>${esc(data.eventDate)}</strong> (Event ID ${esc(data.eventId)}).
+      </p>
+      <p>
+        If you would like to explore another date, please submit a new booking on our website.
+      </p>
+    </div>
+    `);
+}
+
+export function reviewRequestEmail(data: {
+  clientName: string;
+  eventType: string | null;
+  reviewUrl: string;
+}): string {
+  return baseTemplate("How was your Page KillerCutz experience?", `
+    <div class="card card-cyan">
+      <p class="label">Post-event feedback</p>
+      <h1>How was your event?</h1>
+      <p>
+        Hi ${esc(data.clientName)}, thanks again for booking Page KillerCutz${data.eventType ? ` for your ${esc(data.eventType)}` : ""}.
+        We would love to hear your feedback.
+      </p>
+      <p>
+        Your review helps future clients and helps us keep improving.
+      </p>
+    </div>
+    <div style="text-align:center">
+      <a href="${esc(data.reviewUrl)}" class="btn">
+        Leave a Review →
+      </a>
+    </div>
+    `);
 }

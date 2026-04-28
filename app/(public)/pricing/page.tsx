@@ -13,10 +13,20 @@ interface Package {
   inclusions: string[];
 }
 
+type PublicReview = {
+  id: string;
+  rating: number;
+  first_name: string;
+  event_type: string | null;
+  event_month: string | null;
+  review_text: string | null;
+};
+
 export default function PricingPage() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<PublicReview[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +45,21 @@ export default function PricingPage() {
       }
     };
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/reviews?limit=3")
+      .then((r) => r.json())
+      .then((json: { reviews?: PublicReview[] }) => {
+        if (!cancelled) setReviews(json.reviews ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setReviews([]);
+      });
     return () => {
       cancelled = true;
     };
@@ -141,6 +166,52 @@ export default function PricingPage() {
           })
         )}
       </AnimateIn>
+
+      {reviews.length > 0 ? (
+        <AnimateIn from={16}>
+          <section className="mb-16">
+            <h2 className="mb-6 text-center font-headline text-[20px] font-semibold text-white">What clients say</h2>
+            <div className="flex gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible">
+              {reviews.map((r) => (
+                <article
+                  key={r.id}
+                  className="min-w-[280px] rounded-2xl border border-white/[0.08] bg-white/[0.05] p-5 backdrop-blur-[20px]"
+                >
+                  <div className="mb-3 text-[16px] text-[#F5A623]">
+                    {"★".repeat(Math.max(0, Math.min(5, r.rating)))}
+                    <span className="text-white/20">
+                      {"★".repeat(Math.max(0, 5 - Math.max(0, Math.min(5, r.rating))))}
+                    </span>
+                  </div>
+                  <p
+                    className="line-clamp-3 text-[14px] leading-[1.6] text-[#A0A8C0]"
+                    style={{ fontFamily: "Inter" }}
+                  >
+                    {r.review_text || "Great experience with Page KillerCutz."}
+                  </p>
+                  <div className="mt-4">
+                    <p
+                      className="text-[13px] font-medium text-white"
+                      style={{ fontFamily: "Space Grotesk" }}
+                    >
+                      — {r.first_name}
+                      {r.event_type ? `, ${r.event_type}` : ""}
+                    </p>
+                    {r.event_month ? (
+                      <p
+                        className="mt-0.5 text-[11px] text-on-surface-variant"
+                        style={{ fontFamily: "Inter" }}
+                      >
+                        {r.event_month}
+                      </p>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </AnimateIn>
+      ) : null}
 
       {/* Payment section */}
       <AnimateIn from={24}>

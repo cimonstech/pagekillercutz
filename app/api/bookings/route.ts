@@ -1,7 +1,12 @@
 import { authCallbackUrl, getPublicSiteUrl } from "@/lib/auth/site-url";
 import { logger } from "@/lib/logger";
 import { sendEmail } from "@/lib/notify/email";
-import { accountSetupEmail, bookingRequestReceivedEmail } from "@/lib/notify/emailTemplates";
+import {
+  accountSetupEmail,
+  bookingRequestReceivedEmail,
+  urgentRequestEmail,
+} from "@/lib/notify/emailTemplates";
+import { getDjSmsRecipients } from "@/lib/notify/djPhones";
 import { sendNewBookingRequestToDj } from "@/lib/notify/newBookingRequest";
 import { sendSMS } from "@/lib/notify/sms";
 import { getClientIp, rateLimit } from "@/lib/rateLimit";
@@ -109,6 +114,70 @@ async function provisionClientAuthAfterBooking(
   if (!smsResult.success) logger.errorRaw("route", "[api/bookings] client SMS:", smsResult.error ?? "unknown");
 
   return "invite_sent";
+}
+
+function padTimePart(n: string, width = 2): string {
+  const d = n.replace(/\D/g, "");
+  return d.padStart(width, "0").slice(-width);
+}
+
+function eventStartTimeToSqlTime(input: string | null | undefined): string | null {
+  if (!input?.trim()) return null;
+  const m = input.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  return `${padTimePart(m[1]!)}:${padTimePart(m[2]!)}:00`;
+}
+
+async function notifyAdminsUrgentBookingRequest(params: {
+  supabase: ReturnType<typeof getSupabaseAdmin>;
+  bookingDbId: string;
+  eventId: string;
+  clientName: string;
+  clientPhone: string;
+  eventDate: string;
+  eventStartTime: string;
+  venue: string;
+  packageName: string | null;
+}) {
+  const BASE_URL = getPublicSiteUrl().replace(/\/$/, "");
+  const adminUrl = `${BASE_URL}/admin/bookings`;
+  const { data: regularAdmins } = await params.supabase
+    .from("admins")
+    .select("email")
+    .eq("role", "admin")
+    .eq("status", "active");
+
+  const phones = getDjSmsRecipients();
+  const smsBody = `URGENT — Booking request for ${params.eventDate} (fully booked / blocked). ${params.clientName}. Review: ${adminUrl}`;
+  if (phones.length) {
+    const r = await sendSMS(phones, smsBody, {
+      type: "urgent_booking_request",
+      bookingId: params.bookingDbId,
+    });
+    if (!r.success) logger.errorRaw("route", "[api/bookings] urgent request SMS:", r.error);
+  }
+
+  for (const row of regularAdmins ?? []) {
+    const to = row.email?.trim();
+    if (!to) continue;
+    const result = await sendEmail({
+      to,
+      subject: `URGENT: Booking Request — ${params.eventDate} may be unavailable`,
+      html: urgentRequestEmail({
+        eventId: params.eventId,
+        clientName: params.clientName,
+        clientPhone: params.clientPhone,
+        eventDate: params.eventDate,
+        eventStartTime: params.eventStartTime,
+        venue: params.venue,
+        packageName: params.packageName ?? "Not selected",
+        adminUrl,
+      }),
+      type: "urgent_booking_request_email",
+      bookingId: params.bookingDbId,
+    });
+    if (!result.success) logger.errorRaw("route", "[api/bookings] urgent request email:", result.error);
+  }
 }
 
 function normalizeGhanaPhone(raw: string): string {
@@ -233,6 +302,21 @@ export async function POST(request: Request) {
 
     const guest_count = b.guestCount ?? null;
     const event_name = b.eventName?.trim() ? b.eventName.trim() : null;
+    const isRequest = Boolean(b.isRequest);
+    const bookingStatus = isRequest ? ("request" as const) : ("pending" as const);
+    const booking_type = isRequest ? "request" : "normal";
+    const duration = b.eventDurationHours ?? 3;
+    const startInput = b.eventStartTime?.trim() ? b.eventStartTime.trim() : null;
+    const event_start_time = eventStartTimeToSqlTime(startInput);
+
+    const packageName = b.packageName?.trim() ? b.packageName.trim() : null;
+    const { data: pkg } = packageName
+      ? await supabase
+          .from("packages")
+          .select("price")
+          .ilike("name", packageName)
+          .maybeSingle()
+      : { data: null };
 
     const insertRow = {
       event_id: eventId,
@@ -245,10 +329,18 @@ export async function POST(request: Request) {
       venue: b.venue.trim(),
       guest_count,
       notes: b.notes?.trim() ? b.notes.trim() : null,
-      package_name: b.packageName?.trim() ? b.packageName.trim() : null,
+      package_name: packageName,
+      package_price: pkg?.price ?? null,
       genres: b.genres ?? [],
-      status: "pending" as const,
+      status: bookingStatus,
       payment_status: "unpaid" as const,
+      event_start_time_input: startInput,
+      event_start_time,
+      event_duration_hours: duration,
+      booking_type,
+      is_company: Boolean(b.isCompany),
+      company_name: b.isCompany ? (b.companyName?.trim() ?? null) : null,
+      rep_title: b.isCompany ? (b.repTitle?.trim() ?? null) : null,
     };
 
     const { data, error } = await supabase.from("bookings").insert(insertRow).select("*").single();
@@ -261,16 +353,30 @@ export async function POST(request: Request) {
     const row = data as BookingRow;
     logger.infoRaw("route", "[api/bookings] Success:", row.event_id);
 
-    await sendNewBookingRequestToDj({
-      eventId: row.event_id,
-      clientName: b.clientName.trim(),
-      clientEmail: b.clientEmail.trim(),
-      clientPhone,
-      eventType: b.eventType.trim(),
-      eventDate: b.eventDate.trim(),
-      venue: b.venue.trim(),
-      packageName: b.packageName?.trim() ? b.packageName.trim() : null,
-    }).catch((err) => logger.errorRaw("route", "[bookings] DJ notify failed:", err));
+    if (!isRequest) {
+      await sendNewBookingRequestToDj({
+        eventId: row.event_id,
+        clientName: b.clientName.trim(),
+        clientEmail: b.clientEmail.trim(),
+        clientPhone,
+        eventType: b.eventType.trim(),
+        eventDate: b.eventDate.trim(),
+        venue: b.venue.trim(),
+        packageName: b.packageName?.trim() ? b.packageName.trim() : null,
+      }).catch((err) => logger.errorRaw("route", "[bookings] DJ notify failed:", err));
+    } else {
+      await notifyAdminsUrgentBookingRequest({
+        supabase,
+        bookingDbId: row.id,
+        eventId: row.event_id,
+        clientName: b.clientName.trim(),
+        clientPhone,
+        eventDate: b.eventDate.trim(),
+        eventStartTime: startInput ?? "",
+        venue: b.venue.trim(),
+        packageName: b.packageName?.trim() ? b.packageName.trim() : null,
+      }).catch((err) => logger.errorRaw("route", "[bookings] urgent admin notify failed:", err));
+    }
 
     let clientAuth: ClientAuthProvisionResult = "failed";
     try {
